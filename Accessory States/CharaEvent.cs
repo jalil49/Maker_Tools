@@ -613,9 +613,12 @@ namespace Accessory_States
 
         protected override void Update()
         {
-            if (Input.GetKeyDown(KeyCode.N))
+            if (Input.anyKeyDown)
             {
-                Settings.Logger.LogWarning(ACC_Appearance_state2.Control.ControlObjects.Count());
+                if (Input.GetKeyDown(KeyCode.N))
+                {
+                    Settings.Logger.LogWarning(ACC_Appearance_state2.Control.ControlObjects.Count());
+                }
             }
             base.Update();
         }

@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Accessory_States", "Accesso
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Accessory_Themes_and_Info", "Accessory Themes\Accessory Themes\Accessory_Themes_and_Info.csproj", "{86AB6D65-3357-48DE-BBA2-ED3EA4912BCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template_Accessories", "Accessory Template\Accessory_Template\Template_Accessories.csproj", "{73F3996E-4290-4C1A-B472-31035B0A2F72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Accessory_Shortcuts", "Accessory Shortcuts\Accessory_Shortcuts\Accessory_Shortcuts.csproj", "{18733318-DA12-4D7F-A8D4-0E320B22693A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{86AB6D65-3357-48DE-BBA2-ED3EA4912BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86AB6D65-3357-48DE-BBA2-ED3EA4912BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86AB6D65-3357-48DE-BBA2-ED3EA4912BCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73F3996E-4290-4C1A-B472-31035B0A2F72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73F3996E-4290-4C1A-B472-31035B0A2F72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73F3996E-4290-4C1A-B472-31035B0A2F72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73F3996E-4290-4C1A-B472-31035B0A2F72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18733318-DA12-4D7F-A8D4-0E320B22693A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18733318-DA12-4D7F-A8D4-0E320B22693A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18733318-DA12-4D7F-A8D4-0E320B22693A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18733318-DA12-4D7F-A8D4-0E320B22693A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -36,7 +36,7 @@ namespace Accessory_States
                         }
                         ThisCharactersData.Controller.Refresh();
                     }
-                    Settings.Logger.LogWarning(ThisCharactersData.Controller.ChaControl.fileStatus.clothesState == null);
+                    Settings.Logger.LogWarning("length" + ThisCharactersData.Controller.ChaControl.fileStatus.clothesState.Length);
                 }
                 Buttonlogic(i, false);
             }
