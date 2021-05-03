@@ -266,7 +266,7 @@ namespace Accessory_Themes_and_Info
             ThemeNamesDropdown = MakerAPI.AddControl<MakerDropdown>(ThemesDropDown_Setting);
             ThemeNamesDropdown.ValueChanged.Subscribe(x => Theme_Changed());
 
-            IsThemeRelativeBool = new MakerToggle(category, "Is NOT relative Color", owner);
+            IsThemeRelativeBool = new MakerToggle(category, "Fixed Color Theme", owner);
             e.AddControl(IsThemeRelativeBool).ValueChanged.Subscribe(b => RelativeThemeBool[CoordinateNum][ThemeNamesDropdown.Value] = b);
 
             #region Sliders

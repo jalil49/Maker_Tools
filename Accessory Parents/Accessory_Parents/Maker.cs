@@ -81,64 +81,7 @@ namespace Accessory_Parents
             Modify_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Modify Parent", category, owner));
             Modify_Button.OnClick.AddListener(delegate ()
             {
-                List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
-                int index = 0;
-                switch (radio.Value)
-                {
-                    case 0:
-                        if (options.Any(x => x.text == textbox.Value))
-                        {
-                            return;
-                        }
-                        options.Add(new TMP_Dropdown.OptionData(textbox.Value));
-                        Custom_Names[CoordinateNum][textbox.Value] = AccessoriesApi.SelectedMakerAccSlot;
-                        break;
-                    case 1:
-                        if (textbox.Value == "None")
-                        {
-                            return;
-                        }
-                        for (int i = 0; i < options.Count; i++)
-                        {
-                            if (options[i].text == textbox.Value)
-                            {
-                                index = i;
-                                break;
-                            }
-                            else if (i == options.Count - 1)
-                            {
-                                return;
-                            }
-                        }
-                        Custom_Names[CoordinateNum].Remove(textbox.Value);
-                        options.RemoveAt(index);
-                        break;
-                    case 2:
-                        if (Parent_DropDown.Value == 0)
-                        {
-                            return;
-                        }
-                        foreach (var item in options)
-                        {
-                            if (item.text == textbox.Value)
-                            {
-                                return;
-                            }
-                        }
-                        options[Parent_DropDown.Value].text = textbox.Value;
-                        break;
-                    default:
-                        break;
-                }
-
-                foreach (var item in Parent_DropDown.ControlObjects)
-                {
-                    item.GetComponentInChildren<TMP_Dropdown>().options = options;
-                }
-                Update_Old_Parents();
-                Update_Parenting();
-                VisibiltyToggle();
-
+                Modify_Dropdown();
             });
             Replace_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Replace Parent", category, owner));
             Replace_Button.OnClick.AddListener(delegate ()
@@ -163,32 +106,7 @@ namespace Accessory_Parents
             Child_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Make Child", category, owner));
             Child_Button.OnClick.AddListener(delegate ()
             {
-                var Slot = AccessoriesApi.SelectedMakerAccSlot;
-                if (Dropdown.Value == 0)
-                {
-                    Child[CoordinateNum].Remove(Slot);
-                    Update_Parenting();
-                    Update_Text(Slot);
-                    return;
-                }
-                var options = Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
-                if (Custom_Names[CoordinateNum].TryGetValue(options[Parent_DropDown.Value].text, out var parentKey))
-                {
-                    if (RecursiveParentCheck(Slot, parentKey) || RecursiveChildCheck(Slot, parentKey))
-                    {
-                        Logger.LogWarning("Loop Detected");
-                        Child[CoordinateNum].Remove(Slot);
-                        Update_Parenting();
-                        Update_Text(Slot);
-                        return;
-                    }
-                    Child[CoordinateNum][Slot] = parentKey;
-                    Move_To_Parent_Postion(Slot, parentKey);
-
-                    Save_Relative_data(Slot);
-                    Update_Parenting();
-                    Update_Text(Slot);
-                }
+                MakeChild();
             });
             Save_Relative_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Save Position", category, owner));
             Save_Relative_Button.OnClick.AddListener(delegate ()
@@ -292,7 +210,7 @@ namespace Accessory_Parents
 
         private void Update_Text(int slot)
         {
-            string output = "Slot " + slot.ToString();
+            string output = "Slot " + (slot + 1).ToString();
             var find = Custom_Names[CoordinateNum].Where(x => x.Value == slot).ToArray();
             if (find.Length > 0)
             {
@@ -901,7 +819,6 @@ namespace Accessory_Parents
             ChaControl.SetAccessoryScl(Slot, 0, Original[0, 2].x, false, 1);
             ChaControl.SetAccessoryScl(Slot, 0, Original[0, 2].y, false, 2);
             ChaControl.SetAccessoryScl(Slot, 0, Original[0, 2].z, false, 4);
-
         }
 
         private void Keep_Last_Data(int Slot, int ParentKey)
@@ -981,6 +898,126 @@ namespace Accessory_Parents
                 }
                 Old_Parent[CoordinateNum][item] = string.Copy(ParentKey);
             }
+        }
+
+        private void MakeChild()
+        {
+            if (MakerAPI.GetCharacterControl().GetAccessoryObject(AccessoriesApi.SelectedMakerAccSlot) == null)
+            {
+                return;
+            }
+            var Slot = AccessoriesApi.SelectedMakerAccSlot;
+            if (Parent_DropDown.Value == 0)
+            {
+                Child[CoordinateNum].Remove(Slot);
+                Update_Parenting();
+                Update_Text(Slot);
+                return;
+            }
+            var options = Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
+            if (Custom_Names[CoordinateNum].TryGetValue(options[Parent_DropDown.Value].text, out var parentKey))
+            {
+                if (RecursiveParentCheck(Slot, parentKey) || RecursiveChildCheck(Slot, parentKey))
+                {
+                    Child[CoordinateNum].Remove(Slot);
+                    Update_Parenting();
+                    Update_Text(Slot);
+                    return;
+                }
+                Child[CoordinateNum][Slot] = parentKey;
+                Move_To_Parent_Postion(Slot, parentKey);
+                Save_Relative_data(Slot);
+                Update_Parenting();
+                Update_Text(Slot);
+            }
+        }
+
+        private void Modify_Dropdown()
+        {
+            if (MakerAPI.GetCharacterControl().GetAccessoryObject(AccessoriesApi.SelectedMakerAccSlot) == null)
+            {
+                return;
+            }
+            List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
+            int index = 0;
+            switch (radio.Value)
+            {
+                case 0:
+                    var Text = textbox.Value;
+                    if (textbox.Value == "")
+                    {
+                        Text = $"Slot{(AccessoriesApi.SelectedMakerAccSlot + 1):000}";
+                    }
+                    if (options.Any(x => x.text == Text))
+                    {
+                        return;
+                    }
+                    options.Add(new TMP_Dropdown.OptionData(Text));
+                    Custom_Names[CoordinateNum][Text] = AccessoriesApi.SelectedMakerAccSlot;
+                    break;
+                case 1:
+                    if (textbox.Value == "None")
+                    {
+                        return;
+                    }
+                    for (int i = 0; i < options.Count; i++)
+                    {
+                        if (options[i].text == textbox.Value)
+                        {
+                            index = i;
+                            break;
+                        }
+                        else if (i == options.Count - 1)
+                        {
+                            return;
+                        }
+                    }
+                    Custom_Names[CoordinateNum].Remove(textbox.Value);
+                    options.RemoveAt(index);
+                    break;
+                case 2:
+                    if (Parent_DropDown.Value == 0)
+                    {
+                        return;
+                    }
+                    foreach (var item in options)
+                    {
+                        if (item.text == textbox.Value)
+                        {
+                            return;
+                        }
+                    }
+                    options[Parent_DropDown.Value].text = textbox.Value;
+                    break;
+                default:
+                    break;
+            }
+
+            foreach (var item in Parent_DropDown.ControlObjects)
+            {
+                item.GetComponentInChildren<TMP_Dropdown>().options = options;
+            }
+            Update_Old_Parents();
+            Update_Parenting();
+            VisibiltyToggle();
+        }
+
+        protected override void Update()
+        {
+            if (Input.anyKeyDown && AccessoriesApi.AccessoryCanvasVisible)
+            {
+                if (Input.GetKeyDown(KeyCode.C))
+                {
+                    MakeChild();
+                }
+                else if (Input.GetKeyDown(KeyCode.F))
+                {
+                    MakeChild();
+                    Modify_Dropdown();
+                    Parent_DropDown.SetValue(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options.Count() - 1);
+                }
+            }
+            base.Update();
         }
     }
 }

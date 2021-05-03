@@ -8,7 +8,8 @@ namespace Accessory_Shortcuts
     public static class Hooks
     {
         static ManualLogSource Logger;
-        public static CustomAcsChangeSlot CustomAcsChangeSlot_Reference;
+        //public static CustomAcsSelectKind CustomAcsSelectKind_Reference;
+        //public static CustomAcsChangeSlot CustomAcsChangeSlot_Reference;
         public static void Init()
         {
             Harmony.CreateAndPatchAll(typeof(Hooks));
@@ -35,6 +36,7 @@ namespace Accessory_Shortcuts
                 Logger.LogError($"Subscriber crash in {nameof(Accessory_Shortcuts.Hooks)}.{nameof(Post_Slot_ACC_Change)} - {ex}");
             }
         }
+
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void PreAccessory(ChaControl __instance, int slotNo, int type, int id, string parentKey)
         {
@@ -53,11 +55,19 @@ namespace Accessory_Shortcuts
             }
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(CustomAcsChangeSlot), "Start")]
-        private static void Select_Patch_Start(CustomAcsChangeSlot __instance)
-        {
-            CustomAcsChangeSlot_Reference = __instance;
-        }
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CustomAcsChangeSlot), "Start")]
+        //private static void CustomAcsChangeSlot_Patch_Start(CustomAcsChangeSlot __instance)
+        //{
+        //    CustomAcsChangeSlot_Reference = __instance;
+        //}
+
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CustomAcsSelectKind), "Start")]
+        //private static void CustomAcsSelectKind_Patch_Start(CustomAcsSelectKind __instance)
+        //{
+        //    CustomAcsSelectKind_Reference = __instance;
+        //}
+
     }
 }

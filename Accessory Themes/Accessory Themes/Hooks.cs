@@ -24,6 +24,5 @@ namespace Accessory_Themes_and_Info
                 Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Slot_ACC_Change)} - {ex}");
             }
         }
-
     }
 }

@@ -41,16 +41,14 @@ namespace Accessory_Themes_and_Info
         private bool SubtractValue = false;
 
         private bool Character_Cosplay_Ready = false;
-        private Stack<Queue<Color>>[] UndoACCSkew = new Stack<Queue<Color>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Stack<Queue<Color>>[] ClothsUndoSkew = new Stack<Queue<Color>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        private readonly Stack<Queue<Color>>[] UndoACCSkew = new Stack<Queue<Color>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        private readonly Stack<Queue<Color>>[] ClothsUndoSkew = new Stack<Queue<Color>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private bool underwearbool;
         private Color RelativeColorSkew = new Color();
 
         private Color[] PersonalColorSkew = new Color[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
 
         List<ChaFileAccessory.PartsInfo> ACCData;
-
-        private float[][] Relative_Saturation_Value_Limits = new float[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length][];
 
         public Required_ACC_Controller()
         {
@@ -75,7 +73,6 @@ namespace Accessory_Themes_and_Info
                 PersonalColorSkew[i] = Color.white;
                 colors[i] = new List<Color[]> { new Color[] { new Color(), new Color(), new Color(), new Color() } };
                 CoordinateSaveBools[i] = new bool[9];
-                Relative_Saturation_Value_Limits[i] = new float[] { 1f, 0f };
             }
         }
 
@@ -116,7 +113,6 @@ namespace Accessory_Themes_and_Info
                 RelativeThemeBool[i].Add(false);
                 PersonalColorSkew[i] = Color.white;
                 CoordinateSaveBools[i] = new bool[9];
-                Relative_Saturation_Value_Limits[i] = new float[] { 1f, 0f };
             }
             CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
             {
@@ -613,14 +609,6 @@ namespace Accessory_Themes_and_Info
                 for (int C1_color = 0; C1_color < 4; C1_color++)
                 {
                     Color.RGBToHSV(Check[C1_Theme][C1_color], out _, out var Saturation, out var Value);
-                    if (Saturation < Relative_Saturation_Value_Limits[CoordinateNum][0])
-                    {
-                        Relative_Saturation_Value_Limits[CoordinateNum][0] = Saturation;
-                    }
-                    else if (Saturation > Relative_Saturation_Value_Limits[CoordinateNum][1])
-                    {
-                        Relative_Saturation_Value_Limits[CoordinateNum][1] = Saturation;
-                    }
                     excludetemp.Clear();
                     excludetemp.Add(Check[C1_Theme][C1_color]);
                     if (exclude.Contains(Check[C1_Theme][C1_color]))
@@ -651,7 +639,6 @@ namespace Accessory_Themes_and_Info
                     exclude.AddRange(excludetemp);
                 }
             }
-            Settings.Logger.LogWarning($"Lower S limit {Relative_Saturation_Value_Limits[CoordinateNum][0]}, uppper limit {Relative_Saturation_Value_Limits[CoordinateNum][1]}");
             //var clothes = ChaControl.chaFile.coordinate[CoordinateNum].clothes.parts;
             //for (int i = 0; i < clothes.Length; i++)
             //{

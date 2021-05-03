@@ -36,7 +36,7 @@ namespace Accessory_States
 
             string[] ACC_app_Dropdown = new string[] { "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
 
-            ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing Bind", ACC_app_Dropdown, category, 0, owner));
+            ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing\nBind", ACC_app_Dropdown, category, 0, owner));
             ACC_Appearance_dropdown.ValueChanged += ACC_Appearance_dropdown_ValueChanged;
 
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
