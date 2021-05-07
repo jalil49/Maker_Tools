@@ -20,8 +20,8 @@ namespace Additional_Card_Info
 
         private bool[][] CoordinateSaveBools = new bool[Constants.CoordinateLength][];
 
-        private List<int>[] PersonalityType_Restriction = new List<int>[Constants.CoordinateLength];
-        private List<int>[] TraitType_Restriction = new List<int>[Constants.CoordinateLength];
+        private Dictionary<int, int>[] PersonalityType_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
+        private Dictionary<int, int>[] TraitType_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
         private int[] HstateType_Restriction = new int[Constants.CoordinateLength];
         private int[] ClubType_Restriction = new int[Constants.CoordinateLength];
         private bool[][] Height_Restriction = new bool[Constants.CoordinateLength][];
@@ -48,8 +48,8 @@ namespace Additional_Card_Info
                 CoordinateSaveBools[i] = new bool[Enum.GetNames(typeof(Constants.ClothingTypes)).Length];
                 CreatorNames[i] = Settings.CreatorName.Value;
                 SetNames[i] = "";
-                PersonalityType_Restriction[i] = new List<int>();
-                TraitType_Restriction[i] = new List<int>();
+                PersonalityType_Restriction[i] = new Dictionary<int, int>();
+                TraitType_Restriction[i] = new Dictionary<int, int>();
                 Height_Restriction[i] = new bool[Constants.HeightLength];
                 Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
                 HstateType_Restriction[i] = 0;
@@ -133,11 +133,11 @@ namespace Additional_Card_Info
                 }
                 if (MyData.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {
-                    PersonalityType_Restriction = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
+                    PersonalityType_Restriction = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 }
                 if (MyData.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
                 {
-                    TraitType_Restriction = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
+                    TraitType_Restriction = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 }
                 if (MyData.data.TryGetValue("HstateType_Restriction", out ByteData) && ByteData != null)
                 {
@@ -207,12 +207,20 @@ namespace Additional_Card_Info
 
             for (int i = 0; i < PersonalityToggles.Length; i++)
             {
-                PersonalityToggles[i].SetValue(PersonalityType_Restriction[CoordinateNum].Contains(i), false);
+                if (!PersonalityType_Restriction[CoordinateNum].TryGetValue(i, out int Value))
+                {
+                    Value = 1;
+                }
+                PersonalityToggles[i].SetValue(Value, false);
             }
 
             for (int i = 0; i < TraitToggles.Length; i++)
             {
-                TraitToggles[i].SetValue(TraitType_Restriction[CoordinateNum].Contains(i), false);
+                if (!TraitType_Restriction[CoordinateNum].TryGetValue(i, out int Value))
+                {
+                    Value = 1;
+                }
+                TraitToggles[i].SetValue(Value, false);
             }
 
             for (int i = 0; i < HeightToggles.Length; i++)
@@ -320,11 +328,11 @@ namespace Additional_Card_Info
                 }
                 if (MyData.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {
-                    PersonalityType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<List<int>>((byte[])ByteData);
+                    PersonalityType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, int>>((byte[])ByteData);
                 }
                 if (MyData.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
                 {
-                    TraitType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<List<int>>((byte[])ByteData);
+                    TraitType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, int>>((byte[])ByteData);
                 }
                 if (MyData.data.TryGetValue("HstateType_Restriction", out ByteData) && ByteData != null)
                 {

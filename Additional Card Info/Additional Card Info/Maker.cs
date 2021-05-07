@@ -10,8 +10,8 @@ namespace Additional_Card_Info
     public partial class CharaEvent : CharaCustomFunctionController
     {
         readonly MakerToggle[] CoordinateKeepToggles = new MakerToggle[Constants.ClothingTypesLength];
-        readonly MakerToggle[] PersonalityToggles = new MakerToggle[Constants.PersonalityLength];
-        readonly MakerToggle[] TraitToggles = new MakerToggle[Constants.TraitsLength];
+        readonly MakerRadioButtons[] PersonalityToggles = new MakerRadioButtons[Constants.PersonalityLength];
+        readonly MakerRadioButtons[] TraitToggles = new MakerRadioButtons[Constants.TraitsLength];
         readonly MakerToggle[] HeightToggles = new MakerToggle[Constants.HeightLength];
         readonly MakerToggle[] BreastsizeToggles = new MakerToggle[Constants.BreastsizeLength];
 
@@ -251,14 +251,14 @@ namespace Additional_Card_Info
 
             #region Personality Restrictions
             e.AddControl(new MakerSeparator(category, owner));
-            e.AddControl(new MakerText("Personality Restrictions (exclusive)", category, owner));
+            e.AddControl(new MakerText("Personality Restrictions", category, owner));
             for (int PersonNum = 0, n = Enum.GetNames(typeof(Constants.Personality)).Length; PersonNum < n; PersonNum++)
             {
                 PersonalityRestrictionControls(PersonNum, e);
             }
 
             e.AddControl(new MakerSeparator(category, owner));
-            e.AddControl(new MakerText("Trait Restrictions (inclusive)", category, owner));
+            e.AddControl(new MakerText("Trait Restrictions", category, owner));
             for (int TraitNum = 0, n = Enum.GetNames(typeof(Constants.Traits)).Length; TraitNum < n; TraitNum++)
             {
                 TraitRestrictionControls(TraitNum, e);
@@ -272,36 +272,32 @@ namespace Additional_Card_Info
 
         private void PersonalityRestrictionControls(int PersonalityNum, RegisterSubCategoriesEvent e)
         {
-            PersonalityToggles[PersonalityNum] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), false, Settings.Instance));
+            //PersonalityToggles[PersonalityNum] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), false, Settings.Instance));
+            PersonalityToggles[PersonalityNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             PersonalityToggles[PersonalityNum].ValueChanged.Subscribe(x =>
             {
-                if (x && !PersonalityType_Restriction[CoordinateNum].Contains(PersonalityNum))
-                {
-                    PersonalityType_Restriction[CoordinateNum].Add(PersonalityNum);
-                }
-                else if (!x)
+                Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Personality)PersonalityNum}");
+                if (x == 1)
                 {
                     PersonalityType_Restriction[CoordinateNum].Remove(PersonalityNum);
+                    return;
                 }
-                Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Personality)PersonalityNum}");
+                PersonalityType_Restriction[CoordinateNum][PersonalityNum] = x;
             });
         }
 
         private void TraitRestrictionControls(int TraitNum, RegisterSubCategoriesEvent e)
         {
-            TraitToggles[TraitNum] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), ((Constants.Traits)TraitNum).ToString().Replace('_', ' '), false, Settings.Instance));
+            TraitToggles[TraitNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Traits)TraitNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             TraitToggles[TraitNum].ValueChanged.Subscribe(x =>
             {
-                if (x && !TraitType_Restriction[CoordinateNum].Contains(TraitNum))
+                Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Traits)TraitNum}");
+                if (x == 1)
                 {
-                    TraitType_Restriction[CoordinateNum].Add(TraitNum);
+                    PersonalityType_Restriction[CoordinateNum].Remove(TraitNum);
+                    return;
                 }
-                else if (!x)
-                {
-                    TraitType_Restriction[CoordinateNum].Remove(TraitNum);
-
-                }
-                Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Traits)TraitNum}");
+                PersonalityType_Restriction[CoordinateNum][TraitNum] = x;
             });
         }
 
