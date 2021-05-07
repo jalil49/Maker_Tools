@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-namespace Accessory_Shortcuts
+namespace Template_Accessories
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
@@ -64,13 +64,12 @@ namespace Accessory_Shortcuts
 
             var Dropdown = new MakerDropdown("Parent", new string[] { "None" }, category, 0, owner);
             Parent_DropDown = MakerAPI.AddAccessoryWindowControl<MakerDropdown>(Dropdown);
-            //Parent_DropDown.ValueChanged += Parent_ValueChanged;
 
             textbox = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(new MakerTextbox(category, "Name", "", owner));
 
+            radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" });
 
-            radio = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }));
-            radio.ValueChanged.Subscribe(x => RadioChanged(x));
+            MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
 
             Modify_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Modify Parent", category, owner));
             Modify_Button.OnClick.AddListener(delegate ()
@@ -230,52 +229,8 @@ namespace Accessory_Shortcuts
                 Child_Button.Visible.OnNext(true);
                 Save_Relative_Button.Visible.OnNext(true);
                 ChildText.Visible.OnNext(true);
-                //Update_Text(AccessoriesApi.SelectedMakerAccSlot);
             }
         }
-
-        //private void Update_Text(int slot)
-        //{
-        //    string output = "Slot " + slot.ToString();
-        //    var find = Custom_Names[CoordinateNum].Where(x => x.Value == slot).ToArray();
-        //    if (find.Length > 0)
-        //    {
-        //        output += " is parent of ";
-        //        for (int i = 0, n = find.Length; i < n; i++)
-        //        {
-        //            if (i < n - 2)
-        //            {
-        //                output += find[i].Key + ", ";
-        //            }
-        //            else if (i == n - 2)
-        //            {
-        //                output += find[i].Key + " and ";
-        //            }
-        //            else
-        //            {
-        //                output += find[i].Key;
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        output += " is not Parent";
-        //    }
-        //    ParentText.ControlObjects.ElementAt(slot).GetComponentInChildren<TextMeshProUGUI>().text = output;
-        //    string output2;
-        //    if (Child[CoordinateNum].TryGetValue(slot, out int value))
-        //    {
-        //        output2 = "Child of " + Custom_Names[CoordinateNum].First(x => x.Value == value).Key;
-        //    }
-        //    else
-        //    {
-        //        output2 = "Is not a Child";
-        //    }
-        //    ChildText.ControlObjects.ElementAt(slot).GetComponentInChildren<TextMeshProUGUI>().text = output2;
-        //}
-
-
-
 
         private void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
         {
@@ -286,19 +241,6 @@ namespace Accessory_Shortcuts
             {
             }
             VisibiltyToggle();
-        }
-
-        private void RadioChanged(int value)
-        {
-            var ControlObjects = radio.ControlObjects.ToArray();
-            foreach (var ControlObject in ControlObjects)
-            {
-                var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
-                for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
-                {
-                    Toggles[Index].isOn = value == Index;
-                }
-            }
         }
 
         private void Update_DropBox()

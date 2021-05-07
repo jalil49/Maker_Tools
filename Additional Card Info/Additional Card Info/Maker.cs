@@ -2,30 +2,45 @@
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using UniRx;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace Additional_Card_Info
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        readonly MakerToggle[] CoordinateKeepToggles = new MakerToggle[9];
+        readonly MakerToggle[] CoordinateKeepToggles = new MakerToggle[Constants.ClothingTypesLength];
+        readonly MakerToggle[] PersonalityToggles = new MakerToggle[Constants.PersonalityLength];
+        readonly MakerToggle[] TraitToggles = new MakerToggle[Constants.TraitsLength];
+        readonly MakerToggle[] HeightToggles = new MakerToggle[Constants.HeightLength];
+        readonly MakerToggle[] BreastsizeToggles = new MakerToggle[Constants.BreastsizeLength];
 
-        MakerToggle IsUnderwear;
         AccessoryControlWrapper<MakerToggle, bool> AccKeepToggles;
         AccessoryControlWrapper<MakerToggle, bool> HairKeepToggles;
+
+        MakerRadioButtons CoordinateTypeRadio;
+        MakerRadioButtons CoordinateSubTypeRadio;
+        MakerRadioButtons ClubTypeRadio;
+        MakerRadioButtons HStateTypeRadio;
+
+        MakerTextbox Creator;
+        MakerTextbox Set_Name;
 
         private void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
-            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
 
-            MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
+            MakerAPI.MakerExiting += MakerAPI_MakerExiting;
+
+            MakerAPI.ReloadCustomInterface += (s, e2) => StartCoroutine(UpdateSlots());
+            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
+            MakerAPI.MakerFinishedLoading += (s, e2) =>
+            {
+                VisibiltyToggle();
+            };
+            Hooks.Slot_ACC_Change += (s, e2) => VisibiltyToggle();
         }
 
         private void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -33,31 +48,27 @@ namespace Additional_Card_Info
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
+
+
+            MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
+
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e2) => VisibiltyToggle();
-
-            MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
-            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
-        }
-
-        private void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
-        {
-            VisibiltyToggle();
-        }
-
-        private void MakerAPI_MakerFinishedLoading(object sender, System.EventArgs e)
-        {
-            VisibiltyToggle();
+            MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
+            MakerAPI.ReloadCustomInterface -= (s, e2) => StartCoroutine(UpdateSlots());
+            Hooks.Slot_ACC_Change -= (s, e2) => VisibiltyToggle();
         }
 
         private void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             var owner = Settings.Instance;
+
             #region Personal Settings
             MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
 
             e.AddSubCategory(category);
 
             e.AddControl(new MakerText("Toggle when all Hair accessories and accessories you want to keep on this character are ready.\nExample Mecha Chika who requires her arm and legs accessories", category, owner));
+            e.AddControl(new MakerText(null, category, owner));
             e.AddControl(new MakerSeparator(category, owner));
 
             e.AddControl(new MakerToggle(category, "Cosplay Academy Ready", false, owner)).BindToFunctionController<CharaEvent, bool>(
@@ -65,6 +76,7 @@ namespace Additional_Card_Info
                  (controller, value) => Character_Cosplay_Ready = value);
 
             e.AddControl(new MakerText("Select data that shouldn't be overwritten by other mods.\nExample Mecha Chika who doesn't work with socks/pantyhose and requires her shoes/glove", category, owner));
+            e.AddControl(new MakerText(null, category, owner));
 
             #region Keep Toggles
 
@@ -140,37 +152,175 @@ namespace Additional_Card_Info
 
             category = new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings");
             e.AddSubCategory(category);
+
             e.AddControl(new MakerText("Settings to be applied when saving coordinates\nThis isn't saved to Character Cards", category, owner));
-            CoordinateKeepToggles[0] = new MakerToggle(category, $"Keep Top", owner);
-            CoordinateKeepToggles[1] = new MakerToggle(category, $"Keep Bottom", owner);
-            CoordinateKeepToggles[2] = new MakerToggle(category, $"Keep Bra", owner);
-            CoordinateKeepToggles[3] = new MakerToggle(category, $"Keep Underwear", owner);
-            CoordinateKeepToggles[4] = new MakerToggle(category, $"Keep Gloves", owner);
-            CoordinateKeepToggles[5] = new MakerToggle(category, $"Keep Pantyhose", owner);
-            CoordinateKeepToggles[6] = new MakerToggle(category, $"Keep Socks", owner);
-            CoordinateKeepToggles[7] = new MakerToggle(category, $"Keep Indoor Shoes", owner);
-            CoordinateKeepToggles[8] = new MakerToggle(category, $"Keep Outdoor Shoes", owner);
-            e.AddControl(CoordinateKeepToggles[0]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][0] = x);
-            e.AddControl(CoordinateKeepToggles[1]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][1] = x);
-            e.AddControl(CoordinateKeepToggles[2]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][2] = x);
-            e.AddControl(CoordinateKeepToggles[3]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][3] = x);
-            e.AddControl(CoordinateKeepToggles[4]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][4] = x);
-            e.AddControl(CoordinateKeepToggles[5]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][5] = x);
-            e.AddControl(CoordinateKeepToggles[6]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][6] = x);
-            e.AddControl(CoordinateKeepToggles[7]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][7] = x);
-            e.AddControl(CoordinateKeepToggles[8]).ValueChanged.Subscribe(x => CoordinateSaveBools[CoordinateNum][8] = x);
+
             e.AddControl(new MakerSeparator(category, owner));
-            e.AddControl(new MakerText("Underwear settings", category, owner));
 
-            IsUnderwear = new MakerToggle(category, "Is underwear coordinate", owner);
-            e.AddControl(IsUnderwear).ValueChanged.Subscribe(x => underwearbool = x);
+            Creator = new MakerTextbox(category, "Author", Settings.CreatorName.Value, owner);
+            Set_Name = new MakerTextbox(category, "Set Name", "", owner);
 
+            e.AddControl(Creator).ValueChanged.Subscribe(x => CreatorNames[CoordinateNum] = x);
+            e.AddControl(Set_Name).ValueChanged.Subscribe(x => SetNames[CoordinateNum] = x);
+
+
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Coordinate Type information", category, owner));
+            CoordinateTypeRadio = new MakerRadioButtons(category, owner, "Coordinate Type", 0, Enum.GetNames(typeof(Constants.SimplifiedCoordinateTypes)))
+            {
+                Rows = 2
+            };
+            e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x => CoordinateType[CoordinateNum] = x);
+            e.AddControl(new MakerText(null, category, owner));
+
+            List<string> buttons = new List<string> { "General" };
+            buttons.AddRange(Enum.GetNames(typeof(Constants.ClothingTypes)));
+            buttons.AddRange(Enum.GetNames(typeof(Constants.AdditonalClothingTypes)));
+            for (int i = 0, n = buttons.Count; i < n; i++)
+            {
+                buttons[i] = buttons[i].Replace('_', ' ');
+            }
+            CoordinateSubTypeRadio = new MakerRadioButtons(category, owner, "Sub Type", 0, buttons.ToArray())
+            {
+                Rows = 5
+            };
+            Settings.Logger.LogWarning($"Subtype {buttons.Count / 4 + (buttons.Count % 4) % 2}");
+            e.AddControl(CoordinateSubTypeRadio).ValueChanged.Subscribe(x =>
+            {
+                CoordinateSubType[CoordinateNum] = x;
+                Settings.Logger.LogWarning($"Setting coordiante sub to {buttons[x]}");
+            });
+            for (int i = 0; i < 3; i++)
+            {
+                e.AddControl(new MakerText(null, category, owner));
+            }
+
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("H State Restrictions", category, owner));
+            string[] HstatesOptions = Enum.GetNames(typeof(Constants.HStates));
+            for (int i = 0; i < HstatesOptions.Length; i++)
+            {
+                HstatesOptions[i] = HstatesOptions[i].Replace('_', ' ');
+            }
+            HStateTypeRadio = new MakerRadioButtons(category, owner, "H State", 0, HstatesOptions)
+            {
+                Rows = 2
+            };
+            e.AddControl(HStateTypeRadio).ValueChanged.Subscribe(x => HstateType_Restriction[CoordinateNum] = x);
+
+            e.AddControl(new MakerText(null, category, owner));
+
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Club Restrictions", category, owner));
+            string[] ClubOptions = Enum.GetNames(typeof(Constants.Club));
+            for (int i = 0; i < ClubOptions.Length; i++)
+            {
+                ClubOptions[i] = ClubOptions[i].Replace('_', ' ');
+            }
+            ClubTypeRadio = new MakerRadioButtons(category, owner, "Club", 0, ClubOptions)
+            {
+                Rows = 4
+            };
+
+            e.AddControl(ClubTypeRadio).ValueChanged.Subscribe(x => ClubType_Restriction[CoordinateNum] = x - 1);
+            for (int i = 0; i < 2; i++)
+            {
+                e.AddControl(new MakerText(null, category, owner));
+            }
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Non-replaceable", category, owner));
+            for (int ClothingInt = 0; ClothingInt < 9; ClothingInt++)
+            {
+                ClothingKeepControls(ClothingInt, e);
+            }
             #endregion
 
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Breast Size Restrictions (exclusive)", category, owner));
+            for (int i = 0; i < Constants.BreastsizeLength; i++)
+            {
+                BreastSizeRestrictionControls(i, e);
+            }
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Height Restrictions (exclusive)", category, owner));
+
+            for (int i = 0; i < Constants.HeightLength; i++)
+            {
+                HeightRestrictionControls(i, e);
+            }
+
+            #region Personality Restrictions
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Personality Restrictions (exclusive)", category, owner));
+            for (int PersonNum = 0, n = Enum.GetNames(typeof(Constants.Personality)).Length; PersonNum < n; PersonNum++)
+            {
+                PersonalityRestrictionControls(PersonNum, e);
+            }
+
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Trait Restrictions (inclusive)", category, owner));
+            for (int TraitNum = 0, n = Enum.GetNames(typeof(Constants.Traits)).Length; TraitNum < n; TraitNum++)
+            {
+                TraitRestrictionControls(TraitNum, e);
+            }
+            #endregion
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             AccKeepToggles.Control.GroupingID = GroupingID;
             HairKeepToggles.Control.GroupingID = GroupingID;
+        }
+
+        private void PersonalityRestrictionControls(int PersonalityNum, RegisterSubCategoriesEvent e)
+        {
+            PersonalityToggles[PersonalityNum] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), false, Settings.Instance));
+            PersonalityToggles[PersonalityNum].ValueChanged.Subscribe(x =>
+            {
+                if (x && !PersonalityType_Restriction[CoordinateNum].Contains(PersonalityNum))
+                {
+                    PersonalityType_Restriction[CoordinateNum].Add(PersonalityNum);
+                }
+                else if (!x)
+                {
+                    PersonalityType_Restriction[CoordinateNum].Remove(PersonalityNum);
+                }
+                Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Personality)PersonalityNum}");
+            });
+        }
+
+        private void TraitRestrictionControls(int TraitNum, RegisterSubCategoriesEvent e)
+        {
+            TraitToggles[TraitNum] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), ((Constants.Traits)TraitNum).ToString().Replace('_', ' '), false, Settings.Instance));
+            TraitToggles[TraitNum].ValueChanged.Subscribe(x =>
+            {
+                if (x && !TraitType_Restriction[CoordinateNum].Contains(TraitNum))
+                {
+                    TraitType_Restriction[CoordinateNum].Add(TraitNum);
+                }
+                else if (!x)
+                {
+                    TraitType_Restriction[CoordinateNum].Remove(TraitNum);
+
+                }
+                Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Traits)TraitNum}");
+            });
+        }
+
+        private void ClothingKeepControls(int ClothingInt, RegisterSubCategoriesEvent e)
+        {
+            CoordinateKeepToggles[ClothingInt] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"Keep {((Constants.ClothingTypes)ClothingInt).ToString().Replace('_', ' ')}", false, Settings.Instance));
+            CoordinateKeepToggles[ClothingInt].ValueChanged.Subscribe(x => { CoordinateSaveBools[CoordinateNum][ClothingInt] = x; Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.ClothingTypes)ClothingInt}"); });
+        }
+
+        private void BreastSizeRestrictionControls(int size, RegisterSubCategoriesEvent e)
+        {
+            BreastsizeToggles[size] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"{((Constants.Breastsize)size)}", false, Settings.Instance));
+            BreastsizeToggles[size].ValueChanged.Subscribe(x => { Breastsize_Restriction[CoordinateNum][size] = x; Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Breastsize)size}"); });
+        }
+
+        private void HeightRestrictionControls(int size, RegisterSubCategoriesEvent e)
+        {
+            HeightToggles[size] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"{((Constants.Height)size)}", false, Settings.Instance));
+            HeightToggles[size].ValueChanged.Subscribe(x => { Height_Restriction[CoordinateNum][size] = x; Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Height)size}"); });
         }
 
         private void AccHairKeep_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)

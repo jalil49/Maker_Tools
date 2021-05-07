@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace Accessory_Themes_and_Info
+namespace Accessory_Themes
 {
     internal static class Hooks
     {

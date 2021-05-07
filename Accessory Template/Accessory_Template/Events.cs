@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Accessory_Shortcuts
+namespace Template_Accessories
 {
     public sealed class Acc_modifier_Event_ARG : EventArgs
     {

@@ -3,7 +3,6 @@ using HarmonyLib;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,11 +11,9 @@ namespace Accessory_Shortcuts
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        List<Toggle> Slot_Toggles = new List<Toggle>();
-        //List<CvsAccessory> Slot_CvsAccessory = new List<CvsAccessory>();
+        readonly List<Toggle> Slot_Toggles = new List<Toggle>();
         Transform Slots_Location;
         Traverse More_Acc;
-        //CustomAcsSelectKind CustomAcsSelectKind_Reference;
         bool Skip = false;
 
         private void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -31,7 +28,6 @@ namespace Accessory_Shortcuts
             Hooks.Pre_Slot_ACC_Change += Hooks_Pre_Slot_ACC_Change;
 
             More_Acc = Traverse.Create(MoreAccessoriesKOI.MoreAccessories._self);
-            //CustomAcsSelectKind_Reference = Hooks.CustomAcsSelectKind_Reference;
             Slots_Location = GameObject.Find("CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/Slots/Viewport/Content").transform;
             UpdateSlots();
         }
@@ -80,12 +76,10 @@ namespace Accessory_Shortcuts
 
         private void UpdateSlots()
         {
-            //Slot_CvsAccessory.Clear();
             Slot_Toggles.Clear();
             for (int i = 0, n = Slots_Location.childCount - 1; i < n; i++)
             {
                 Slot_Toggles.Add(Slots_Location.GetChild(i).GetComponent<Toggle>());
-                //Slot_CvsAccessory.Add(Slots_Location.GetChild(i).GetComponentInChildren<CvsAccessory>(true));
             }
         }
 
@@ -119,30 +113,13 @@ namespace Accessory_Shortcuts
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
                     Slot_Toggles[Math.Max(Slot - 1, 0)].isOn = true;
-                    //StartCoroutine(ToggleSlot(Math.Max(Slot - 1, 0)));
-                    //CustomAcsSelectKind_Reference.OnSelect(Math.Max(Slot - 1, 0));
                 }
                 else if (Input.GetKeyDown(KeyCode.E))
                 {
                     Slot_Toggles[Math.Min(Slot + 1, Slot_Toggles.Count - 1)].isOn = true;
-                    //StartCoroutine(ToggleSlot(Math.Min(Slot + 1, Slot_Toggles.Count - 1)));
-                    //CustomAcsSelectKind_Reference.OnSelect(Math.Min(Slot + 1, 19 + Accessorys_Parts.Count));
                 }
             }
-            //if (Input.GetKeyDown(KeyCode.N))
-            //{
-            //    Constants.Print_Dict();
-            //}
             base.Update();
-        }
-        private IEnumerator ToggleSlot(int Slot)
-        {
-            yield return null;
-            Logger.LogWarning($"Disabling Slot {AccessoriesApi.SelectedMakerAccSlot} and enabling {Slot}");
-            //Slot_Toggles[AccessoriesApi.SelectedMakerAccSlot].isOn = false;
-            // Slot_CvsAccessory[AccessoriesApi.SelectedMakerAccSlot].gameObject.SetActive(false);
-            Slot_Toggles[Slot].isOn = true;
-            //Slot_CvsAccessory[Slot].gameObject.SetActive(true);
         }
     }
 }

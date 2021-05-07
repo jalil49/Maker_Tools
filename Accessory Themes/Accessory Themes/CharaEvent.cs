@@ -14,8 +14,7 @@ using ToolBox;
 using UniRx;
 using UnityEngine;
 
-
-namespace Accessory_Themes_and_Info
+namespace Accessory_Themes
 {
     public partial class Required_ACC_Controller : CharaCustomFunctionController
     {
@@ -24,29 +23,21 @@ namespace Accessory_Themes_and_Info
         private List<string>[] ThemeNames = new List<string>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private List<bool>[] RelativeThemeBool = new List<bool>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private List<Color[]>[] colors = new List<Color[]>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private List<int>[] AccKeep = new List<int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private List<int>[] HairAcc = new List<int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         Dictionary<int, int>[] ACC_Theme_Dictionary = new Dictionary<int, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private Dictionary<int, bool>[] ColorRelativity = new Dictionary<int, bool>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private Dictionary<int, List<int[]>>[] Relative_ACC_Dictionary = new Dictionary<int, List<int[]>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private bool[][] CoordinateSaveBools = new bool[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length][];
 
         private int CoordinateNum = 0;
-        private bool ReassignValues = true;
-        private bool disableupdate = false;
-        private string[] Parentlist = Enum.GetNames(typeof(ChaAccessoryDefine.AccessoryParentKey));
 
-        private bool SubtractHue = false;
-        private bool SubtractSaturation = false;
-        private bool SubtractValue = false;
+        private readonly string[] Parentlist = Enum.GetNames(typeof(ChaAccessoryDefine.AccessoryParentKey));
 
-        private bool Character_Cosplay_Ready = false;
         private readonly Stack<Queue<Color>>[] UndoACCSkew = new Stack<Queue<Color>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private readonly Stack<Queue<Color>>[] ClothsUndoSkew = new Stack<Queue<Color>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private bool underwearbool;
-        private Color RelativeColorSkew = new Color();
 
         private Color[] PersonalColorSkew = new Color[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+
+        private List<int>[] HairAcc = new List<int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        private Additional_Card_Info.CharaEvent AdditionalInfoController;
 
         List<ChaFileAccessory.PartsInfo> ACCData;
 
@@ -56,10 +47,8 @@ namespace Accessory_Themes_and_Info
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
             MakerAPI.RegisterCustomSubCategories += RegisterCustomSubCategories;
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
-            for (int i = 0; i < AccKeep.Length; i++)
+            for (int i = 0; i < ThemeNames.Length; i++)
             {
-                AccKeep[i] = new List<int>();
-                HairAcc[i] = new List<int>();
                 ColorRelativity[i] = new Dictionary<int, bool>();
                 ACC_Theme_Dictionary[i] = new Dictionary<int, int>();
                 ThemeNames[i] = new List<string> { "None" };
@@ -72,7 +61,6 @@ namespace Accessory_Themes_and_Info
                 };
                 PersonalColorSkew[i] = Color.white;
                 colors[i] = new List<Color[]> { new Color[] { new Color(), new Color(), new Color(), new Color() } };
-                CoordinateSaveBools[i] = new bool[9];
             }
         }
 
@@ -95,11 +83,8 @@ namespace Accessory_Themes_and_Info
             {
                 return;
             }
-            disableupdate = true;
-            for (int i = 0; i < AccKeep.Length; i++)
+            for (int i = 0; i < ThemeNames.Length; i++)
             {
-                AccKeep[i].Clear();
-                HairAcc[i].Clear();
                 ColorRelativity[i].Clear();
                 ThemeNames[i].Clear();
                 ThemeNames[i].Add("None");
@@ -112,13 +97,12 @@ namespace Accessory_Themes_and_Info
                 RelativeThemeBool[i].Clear();
                 RelativeThemeBool[i].Add(false);
                 PersonalColorSkew[i] = Color.white;
-                CoordinateSaveBools[i] = new bool[9];
             }
             CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
             {
                 CoordinateNum = (int)value;
                 GetALLACC();
-                ReassignValues = true;
+                StartCoroutine(WaitForSlots());
             });
             GetALLACC();
 
@@ -129,7 +113,7 @@ namespace Accessory_Themes_and_Info
                 PersonalClothingBools[j] = false;
             }
             var MyData = GetExtendedData();
-            if (MyData != null && finishedloading)
+            if (MyData != null)
             {
                 if (MyData.data.TryGetValue("Theme_Names", out var ByteData) && ByteData != null)
                 {
@@ -148,14 +132,6 @@ namespace Accessory_Themes_and_Info
                 {
                     ColorRelativity = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("HairAcc", out ByteData) && ByteData != null)
-                {
-                    HairAcc = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
-                }
-                if (MyData.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
-                {
-                    AccKeep = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
-                }
                 if (MyData.data.TryGetValue("Personal_Clothing_Save", out ByteData) && ByteData != null)
                 {
                     PersonalClothingBools = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
@@ -172,26 +148,12 @@ namespace Accessory_Themes_and_Info
                 {
                     Relative_ACC_Dictionary = MessagePackSerializer.Deserialize<Dictionary<int, List<int[]>>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Cosplay_Academy_Ready", out ByteData) && ByteData != null)
-                {
-                    Character_Cosplay_Ready = MessagePackSerializer.Deserialize<bool>((byte[])ByteData);
-                }
             }
-            ReassignValues = true;
-            disableupdate = false;
-            finishedloading = true;
+            AdditionalInfoController = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
         }
 
         private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
-            if (HairAcc[CoordinateNum].Contains(e.SourceSlotIndex))
-            {
-                HairAcc[CoordinateNum].Add(e.DestinationSlotIndex);
-            }
-            if (AccKeep[CoordinateNum].Contains(e.SourceSlotIndex))
-            {
-                AccKeep[CoordinateNum].Add(e.DestinationSlotIndex);
-            }
             if (ACC_Theme_Dictionary[CoordinateNum].TryGetValue(e.SourceSlotIndex, out int ACC_Dict))
             {
                 ACC_Theme_Dictionary[CoordinateNum].Add(e.DestinationSlotIndex, ACC_Dict);
@@ -208,16 +170,16 @@ namespace Accessory_Themes_and_Info
             Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
             for (int i = 0; i < CopiedSlots.Length; i++)
             {
-                Settings.Logger.LogWarning($"ACCKeep");
-                if (AccKeep[Source].Contains(CopiedSlots[i]) && !AccKeep[Dest].Contains(CopiedSlots[i]))
-                {
-                    AccKeep[Dest].Add(CopiedSlots[i]);
-                }
-                Settings.Logger.LogWarning($"HairKeep");
-                if (HairAcc[Source].Contains(CopiedSlots[i]) && !HairAcc[Dest].Contains(CopiedSlots[i]))
-                {
-                    HairAcc[Dest].Add(CopiedSlots[i]);
-                }
+                //Settings.Logger.LogWarning($"ACCKeep");
+                //if (AccKeep[Source].Contains(CopiedSlots[i]) && !AccKeep[Dest].Contains(CopiedSlots[i]))
+                //{
+                //    AccKeep[Dest].Add(CopiedSlots[i]);
+                //}
+                //Settings.Logger.LogWarning($"HairKeep");
+                //if (HairAcc[Source].Contains(CopiedSlots[i]) && !HairAcc[Dest].Contains(CopiedSlots[i]))
+                //{
+                //    HairAcc[Dest].Add(CopiedSlots[i]);
+                //}
 
                 if (!ACC_Theme_Dictionary[Source].TryGetValue(CopiedSlots[i], out int value))
                 {
@@ -251,15 +213,16 @@ namespace Accessory_Themes_and_Info
             PluginData MyData = new PluginData();
             MyData.data.Add("Theme_Names", MessagePackSerializer.Serialize(ThemeNames));
             MyData.data.Add("Theme_dic", MessagePackSerializer.Serialize(ACC_Theme_Dictionary));
-            MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc));
-            MyData.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
             MyData.data.Add("Color_Theme_dic", MessagePackSerializer.Serialize(colors));
             MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity));
             MyData.data.Add("Personal_Clothing_Save", MessagePackSerializer.Serialize(PersonalClothingBools));
             MyData.data.Add("Relative_Theme_Bools", MessagePackSerializer.Serialize(RelativeThemeBool));
             MyData.data.Add("Color_Skews", MessagePackSerializer.Serialize(PersonalColorSkew));
             MyData.data.Add("Relative_ACC_Dictionary", MessagePackSerializer.Serialize(Relative_ACC_Dictionary));
-            MyData.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready));
+            //MyData.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready));
+            //MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc));
+            //MyData.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
+
             SetExtendedData(MyData);
         }
 
@@ -274,12 +237,10 @@ namespace Accessory_Themes_and_Info
             MyData.data.Add("Color_Theme_dic", MessagePackSerializer.Serialize(colors[CoordinateNum]));
             MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity[CoordinateNum]));
             MyData.data.Add("Relative_Theme_Bools", MessagePackSerializer.Serialize(RelativeThemeBool[CoordinateNum]));
-            MyData.data.Add("CoordinateSaveBools", MessagePackSerializer.Serialize(CoordinateSaveBools[CoordinateNum]));
-            MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc[CoordinateNum]));
             MyData.data.Add("Relative_ACC_Dictionary", MessagePackSerializer.Serialize(Relative_ACC_Dictionary[CoordinateNum]));
-            MyData.data.Add("Is_Underwear", MessagePackSerializer.Serialize(underwearbool));
-            //MyData.data.Add("ACC_State_2_array", MessagePackSerializer.Serialize(ACC_State_2_array[CoordinateNum]));
-            //MyData.data.Add("ACC_State_bool_array", MessagePackSerializer.Serialize(ACC_State_bool_array[CoordinateNum]));
+            //MyData.data.Add("Is_Underwear", MessagePackSerializer.Serialize(underwearbool));
+            //MyData.data.Add("CoordinateSaveBools", MessagePackSerializer.Serialize(CoordinateSaveBools[CoordinateNum]));
+            //MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc[CoordinateNum]));
 
             //Items to not color
             SetCoordinateExtendedData(coordinate, MyData);
@@ -315,29 +276,16 @@ namespace Accessory_Themes_and_Info
                     RelativeThemeBool[CoordinateNum] = MessagePackSerializer.Deserialize<List<bool>>((byte[])ByteData);
                 }
                 GetALLACC();
-                if (MyData.data.TryGetValue("HairAcc", out ByteData) && ByteData != null)
-                {
-                    HairAcc[CoordinateNum] = MessagePackSerializer.Deserialize<List<int>>((byte[])ByteData);
-                }
                 if (MyData.data.TryGetValue("Relative_ACC_Dictionary", out ByteData) && ByteData != null)
                 {
                     Relative_ACC_Dictionary[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, List<int[]>>>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
-                {
-                    CoordinateSaveBools[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
-                }
-                if (MyData.data.TryGetValue("Is_Underwear", out ByteData) && ByteData != null)
-                {
-                    IsUnderwear.SetValue(MessagePackSerializer.Deserialize<bool>((byte[])ByteData));
-                }
-                if (!PersonalSkew_Toggle.Value)
-                {
-                    return;
-                }
 
+                //if (!PersonalSkew_Toggle.Value)
+                //{
+                //    return;
+                //}
             }
-            ReassignValues = true;
         }
 
         private void Theme_Changed()
@@ -416,6 +364,7 @@ namespace Accessory_Themes_and_Info
             {
                 comparison = new string[] { Parentlist[ParentDropdown.Value] };
             }
+            HairAcc = AdditionalInfoController.HairAcc;
             for (int slot = 0; slot < ACCData.Count; slot++)
             {
                 if (comparison.Contains(ACCData[slot].parentKey))
@@ -430,11 +379,8 @@ namespace Accessory_Themes_and_Info
 
         private void UpdateSliderColor(int ColorNum, Color value, bool IsPersonal = false)
         {
-            if (disableupdate)
-            {
-                return;
-            }
             colors[CoordinateNum][ThemeNamesDropdown.Value][ColorNum] = value;
+            HairAcc = AdditionalInfoController.HairAcc;
             foreach (var item in ACC_Theme_Dictionary[CoordinateNum])
             {
                 if (item.Value == ThemeNamesDropdown.Value)
@@ -506,7 +452,6 @@ namespace Accessory_Themes_and_Info
                 var removeindex = ACC_Theme_Dictionary[CoordinateNum].Where(x => x.Value == index).ToArray();
                 foreach (var item in removeindex)
                 {
-                    //Themes.SetValue(item.Key, 0, false);
                     ACC_Theme_Dictionary[CoordinateNum].Remove(item.Key);
                     Themes.SetValue(item.Key, 0);
                 }
@@ -535,7 +480,7 @@ namespace Accessory_Themes_and_Info
         {
             List<TMP_Dropdown.OptionData> lists = ThemeNames[CoordinateNum].Select(x => new TMP_Dropdown.OptionData(x)).ToList();
             var old = ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
-            if (old.Count == ThemeNames[CoordinateNum].Count && ReassignValues)
+            if (old.Count == ThemeNames[CoordinateNum].Count)
             {
                 return;
             }
@@ -545,7 +490,6 @@ namespace Accessory_Themes_and_Info
             {
                 acc_slots[slot].GetComponentInChildren<TMP_Dropdown>().options = lists;
             }
-
             ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options = lists;
         }
 
@@ -575,9 +519,9 @@ namespace Accessory_Themes_and_Info
 
         private bool ColorComparison(Color C1, Color C2)
         {
-            if (float.TryParse(ToleranceTextBox.Value, out float Tolerance))
+            if (float.TryParse(Tolerance.Value, out float value))
             {
-                return Math.Abs(C1.r - C2.r) <= Tolerance && Math.Abs(C1.g - C2.g) <= Tolerance && Math.Abs(C1.b - C2.b) <= Tolerance && Math.Abs(C1.a - C2.a) <= Tolerance;
+                return Math.Abs(C1.r - C2.r) <= value && Math.Abs(C1.g - C2.g) <= value && Math.Abs(C1.b - C2.b) <= value && Math.Abs(C1.a - C2.a) <= value;
             }
             return false;
         }
@@ -699,13 +643,14 @@ namespace Accessory_Themes_and_Info
 
         private void RelativeAssignColors(Color input)
         {
-            if (disableupdate || ACC_Theme_Dictionary[CoordinateNum].Count == 0)
+            if (ACC_Theme_Dictionary[CoordinateNum].Count == 0)
             {
                 return;
             }
             List<int[]> list = Relative_ACC_Dictionary[CoordinateNum][SimilarDropdown.Value];
             var clothes = ChaControl.chaFile.coordinate[CoordinateNum].clothes.parts;
             var clothes2 = ChaControl.nowCoordinate.clothes.parts;
+            HairAcc = AdditionalInfoController.HairAcc;
             for (int i = 0; i < list.Count; i++)
             {
                 colors[CoordinateNum][list[i][0]][list[i][1]] = input;
@@ -736,22 +681,20 @@ namespace Accessory_Themes_and_Info
 
         private void AssignRelativeColorBox(int input)
         {
-            disableupdate = true;
             if (Relative_ACC_Dictionary[CoordinateNum].Count != 0)
             {
                 makerColorSimilar.Value = colors[CoordinateNum][Relative_ACC_Dictionary[CoordinateNum][input][0][0]][Relative_ACC_Dictionary[CoordinateNum][input][0][1]];
             }
             else { makerColorSimilar.Value = new Color(); SimilarDropdown.Value = 0; }
-            disableupdate = false;
         }
 
         private void RelativeSkew(bool undo = false)
         {
-            if (Relative_ACC_Dictionary[CoordinateNum].Count == 0 || disableupdate)
+            if (Relative_ACC_Dictionary[CoordinateNum].Count == 0)
             {
                 return;
             }
-            Color input = RelativeColorSkew;
+            Color input = RelativeSkewColor.Value;
 
             Color.RGBToHSV(input, out float In_Hue, out float In_S, out float In_V);
 
@@ -763,6 +706,8 @@ namespace Accessory_Themes_and_Info
                 UndoACCQueue = UndoACCSkew[CoordinateNum].Pop();
                 ClothesUndoQueue = ClothsUndoSkew[CoordinateNum].Pop();
             }
+            HairAcc = AdditionalInfoController.HairAcc;
+
             for (int i = 0; i < list.Count; i++)
             {
                 for (int j = 0; j < list[i].Count; j++)
@@ -776,30 +721,30 @@ namespace Accessory_Themes_and_Info
                     else
                     {
                         UndoACCQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        if (SubtractHue)
-                        {
-                            T_Hue = T_Hue - (In_Hue);
-                        }
-                        else
-                        {
-                            T_Hue = T_Hue + (In_Hue);
-                        }
-                        if (SubtractSaturation)
-                        {
-                            T_S = T_S - (In_S);
-                        }
-                        else
-                        {
-                            T_S = T_S + (In_S);
-                        }
-                        if (SubtractValue)
-                        {
-                            T_V = T_V - (In_V);
-                        }
-                        else
-                        {
-                            T_V = T_V + (In_V);
-                        }
+                        //if (SubtractHue)
+                        //{
+                        //    T_Hue = T_Hue - (In_Hue);
+                        //}
+                        //else
+                        //{
+                        T_Hue += (In_Hue);
+                        //}
+                        //if (SubtractSaturation)
+                        //{
+                        //    T_S = T_S - (In_S);
+                        //}
+                        //else
+                        //{
+                        //    T_S = T_S + (In_S);
+                        //}
+                        //if (SubtractValue)
+                        //{
+                        //    T_V = T_V - (In_V);
+                        //}
+                        //else
+                        //{
+                        //    T_V = T_V + (In_V);
+                        //}
                         temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
                     }
                     colors[CoordinateNum][list[i][j][0]][list[i][j][1]] = temp;
@@ -825,30 +770,30 @@ namespace Accessory_Themes_and_Info
                     else
                     {
                         ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        if (SubtractHue)
-                        {
-                            T_Hue = T_Hue - (In_Hue);
-                        }
-                        else
-                        {
-                            T_Hue = T_Hue + (In_Hue);
-                        }
-                        if (SubtractSaturation)
-                        {
-                            T_S = T_S - (In_S);
-                        }
-                        else
-                        {
-                            T_S = T_S + (In_S);
-                        }
-                        if (SubtractValue)
-                        {
-                            T_V = T_V - (In_V);
-                        }
-                        else
-                        {
-                            T_V = T_V + (In_V);
-                        }
+                        //if (SubtractHue)
+                        //{
+                        //    T_Hue = T_Hue - (In_Hue);
+                        //}
+                        //else
+                        //{
+                        T_Hue += (In_Hue);
+                        //}
+                        //if (SubtractSaturation)
+                        //{
+                        //    T_S = T_S - (In_S);
+                        //}
+                        //else
+                        //{
+                        //    T_S = T_S + (In_S);
+                        //}
+                        //if (SubtractValue)
+                        //{
+                        //    T_V = T_V - (In_V);
+                        //}
+                        //else
+                        //{
+                        //    T_V = T_V + (In_V);
+                        //}
                         temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
                     }
                     clothes[i].colorInfo[j].baseColor = temp;
@@ -865,10 +810,9 @@ namespace Accessory_Themes_and_Info
 
         private void AutoTheme()
         {
-            disableupdate = true;
             var data = ACCData;
             var themed = ACC_Theme_Dictionary[CoordinateNum];
-            if (clearthemes.Value)
+            if (Clearthemes.Value)
             {
                 themed.Clear();
                 ThemeNames[CoordinateNum].Clear();
@@ -886,49 +830,37 @@ namespace Accessory_Themes_and_Info
                 ThemeText.Value = $"Gen_Slot{(Slot + 1):000}";
                 AddThemeValueToList(Slot, true);
             }
-            disableupdate = false;
         }
 
         private IEnumerator WaitForSlots()
         {
             GetALLACC();
-            while (AccKeepToggles.Control.ControlObjects.Count() < ACCData.Count)
+            while (Themes.Control.ControlObjects.Count() < ACCData.Count)
             {
                 yield return 0;
             }
-            Settings.Logger.LogWarning($"cvs {AccKeepToggles.Control.ControlObjects.Count() }");
+            //Settings.Logger.LogWarning($"cvs {AccKeepToggles.Control.ControlObjects.Count() }");
 
             Settings.Logger.LogWarning("ReloadCustomInterface fired");
-            if (ReassignValues)
-            {
-                ReassignValues = false;
-                GetALLACC();
-                Update_ACC_Dropbox();
-                Update_RelativeColor_Dropbox();
-                var set = ACC_Theme_Dictionary[CoordinateNum];
-                disableupdate = true;
-                Update_ACC_Dropbox();
+            GetALLACC();
+            Update_ACC_Dropbox();
+            Update_RelativeColor_Dropbox();
+            var set = ACC_Theme_Dictionary[CoordinateNum];
+            Update_ACC_Dropbox();
 
-                for (int SlotIndex = 0, ACC_Count = ACCData.Count; SlotIndex < ACC_Count; SlotIndex++)
+            for (int SlotIndex = 0, ACC_Count = ACCData.Count; SlotIndex < ACC_Count; SlotIndex++)
+            {
+                if (set.ContainsKey(SlotIndex))
                 {
-                    HairKeepToggles.SetValue(SlotIndex, HairAcc[CoordinateNum].Contains(SlotIndex));
-                    AccKeepToggles.SetValue(SlotIndex, AccKeep[CoordinateNum].Contains(SlotIndex));
-                    if (set.ContainsKey(SlotIndex))
-                    {
-                        Themes.SetValue(SlotIndex, set[SlotIndex]);
-                    }
-                    else
-                    {
-                        Themes.SetValue(SlotIndex, 0);
-                    }
+                    Themes.SetValue(SlotIndex, set[SlotIndex], false);
                 }
-                IsThemeRelativeBool.SetValue(RelativeThemeBool[CoordinateNum][ThemeNamesDropdown.Value]);
-                disableupdate = false;
-                for (int i = 0; i < CoordinateKeepToggles.Length; i++)
+                else
                 {
-                    CoordinateKeepToggles[i].SetValue(CoordinateSaveBools[CoordinateNum][i]);
+                    Themes.SetValue(SlotIndex, 0, false);
                 }
             }
+            IsThemeRelativeBool.SetValue(RelativeThemeBool[CoordinateNum][ThemeNamesDropdown.Value], false);
+
             VisibiltyToggle();
         }
     }

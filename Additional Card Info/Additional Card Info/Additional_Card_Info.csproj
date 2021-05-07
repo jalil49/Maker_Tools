@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{86AB6D65-3357-48DE-BBA2-ED3EA4912BCC}</ProjectGuid>
+    <ProjectGuid>{C524AC66-CABC-4301-8B24-6910C0BE07F7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Accessory_Themes_and_Info</RootNamespace>
-    <AssemblyName>Accessory_Themes_and_Info</AssemblyName>
+    <RootNamespace>Additional_Card_Info</RootNamespace>
+    <AssemblyName>Additional Card Info</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -83,10 +83,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CharaEvent.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="Hooks.cs" />
-    <Compile Include="CharaEvent.cs" />
     <Compile Include="Maker.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

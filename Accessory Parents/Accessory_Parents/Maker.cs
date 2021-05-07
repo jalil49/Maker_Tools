@@ -17,10 +17,14 @@ namespace Accessory_Parents
     public partial class CharaEvent : CharaCustomFunctionController
     {
         MakerDropdown Parent_DropDown;
+
         MakerText ParentText;
         MakerText ChildText;
+
         MakerTextbox textbox;
+
         MakerRadioButtons radio;
+
         MakerButton Modify_Button;
         MakerButton Replace_Button;
         MakerButton Save_Relative_Button;
@@ -74,9 +78,9 @@ namespace Accessory_Parents
 
             textbox = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(new MakerTextbox(category, "Name", "", owner));
 
-
-            radio = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }));
-            radio.ValueChanged.Subscribe(x => RadioChanged(x));
+            radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }) { Unify_AccessoryWindowControl = true };
+            MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
+            //radio.ValueChanged.Subscribe(x => RadioChanged(x));
 
             Modify_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Modify Parent", category, owner));
             Modify_Button.OnClick.AddListener(delegate ()
@@ -749,18 +753,18 @@ namespace Accessory_Parents
             Update_Old_Parents();
         }
 
-        private void RadioChanged(int value)
-        {
-            var ControlObjects = radio.ControlObjects.ToArray();
-            foreach (var ControlObject in ControlObjects)
-            {
-                var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
-                for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
-                {
-                    Toggles[Index].isOn = value == Index;
-                }
-            }
-        }
+        //private void RadioChanged(int value)
+        //{
+        //    var ControlObjects = radio.ControlObjects.ToArray();
+        //    foreach (var ControlObject in ControlObjects)
+        //    {
+        //        var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
+        //        for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
+        //        {
+        //            Toggles[Index].isOn = value == Index;
+        //        }
+        //    }
+        //}
 
         private void Update_DropBox()
         {
@@ -823,7 +827,6 @@ namespace Accessory_Parents
 
         private void Keep_Last_Data(int Slot, int ParentKey)
         {
-            Vector3[,] Original;
             string Parent_Name;
             if (ParentKey < 20)
             {
@@ -834,7 +837,7 @@ namespace Accessory_Parents
                 Update_More_Accessories();
                 Parent_Name = Accessorys_Parts[ParentKey - 20].parentKey;
             }
-            if (!Relative_Data[CoordinateNum].TryGetValue(Slot, out Original))
+            if (!Relative_Data[CoordinateNum].TryGetValue(Slot, out Vector3[,] Original))
             {
                 for (int i = 0; i < 2; i++)
                 {

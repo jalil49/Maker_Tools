@@ -12,7 +12,7 @@ using ToolBox;
 using UniRx;
 using UnityEngine;
 
-namespace Accessory_Shortcuts
+namespace Template_Accessories
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {

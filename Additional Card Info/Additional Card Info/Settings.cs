@@ -16,7 +16,7 @@ namespace Additional_Card_Info
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }
-
+        public static ConfigEntry<string> CreatorName { get; private set; }
 
         public void Awake()
         {
@@ -27,8 +27,8 @@ namespace Additional_Card_Info
 
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
             Harmony.CreateAndPatchAll(typeof(Hooks));
-            //ShowTypeInfo(typeof(Required_ACC_Controller));
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "4", "Requires restarting maker");
+            CreatorName = Config.Bind("User", "Creator", "", "Default Creator name for those who make a lot of coordinates");
         }
     }
 }

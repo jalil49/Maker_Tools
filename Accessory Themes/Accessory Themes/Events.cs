@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Accessory_Themes_and_Info
+namespace Accessory_Themes
 {
     public sealed class Slot_ACC_Change_ARG : EventArgs
     {

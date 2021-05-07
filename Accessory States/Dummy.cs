@@ -1,14 +1,5 @@
-﻿using ExtensibleSaveFormat;
-using KKAPI;
+﻿using KKAPI;
 using KKAPI.Chara;
-using KKAPI.Maker;
-using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UniRx;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace Accessory_States
 {
@@ -16,6 +7,7 @@ namespace Accessory_States
     {
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            //Dummy Exists so data from this registered GUID isn't disposed of outside of Maker if Dll isn't installed
         }
     }
 }

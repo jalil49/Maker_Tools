@@ -20,7 +20,9 @@ namespace Accessory_States
         AccessoryControlWrapper<MakerToggle, bool> ACC_Is_Parented;
 
         MakerTextbox ThemeText;
+
         MakerRadioButtons RadioToggle;
+
         MakerButton ApplyTheme;
 
         MakerDropdown Parented_Dropdown;
@@ -42,9 +44,11 @@ namespace Accessory_States
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
             ThemeText = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(ThemeTextBox);
 
-            var radio = new MakerRadioButtons(category, owner, "options", 0, new string[] { "Add Group", "Remove Group", "Rename" });
+            var radio = new MakerRadioButtons(category, owner, "options", 0, new string[] { "Add Group", "Remove Group", "Rename" })
+            {
+                Unify_AccessoryWindowControl = true
+            };
             RadioToggle = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
-            RadioToggle.ValueChanged.Subscribe(x => RadioChanged(x));
 
             var AddRemoveModifyButton = new MakerButton("Modify Group", category, owner);
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveModifyButton);
@@ -169,6 +173,7 @@ namespace Accessory_States
             ACC_Is_Parented = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(Parented_Toggle);
             ACC_Is_Parented.ValueChanged += ACC_Is_Parented_ValueChanged;
 
+            e.AddControl(new MakerText("Accessory States Toggles", category, owner));
             var Parented_View_Toggle = new MakerToggle(category, "toggle parent view", true, owner);
 
             Parented_Dropdown = new MakerDropdown("Parented options", new string[] { "None" }, category, 0, owner);
@@ -275,7 +280,12 @@ namespace Accessory_States
 
         private void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
         {
-            Update_More_Accessories();
+            StartCoroutine(Wait());
+            IEnumerator Wait()
+            {
+                yield return null;
+                Update_More_Accessories();
+            }
         }
 
         private void Custom_groups_GUI_Toggle(int kind)
@@ -529,17 +539,17 @@ namespace Accessory_States
             }
         }
 
-        private void RadioChanged(int value)
-        {
-            var ControlObjects = RadioToggle.ControlObjects.ToArray();
-            foreach (var ControlObject in ControlObjects)
-            {
-                var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
-                for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
-                {
-                    Toggles[Index].isOn = value == Index;
-                }
-            }
-        }
+        //private void RadioChanged(int value)
+        //{
+        //    //var ControlObjects = RadioToggle.ControlObjects.ToArray();
+        //    //foreach (var ControlObject in ControlObjects)
+        //    //{
+        //    //    var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
+        //    //    for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
+        //    //    {
+        //    //        Toggles[Index].isOn = value == Index;
+        //    //    }
+        //    //}
+        //}
     }
 }

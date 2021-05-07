@@ -3,7 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using KKAPI.Chara;
 
-namespace Accessory_Shortcuts
+namespace Template_Accessories
 {
     [BepInPlugin(GUID, "Accessory Template", Version)]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
