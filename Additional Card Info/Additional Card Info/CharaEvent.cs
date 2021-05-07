@@ -4,9 +4,7 @@ using KKAPI.Chara;
 using KKAPI.Maker;
 using MessagePack;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 
 namespace Additional_Card_Info
@@ -172,106 +170,6 @@ namespace Additional_Card_Info
                     SetNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
                 }
             }
-        }
-
-        private IEnumerator UpdateSlots()
-        {
-            yield return null;
-            if (AccKeepToggles.Control.ControlObject == null)
-            {
-                yield break;
-            }
-            for (int i = 0, n = AccKeepToggles.Control.ControlObjects.Count(); i < n; i++)
-            {
-                bool keep = false;
-                if (AccKeep[CoordinateNum].Contains(i))
-                {
-                    keep = true;
-                }
-                AccKeepToggles.SetValue(i, keep, false);
-                if (HairAcc[CoordinateNum].Contains(i))
-                {
-                    keep = true;
-                }
-                else
-                {
-                    keep = false;
-                }
-                HairKeepToggles.SetValue(i, keep, false);
-            }
-
-            for (int i = 0; i < CoordinateKeepToggles.Length; i++)
-            {
-                CoordinateKeepToggles[i].SetValue(CoordinateSaveBools[CoordinateNum][i], false);
-            }
-
-            for (int i = 0; i < PersonalityToggles.Length; i++)
-            {
-                if (!PersonalityType_Restriction[CoordinateNum].TryGetValue(i, out int Value))
-                {
-                    Value = 1;
-                }
-                PersonalityToggles[i].SetValue(Value, false);
-            }
-
-            for (int i = 0; i < TraitToggles.Length; i++)
-            {
-                if (!TraitType_Restriction[CoordinateNum].TryGetValue(i, out int Value))
-                {
-                    Value = 1;
-                }
-                TraitToggles[i].SetValue(Value, false);
-            }
-
-            for (int i = 0; i < HeightToggles.Length; i++)
-            {
-                HeightToggles[i].SetValue(Height_Restriction[CoordinateNum][i], false);
-            }
-            for (int i = 0; i < BreastsizeToggles.Length; i++)
-            {
-                BreastsizeToggles[i].SetValue(Breastsize_Restriction[CoordinateNum][i], false);
-            }
-            CoordinateTypeRadio.SetValue(CoordinateType[CoordinateNum], false);
-            CoordinateSubTypeRadio.SetValue(CoordinateSubType[CoordinateNum], false);
-            ClubTypeRadio.SetValue(ClubType_Restriction[CoordinateNum], false);
-            HStateTypeRadio.SetValue(HstateType_Restriction[CoordinateNum], false);
-            Creator.SetValue(CreatorNames[CoordinateNum], false);
-            Set_Name.SetValue(SetNames[CoordinateNum], false);
-        }
-
-        private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
-        {
-            if (HairAcc[CoordinateNum].Contains(e.SourceSlotIndex))
-            {
-                HairAcc[CoordinateNum].Add(e.DestinationSlotIndex);
-            }
-            if (AccKeep[CoordinateNum].Contains(e.SourceSlotIndex))
-            {
-                AccKeep[CoordinateNum].Add(e.DestinationSlotIndex);
-            }
-            VisibiltyToggle();
-        }
-
-        private void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
-        {
-            var CopiedSlots = e.CopiedSlotIndexes.ToArray();
-            var Source = (int)e.CopySource;
-            var Dest = (int)e.CopyDestination;
-            Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
-            for (int i = 0; i < CopiedSlots.Length; i++)
-            {
-                Settings.Logger.LogWarning($"ACCKeep");
-                if (AccKeep[Source].Contains(CopiedSlots[i]) && !AccKeep[Dest].Contains(CopiedSlots[i]))
-                {
-                    AccKeep[Dest].Add(CopiedSlots[i]);
-                }
-                Settings.Logger.LogWarning($"HairKeep");
-                if (HairAcc[Source].Contains(CopiedSlots[i]) && !HairAcc[Dest].Contains(CopiedSlots[i]))
-                {
-                    HairAcc[Dest].Add(CopiedSlots[i]);
-                }
-            }
-            VisibiltyToggle();
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
