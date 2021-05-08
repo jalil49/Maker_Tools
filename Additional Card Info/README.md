@@ -6,7 +6,7 @@
 ## Additional Character Info
 	Settings Tab
 ### Keep Clothing Parts
-	Will keep the selected clothing part on all characters, primarily for characters who are unable to change/wear a piece of clothing in said slot.
+Will keep the selected clothing part on all characters, primarily for characters who are unable to change/wear a piece of clothing in said slot.
 	
 ### Cosplay Ready
 Character has all required accessories and keeps marked
@@ -31,6 +31,7 @@ After rolling a couple of times you might notice that she doesn't exactly work w
 <img src="https://github.com/jalil49/Maker_Tools/blob/main/Additional%20Card%20Info/Images/Standard%20Chika.jpg" height="500">	<img src="https://github.com/jalil49/Maker_Tools/blob/main/Additional%20Card%20Info/Images/Standard%20Chika%20with%20Cosplay.jpg" height="500">	<img src="https://github.com/jalil49/Maker_Tools/blob/main/Additional%20Card%20Info/Images/Cosplay%20Ready.jpg" height="500">
 
 ## Additional Coordinate Info
+	Clothing Settings Tab
 ### Author: Creator of coordinate
 Can be set to a name in settings so you don't have to type your name everytime
 ### Set Name: Name of coordinate set it belongs too.
