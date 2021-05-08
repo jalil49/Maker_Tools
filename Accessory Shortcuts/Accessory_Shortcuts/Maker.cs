@@ -93,7 +93,7 @@ namespace Accessory_Shortcuts
                 {
                     Skip = true;
                     CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { Slot }).GetValue<CvsAccessory>();
-                    if (int.TryParse(Input.inputString, out var kind) && kind < 10)
+                    if (int.TryParse(Input.inputString, out var kind) && kind < 10 && kind > -1)
                     {
                         if (kind == 0)
                         {

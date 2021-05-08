@@ -27,6 +27,7 @@ namespace Additional_Card_Info
 
         MakerTextbox Creator;
         MakerTextbox Set_Name;
+        MakerTextbox Sub_Set_Name;
 
         private void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
@@ -66,20 +67,19 @@ namespace Additional_Card_Info
 
             #region Personal Settings
             MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
-
             e.AddSubCategory(category);
 
-            e.AddControl(new MakerText("Toggle when all Hair accessories and accessories you want to keep on this character are ready.\nExample Mecha Chika who requires her arm and legs accessories", category, owner));
-            e.AddControl(new MakerText(null, category, owner));
-            e.AddControl(new MakerSeparator(category, owner));
+            //e.AddControl(new MakerText(null, category, owner));
+            e.AddControl(new MakerText("Toggle when all Hair accessories and accessories you want to keep on this character are ready.", category, owner));
+            e.AddControl(new MakerText("Example Mecha Chika who requires her arm and legs accessories", category, owner));
 
             e.AddControl(new MakerToggle(category, "Cosplay Academy Ready", false, owner)).BindToFunctionController<CharaEvent, bool>(
                  (controller) => Character_Cosplay_Ready,
                  (controller, value) => Character_Cosplay_Ready = value);
 
-            e.AddControl(new MakerText("Select data that shouldn't be overwritten by other mods.\nExample Mecha Chika who doesn't work with socks/pantyhose and requires her shoes/glove", category, owner));
-            e.AddControl(new MakerText(null, category, owner));
-
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Select data that shouldn't be overwritten by other mods.", category, owner));
+            e.AddControl(new MakerText("Example Mecha Chika who doesn't work with socks/pantyhose and requires her shoes/glove", category, owner));
             #region Keep Toggles
 
             var TopKeep = e.AddControl(new MakerToggle(category, "Keep Top", owner));
@@ -161,9 +161,10 @@ namespace Additional_Card_Info
 
             Creator = new MakerTextbox(category, "Author", Settings.CreatorName.Value, owner);
             Set_Name = new MakerTextbox(category, "Set Name", "", owner);
-
+            Sub_Set_Name = new MakerTextbox(category, "Sub Set Name", "", owner);
             e.AddControl(Creator).ValueChanged.Subscribe(x => CreatorNames[CoordinateNum] = x);
             e.AddControl(Set_Name).ValueChanged.Subscribe(x => SetNames[CoordinateNum] = x);
+            e.AddControl(Sub_Set_Name).ValueChanged.Subscribe(x => SubSetNames[CoordinateNum] = x);
 
 
             e.AddControl(new MakerSeparator(category, owner));
@@ -274,7 +275,6 @@ namespace Additional_Card_Info
 
         private void PersonalityRestrictionControls(int PersonalityNum, RegisterSubCategoriesEvent e)
         {
-            //PersonalityToggles[PersonalityNum] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), false, Settings.Instance));
             PersonalityToggles[PersonalityNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             PersonalityToggles[PersonalityNum].ValueChanged.Subscribe(x =>
             {

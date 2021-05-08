@@ -86,13 +86,6 @@ namespace Accessory_Themes
 
             e.AddSubCategory(category);
 
-            e.AddControl(new MakerText("Toggle when all Hair accessories and accessories you want to keep on this character are ready.\nExample Mecha Chika who requires her arm and legs accessories", category, owner));
-            e.AddControl(new MakerText(null, category, owner));
-            e.AddControl(new MakerSeparator(category, owner));
-
-
-            e.AddControl(new MakerText("Select data that shouldn't be overwritten by other mods.\nExample Mecha Chika who doesn't work with socks/pantyhose and requires her shoes/glove", category, owner));
-            e.AddControl(new MakerText(null, category, owner));
             #region PersonalTheme
             //string[] outfits = new string[] { "School Uniform", "AfterSchool", "Gym", "Swimsuit", "Club", "Casual", "Nightwear" };
             //var PersonalTheme = new MakerDropdown("Personal Theme: ", outfits, category, 0, owner);

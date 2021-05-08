@@ -6,6 +6,7 @@ using MessagePack;
 using System;
 using System.Collections.Generic;
 using UniRx;
+using UnityEngine;
 
 namespace Additional_Card_Info
 {
@@ -16,19 +17,21 @@ namespace Additional_Card_Info
         public List<int>[] AccKeep = new List<int>[Constants.CoordinateLength];
         public List<int>[] HairAcc = new List<int>[Constants.CoordinateLength];
 
-        private bool[][] CoordinateSaveBools = new bool[Constants.CoordinateLength][];
-
         private Dictionary<int, int>[] PersonalityType_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
         private Dictionary<int, int>[] TraitType_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
-        private int[] HstateType_Restriction = new int[Constants.CoordinateLength];
-        private int[] ClubType_Restriction = new int[Constants.CoordinateLength];
+
+        private bool[][] CoordinateSaveBools = new bool[Constants.CoordinateLength][];
         private bool[][] Height_Restriction = new bool[Constants.CoordinateLength][];
         private bool[][] Breastsize_Restriction = new bool[Constants.CoordinateLength][];
+
+        private int[] HstateType_Restriction = new int[Constants.CoordinateLength];
+        private int[] ClubType_Restriction = new int[Constants.CoordinateLength];
         private int[] CoordinateType = new int[Constants.CoordinateLength];
         private int[] CoordinateSubType = new int[Constants.CoordinateLength];
 
         private string[] CreatorNames = new string[Constants.CoordinateLength];
         private string[] SetNames = new string[Constants.CoordinateLength];
+        private string[] SubSetNames = new string[Constants.CoordinateLength];
 
         private int CoordinateNum = 0;
 
@@ -52,6 +55,7 @@ namespace Additional_Card_Info
                 Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
                 HstateType_Restriction[i] = 0;
                 CoordinateType[i] = 0;
+                SubSetNames[i] = "";
             }
         }
 
@@ -77,6 +81,7 @@ namespace Additional_Card_Info
                 CoordinateSaveBools[i] = new bool[Enum.GetNames(typeof(Constants.ClothingTypes)).Length];
                 CreatorNames[i] = Settings.CreatorName.Value;
                 SetNames[i] = "";
+                SubSetNames[i] = "";
                 PersonalityType_Restriction[i].Clear();
                 TraitType_Restriction[i].Clear();
                 HstateType_Restriction[i] = 0;
@@ -169,6 +174,10 @@ namespace Additional_Card_Info
                 {
                     SetNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
                 }
+                if (MyData.data.TryGetValue("SubSetNames", out ByteData) && ByteData != null)
+                {
+                    SubSetNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
+                }
             }
         }
 
@@ -199,6 +208,7 @@ namespace Additional_Card_Info
             MyData.data.Add("CoordinateSubType", MessagePackSerializer.Serialize(CoordinateSubType[CoordinateNum]));
             MyData.data.Add("Creator", MessagePackSerializer.Serialize(CreatorNames[CoordinateNum]));
             MyData.data.Add("Set_Name", MessagePackSerializer.Serialize(SetNames[CoordinateNum]));
+            MyData.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames[CoordinateNum]));
 
             SetCoordinateExtendedData(coordinate, MyData);
         }
@@ -264,11 +274,20 @@ namespace Additional_Card_Info
                 {
                     SetNames[CoordinateNum] = MessagePackSerializer.Deserialize<string>((byte[])ByteData);
                 }
+                if (MyData.data.TryGetValue("SubSetNames", out ByteData) && ByteData != null)
+                {
+                    SubSetNames[CoordinateNum] = MessagePackSerializer.Deserialize<string>((byte[])ByteData);
+                }
             }
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
             {
                 StartCoroutine(UpdateSlots());
             }
+        }
+
+        protected override void Update()
+        {
+            base.Update();
         }
     }
 }
