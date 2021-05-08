@@ -349,7 +349,6 @@ namespace Accessory_Parents
                 if (!e.Add && e.Value == 0 && Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
                 {
                     float Value;
-                    Logger.LogWarning("Base set location");
                     if (Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
                     {
                         if (e.Flags == 1)
@@ -473,17 +472,17 @@ namespace Accessory_Parents
                                 if (e.Flags == 1)
                                 {
                                     Value = vectors[0, 1].x;
-                                    Rot.x = Value - store2[e.CorrectNo, 1].x;
+                                    Rot.x = store2[e.CorrectNo, 1].x - Value;
                                 }
                                 else if (e.Flags == 2)
                                 {
                                     Value = vectors[0, 1].y;
-                                    Rot.y = Value - store2[e.CorrectNo, 1].y;
+                                    Rot.y = store2[e.CorrectNo, 1].y - Value;
                                 }
                                 else if (e.Flags == 4)
                                 {
                                     Value = vectors[0, 1].z;
-                                    Rot.z = Value - store2[e.CorrectNo, 1].z;
+                                    Rot.z = store2[e.CorrectNo, 1].z - Value;
                                 }
                                 else
                                 {
@@ -494,12 +493,12 @@ namespace Accessory_Parents
                             {
                                 Value = 0;
                             }
-                            ChaControl.SetAccessoryRot(item, e.CorrectNo, Value, e.Add, e.Flags);
+
                             New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-                            //Logger.LogWarning($"Old X: {New_pos.x}, Old Y: {New_pos.y}, Old Z: {New_pos.z}");
                             New_pos = Quaternion.Euler(Rot) * New_pos;
                             New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-                            //Logger.LogWarning($"New X: {New_pos.x}, New Y: {New_pos.y}, New Z: {New_pos.z}");
+                            ChaControl.SetAccessoryRot(item, e.CorrectNo, Value, e.Add, e.Flags);
+
                             for (int i = 0; i < 3; i++)
                             {
                                 int flag;
@@ -517,6 +516,8 @@ namespace Accessory_Parents
                                 }
                                 ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
                             }
+
+
                             if (item < 20)
                             {
                                 ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
@@ -773,26 +774,27 @@ namespace Accessory_Parents
             {
                 yield return null;
                 VisibiltyToggle();
+                if (Parent_DropDown == null || Parent_DropDown.ControlObject == null)
+                {
+                    yield break;
+                }
+                var ControlObjects = Parent_DropDown.ControlObjects;
+                List<TMP_Dropdown.OptionData> Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
+                if (Options.Count > 1)
+                {
+                    Options.RemoveRange(1, Options.Count - 1);
+                }
+                foreach (var item in Custom_Names[CoordinateNum])
+                {
+                    Options.Add(new TMP_Dropdown.OptionData(item.Key));
+                }
+                foreach (var item in ControlObjects)
+                {
+                    item.GetComponentInChildren<TMP_Dropdown>().options = Options;
+                }
+                Update_More_Accessories();
+                Update_Old_Parents();
             }
-            if (Parent_DropDown.ControlObject == null)
-            {
-                return;
-            }
-            var ControlObjects = Parent_DropDown.ControlObjects;
-            List<TMP_Dropdown.OptionData> Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
-            if (Options.Count > 1)
-            {
-                Options.RemoveRange(1, Options.Count - 1);
-            }
-            foreach (var item in Custom_Names[CoordinateNum])
-            {
-                Options.Add(new TMP_Dropdown.OptionData(item.Key));
-            }
-            foreach (var item in ControlObjects)
-            {
-                item.GetComponentInChildren<TMP_Dropdown>().options = Options;
-            }
-            Update_Old_Parents();
         }
 
         private void Move_To_Parent_Postion(int Slot, int ParentKey)
@@ -929,6 +931,10 @@ namespace Accessory_Parents
                 }
                 Child[CoordinateNum][Slot] = parentKey;
                 Move_To_Parent_Postion(Slot, parentKey);
+                if (Slot < 20)
+                {
+                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[Slot] = ChaControl.nowCoordinate.accessory.parts[Slot];
+                }
                 Save_Relative_data(Slot);
                 Update_Parenting();
                 Update_Text(Slot);

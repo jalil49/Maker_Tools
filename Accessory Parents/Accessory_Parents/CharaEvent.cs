@@ -63,7 +63,7 @@ namespace Accessory_Parents
                 Relative_Data[i].Clear();
                 Child[i].Clear();
             }
-            CurrentCoordinate.Subscribe(X => { CoordinateNum = (int)X; ; Update_DropBox(); Update_More_Accessories(); Update_Old_Parents(); });
+            CurrentCoordinate.Subscribe(X => { CoordinateNum = (int)X; ; Update_DropBox(); });
             var Data = GetExtendedData();
             if (Data != null)
             {

@@ -71,6 +71,10 @@ namespace Accessory_Shortcuts
                 ChaControl.ChangeAccessory(e.SlotNo, e.Type, data.Id, data.ParentKey);
                 CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { e.SlotNo }).GetValue<CvsAccessory>();
                 CVS_Slot.UpdateCustomUI();
+                if (e.SlotNo < 20)
+                {
+                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[e.SlotNo] = ChaControl.nowCoordinate.accessory.parts[e.SlotNo];
+                }
             }
         }
 
@@ -99,6 +103,7 @@ namespace Accessory_Shortcuts
                         {
                             kind = 10;
                         }
+                        Settings.Logger.LogWarning($"Slot num {(int)CVS_Slot.slotNo}");
                         CVS_Slot.UpdateSelectAccessoryType(kind);
                         CVS_Slot.UpdateCustomUI();
                     }
