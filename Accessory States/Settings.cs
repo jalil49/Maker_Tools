@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using KKAPI.Chara;
 using KKAPI.MainGame;
+using System;
 
 namespace Accessory_States
 {
@@ -22,9 +23,25 @@ namespace Accessory_States
             Logger = base.Logger;
             Hooks.Init();
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
-            CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
+            if (!TryfindPluginInstance("madevil.kk.ass"))
+            {
+                CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
+            }
             GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
+        }
+
+        private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)
+        {
+            BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out PluginInfo target);
+            if (null != target)
+            {
+                if (target.Metadata.Version >= minimumVersion)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

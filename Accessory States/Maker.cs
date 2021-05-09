@@ -483,7 +483,7 @@ namespace Accessory_States
 
             while (ACC_Appearance_state.Control.ControlObjects.Count() < ACCData)
             {
-                yield return 0;
+                yield return null;
             }
             foreach (var item in ThisCharactersData.Now_ACC_State_array)
             {
