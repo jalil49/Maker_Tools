@@ -54,4 +54,4 @@ Slid too far? No problem when you swap accessories the slider will adjust to the
 ## Accessory Themes
 Color stuff. Currently dependent of Additional Card Info for Hair info to not accidently color it.
 
-https://github.com/jalil49/Maker_Tools/edit/main/Accessory%20Themes/README.md
+https://github.com/jalil49/Maker_Tools/tree/main/Accessory%20Themes#readme
