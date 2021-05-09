@@ -798,6 +798,44 @@ namespace Accessory_Themes
                     }
                     clothes[i].colorInfo[j].baseColor = temp;
                     clothes2[i].colorInfo[j].baseColor = temp;
+
+                    temp = clothes[i].colorInfo[j].patternColor;
+                    Color.RGBToHSV(temp, out T_Hue, out T_S, out T_V);
+                    if (undo)
+                    {
+                        temp = ClothesUndoQueue.Dequeue();
+                    }
+                    else
+                    {
+                        ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
+                        //if (SubtractHue)
+                        //{
+                        //    T_Hue = T_Hue - (In_Hue);
+                        //}
+                        //else
+                        //{
+                        T_Hue += (In_Hue);
+                        //}
+                        //if (SubtractSaturation)
+                        //{
+                        //    T_S = T_S - (In_S);
+                        //}
+                        //else
+                        //{
+                        //    T_S = T_S + (In_S);
+                        //}
+                        //if (SubtractValue)
+                        //{
+                        //    T_V = T_V - (In_V);
+                        //}
+                        //else
+                        //{
+                        //    T_V = T_V + (In_V);
+                        //}
+                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
+                    }
+                    clothes[i].colorInfo[j].patternColor = temp;
+                    clothes2[i].colorInfo[j].patternColor = temp;
                 }
             }
             ChaControl.ChangeClothes();

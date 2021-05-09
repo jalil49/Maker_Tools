@@ -1,4 +1,5 @@
-﻿using KKAPI.Chara;
+﻿using KKAPI;
+using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using System;
@@ -44,7 +45,7 @@ namespace Accessory_States
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
             ThemeText = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(ThemeTextBox);
 
-            var radio = new MakerRadioButtons(category, owner, "options", 0, new string[] { "Add Group", "Remove Group", "Rename" })
+            var radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" })
             {
                 Unify_AccessoryWindowControl = true
             };
@@ -200,31 +201,29 @@ namespace Accessory_States
 
         internal void Maker_started()
         {
-            MakerAPI.RegisterCustomSubCategories += MakerAPI_RegisterCustomSubCategories;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            MakerAPI.MakerFinishedLoading += (s, e) => VisibiltyToggle();
 
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
-            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e) => VisibiltyToggle();
 
+            MakerAPI.MakerFinishedLoading += (s, e) => VisibiltyToggle();
+            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e) => VisibiltyToggle();
             Hooks.Slot_ACC_Change += (s, e) => VisibiltyToggle();
         }
 
         internal void Maker_Ended()
         {
-            MakerAPI.RegisterCustomSubCategories -= MakerAPI_RegisterCustomSubCategories;
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
-            MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
 
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
             AccessoriesApi.AccessoryKindChanged -= AccessoriesApi_AccessoryKindChanged;
-            AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e) => VisibiltyToggle();
 
+            AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e) => VisibiltyToggle();
+            MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
             Hooks.Slot_ACC_Change -= (s, e) => VisibiltyToggle();
         }
 
@@ -276,6 +275,7 @@ namespace Accessory_States
         private void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
             StartCoroutine(WaitForSlots());
+            VisibiltyToggle();
         }
 
         private void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
@@ -473,6 +473,11 @@ namespace Accessory_States
 
         private IEnumerator WaitForSlots()
         {
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            {
+                yield break;
+            }
+            ThisCharactersData.Update_Now_Coordinate();
             Refresh();
             int ACCData = Accessorys_Parts.Count();
 

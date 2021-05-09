@@ -18,7 +18,7 @@ namespace Accessory_States
         protected override void OnStartH(HSceneProc hSceneProc, bool freeH)
         {
             Hooks.HcoordChange += Hooks_HcoordChange;
-            CharaEvent.coordloaded += CharaEvent_coordloaded;
+            CharaEvent.Coordloaded += CharaEvent_coordloaded;
             hScene = hSceneProc;
             var heroines = hScene.dataH.lstFemale;
             for (int i = 0; i < heroines.Count; i++)
@@ -34,6 +34,7 @@ namespace Accessory_States
                         {
                             yield return null;
                         }
+                        ThisCharactersData.Update_Now_Coordinate();
                         ThisCharactersData.Controller.Refresh();
                     }
                     Settings.Logger.LogWarning("length" + ThisCharactersData.Controller.ChaControl.fileStatus.clothesState.Length);
@@ -72,7 +73,6 @@ namespace Accessory_States
 
         private void Hooks_HcoordChange(object sender, OnClickCoordinateChange e)
         {
-            Settings.Logger.LogWarning("coord change button");
             Buttonlogic(e.Female, false);
         }
 
@@ -164,6 +164,8 @@ namespace Accessory_States
             Transform copy = Instantiate(origin.transform, parent, false);
             copy.name = $"btn_{name}_{kind}";
             copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
+            var trans = copy.GetComponent<RectTransform>();
+            trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
 
             Button button = copy.GetComponentInChildren<Button>();
             button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);

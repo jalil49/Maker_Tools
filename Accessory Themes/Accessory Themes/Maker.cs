@@ -154,11 +154,11 @@ namespace Accessory_Themes
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
             ThemeText = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(ThemeTextBox);
 
-            radio = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(new MakerRadioButtons(category, owner, "Theme option", 0, new string[] { "Add Theme", "Remove Theme", "Rename" }));
+            radio = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }));
             radio.Unify_AccessoryWindowControl = true;
             //radio.ValueChanged.Subscribe(b => RadioChanged(b));
 
-            var AddRemoveThemeButton = new MakerButton("add/remove Theme", category, owner);
+            var AddRemoveThemeButton = new MakerButton("Modify Theme", category, owner);
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveThemeButton);
             ApplyTheme.OnClick.AddListener(delegate ()
             {

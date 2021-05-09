@@ -19,7 +19,7 @@ namespace Accessory_States
     {
         private Data ThisCharactersData;
         ChaFile chafile;
-        public static event EventHandler<CoordinateLoadedEventARG> coordloaded;
+        public static event EventHandler<CoordinateLoadedEventARG> Coordloaded;
         private List<bool> Accessory_Show_Bools = new List<bool>();
         public List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
 
@@ -278,7 +278,11 @@ namespace Accessory_States
                     }
                 }
 
-                CurrentCoordinate.Subscribe(x => Refresh());
+                ThisCharactersData.Update_Now_Coordinate();
+                CurrentCoordinate.Subscribe(x =>
+                {
+                    Refresh(); StartCoroutine(WaitForSlots());
+                });
             }
         }
 
@@ -425,17 +429,17 @@ namespace Accessory_States
 
                 //call event
                 var args = new CoordinateLoadedEventARG(ChaControl, coordinate);
-                if (coordloaded == null || coordloaded.GetInvocationList().Length == 0)
+                if (Coordloaded == null || Coordloaded.GetInvocationList().Length == 0)
                 {
                     return;
                 }
                 try
                 {
-                    coordloaded?.Invoke(null, args);
+                    Coordloaded?.Invoke(null, args);
                 }
                 catch (Exception ex)
                 {
-                    Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(coordloaded)} - {ex}");
+                    Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
                 }
 
             }
@@ -502,20 +506,13 @@ namespace Accessory_States
         public void Refresh()
         {
             Update_More_Accessories();
-            ThisCharactersData.Update_Now_Coordinate();
-            if (ChaControl.fileStatus.clothesState != null)
+            for (int i = 0; i < 9; i++)
             {
-                for (int i = 0; i < 9; i++)
-                {
-                    ChangedOutfit(i, ChaControl.fileStatus.clothesState[i]);
-                }
+                ChangedOutfit(i, ChaControl.fileStatus.clothesState[i]);
             }
-            else
+            foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary.Keys)
             {
-                for (int i = 0; i < 9; i++)
-                {
-                    ChangedOutfit(i, 0);
-                }
+                Custom_Groups(item, 0);
             }
         }
 
@@ -526,13 +523,11 @@ namespace Accessory_States
                 if (ChaControl.IsClothesStateKind(Clotheskind))
                 {
                     ChangedOutfit(Clotheskind, state);
-                    //ChaControl.fileStatus.clothesState[Clotheskind] = state;
                 }
             }
             else
             {
                 ChangedOutfit(Clotheskind, state);
-                //ChaControl.fileStatus.clothesState[Clotheskind] = state;
             }
         }
 
@@ -617,7 +612,14 @@ namespace Accessory_States
             {
                 if (Input.GetKeyDown(KeyCode.N))
                 {
-                    Settings.Logger.LogWarning(ACC_Appearance_state2.Control.ControlObjects.Count());
+                    foreach (var item in ThisCharactersData.ACC_Name_Dictionary[0])
+                    {
+                        Settings.Logger.LogWarning($"kind {item.Key} is called {item.Value}");
+                    }
+                    foreach (var item in ThisCharactersData.ACC_Binding_Dictionary[0])
+                    {
+                        Settings.Logger.LogWarning($"slot {item.Key} is part of kind {item.Value}");
+                    }
                 }
             }
             base.Update();

@@ -381,7 +381,7 @@ namespace Accessory_Parents
 
                 if (Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
                 {
-                    Vector3 Rot = new Vector3(0, 0, 0);
+                    Vector3 Rot = Vector3.zero;
 
                     if (e.Flags == 1)
                     {
@@ -395,7 +395,7 @@ namespace Accessory_Parents
                     {
                         Rot.z = e.Value;
                     }
-                    //Logger.LogWarning($"Rot X: {Rot.x}, Rot Y: {Rot.y}, Rot Z: {Rot.z}");
+
                     Vector3[,] store;
                     if (e.SlotNo < 20)
                     {
@@ -453,10 +453,11 @@ namespace Accessory_Parents
                     }
                     else
                     {
-                        Vector3 New_pos;
+                        //Vector3 New_pos;
                         float Value;
                         foreach (var item in parentList)
                         {
+                            //Vector3 Rot2 = Vector3.zero;
                             Vector3[,] store2;
                             if (item < 20)
                             {
@@ -472,17 +473,18 @@ namespace Accessory_Parents
                                 if (e.Flags == 1)
                                 {
                                     Value = vectors[0, 1].x;
-                                    Rot.x = store2[e.CorrectNo, 1].x - Value;
+                                    //Rot2.x = vectors[0, 1].x - store2[e.CorrectNo, 1].x;
                                 }
                                 else if (e.Flags == 2)
                                 {
                                     Value = vectors[0, 1].y;
-                                    Rot.y = store2[e.CorrectNo, 1].y - Value;
+
+                                    //Rot2.y = vectors[0, 1].y - store2[e.CorrectNo, 1].y;
                                 }
                                 else if (e.Flags == 4)
                                 {
                                     Value = vectors[0, 1].z;
-                                    Rot.z = store2[e.CorrectNo, 1].z - Value;
+                                    //Rot2.z = vectors[0, 1].z - store2[e.CorrectNo, 1].z;
                                 }
                                 else
                                 {
@@ -493,29 +495,29 @@ namespace Accessory_Parents
                             {
                                 Value = 0;
                             }
-
-                            New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-                            New_pos = Quaternion.Euler(Rot) * New_pos;
-                            New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
                             ChaControl.SetAccessoryRot(item, e.CorrectNo, Value, e.Add, e.Flags);
 
-                            for (int i = 0; i < 3; i++)
-                            {
-                                int flag;
-                                switch (i)
-                                {
-                                    case 0:
-                                        flag = 1;
-                                        break;
-                                    case 1:
-                                        flag = 2;
-                                        break;
-                                    default:
-                                        flag = 4;
-                                        break;
-                                }
-                                ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
-                            }
+                            //New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
+                            //New_pos = Quaternion.Euler(Rot2) * New_pos;
+                            //New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
+
+                            //for (int i = 0; i < 3; i++)
+                            //{
+                            //    int flag;
+                            //    switch (i)
+                            //    {
+                            //        case 0:
+                            //            flag = 1;
+                            //            break;
+                            //        case 1:
+                            //            flag = 2;
+                            //            break;
+                            //        default:
+                            //            flag = 4;
+                            //            break;
+                            //    }
+                            //    ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
+                            //}
 
 
                             if (item < 20)
@@ -540,7 +542,6 @@ namespace Accessory_Parents
                 if (!e.Add && e.Value == 0 && Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
                 {
                     float Value;
-                    Logger.LogWarning("Base set location");
                     if (Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
                     {
                         if (e.Flags == 1)
@@ -941,7 +942,7 @@ namespace Accessory_Parents
             }
         }
 
-        private void Modify_Dropdown()
+        private void Modify_Dropdown(bool Generic = false)
         {
             if (MakerAPI.GetCharacterControl().GetAccessoryObject(AccessoriesApi.SelectedMakerAccSlot) == null)
             {
@@ -953,7 +954,7 @@ namespace Accessory_Parents
             {
                 case 0:
                     var Text = textbox.Value;
-                    if (textbox.Value == "")
+                    if (textbox.Value == "" || Generic)
                     {
                         Text = $"Slot{(AccessoriesApi.SelectedMakerAccSlot + 1):000}";
                     }
@@ -1022,7 +1023,7 @@ namespace Accessory_Parents
                 else if (Input.GetKeyDown(KeyCode.F))
                 {
                     MakeChild();
-                    Modify_Dropdown();
+                    Modify_Dropdown(true);
                     Parent_DropDown.SetValue(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options.Count() - 1);
                 }
             }
