@@ -17,7 +17,7 @@ Select a theme and you can change the selected color of choice on all accessorie
 	
 Hit the get relative colors, of course be sure to state which themes are "fixed" first to not include them, these will give you a list of colors to choose from at the time the button was clicked.
 
-	Want to shift the color the entire outfit (including cloths)?
+	Want to shift the color the entire outfit (including clothes)?
 	
 With relative colors generated change the Skew color and it the apply button. The Color displayed is relative to Red (0) and it wraps around.
 I just shift the Hue of everything and avoid touching the Saturation and Values.
