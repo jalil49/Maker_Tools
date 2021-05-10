@@ -11,7 +11,7 @@ namespace Accessory_Shortcuts
         }
         public static void Default_Dict()
         {
-            Settings.Logger.LogWarning("defaulting");
+            //Settings.Logger.LogWarning("defaulting");
             Parent.Clear();
             Parent.Add(0, new Data(120, 0, ""));
             Parent.Add(1, new Data(121, 0, "a_n_hair_pin"));

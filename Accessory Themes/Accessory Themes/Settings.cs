@@ -26,7 +26,7 @@ namespace Accessory_Themes
 
             if (StudioAPI.InsideStudio) return;
 
-            CharacterApi.RegisterExtraBehaviour<Required_ACC_Controller>(GUID);
+            CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
             Harmony.CreateAndPatchAll(typeof(Hooks));
 
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "3", "Requires restarting maker");

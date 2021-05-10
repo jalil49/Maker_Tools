@@ -170,10 +170,10 @@ namespace Accessory_Parents
             }
             else if (Old_Parent[CoordinateNum].ContainsKey(e.SlotIndex) && Relative_Data[CoordinateNum].ContainsKey(e.SlotIndex))
             {
-                foreach (var item in Old_Parent[CoordinateNum])
-                {
-                    Logger.LogWarning($"Kind Changed Slot {item.Key} has parent {item.Value}");
-                }
+                //foreach (var item in Old_Parent[CoordinateNum])
+                //{
+                //    Logger.LogWarning($"Kind Changed Slot {item.Key} has parent {item.Value}");
+                //}
                 Keep_Last_Data(e.SlotIndex);
             }
             VisibiltyToggle();
@@ -702,7 +702,7 @@ namespace Accessory_Parents
         {
             if (Slot == Original_Parent)
             {
-                Logger.LogWarning("Tried to make child of self");
+                //Logger.LogWarning("Tried to make child of self");
                 return true;
             }
             if (Child[CoordinateNum].TryGetValue(Slot, out var value))

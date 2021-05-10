@@ -142,5 +142,12 @@ namespace Additional_Card_Info
             Average,
             Large
         }
+
+        public enum ClothesNot
+        {
+            NotBot,
+            NotBra,
+            NotShorts
+        }
     }
 }

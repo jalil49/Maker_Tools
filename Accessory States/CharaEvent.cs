@@ -69,7 +69,7 @@ namespace Accessory_States
             var Accessory_list = ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value - 1 == clothesKind);
             foreach (var item in Accessory_list)
             {
-                Settings.Logger.LogWarning($"attempting to change accessory {item.Key}");
+                //Settings.Logger.LogWarning($"attempting to change accessory {item.Key}");
                 if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(item.Key, out var data))
                 {
                     continue;
@@ -87,7 +87,6 @@ namespace Accessory_States
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-
             ThisCharactersData = Constants.CharacterInfo.Find(x => ChaControl.fileParam.personality == x.Personality && x.FullName == ChaControl.fileParam.fullname && x.BirthDay == ChaControl.fileParam.strBirthDay);
             if (ThisCharactersData == null)
             {
@@ -385,10 +384,10 @@ namespace Accessory_States
                     {
                         ThisCharactersData.Now_ACC_Name_Dictionary[accessorystart + (offset++)] = item;
                     }
-                    foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
-                    {
-                        Settings.Logger.LogWarning($"{(ChaFileDefine.ClothesKind)CoordinateNum} added {item.Value} with kind {item.Key}");
-                    }
+                    //foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
+                    //{
+                    //    Settings.Logger.LogWarning($"{(ChaFileDefine.ClothesKind)CoordinateNum} added {item.Value} with kind {item.Key}");
+                    //}
                 }
 
                 var parts = CharaTriggerInfo[CoordinateNum].Parts;
@@ -413,18 +412,18 @@ namespace Accessory_States
                 ThisCharactersData.Now_ACC_Binding_Dictionary = Converted_Dictionary;
                 //ThisCharactersData.Now_Parented_Dictionary = Converted_Parent_Dictionary;
                 var chara = CharaVirtualGroupInfo[CoordinateNum];
-                foreach (var VGI in CharaTriggerInfo[CoordinateNum].Parts)
-                {
-                    Settings.Logger.LogWarning($"CTI Key: {VGI.Key}, CTI group: {VGI.Value.Group}, CTI Kind: {VGI.Value.Kind} Slot: {VGI.Value.Slot}");
-                    foreach (var item in VGI.Value.State)
-                    {
-                        Settings.Logger.LogWarning($"CTI state: {item}");
-                    }
-                }
-                foreach (var VGI in chara)
-                {
-                    Settings.Logger.LogWarning($"{(ChaFileDefine.ClothesKind)CoordinateNum}, VGI Key: {VGI.Key}, VGI group: {VGI.Value.Group}, VGI Kind: {VGI.Value.Kind}, VGI Label: {VGI.Value.Label}, VGI Secondary: {VGI.Value.Secondary}");
-                }
+                //foreach (var VGI in CharaTriggerInfo[CoordinateNum].Parts)
+                //{
+                //    Settings.Logger.LogWarning($"CTI Key: {VGI.Key}, CTI group: {VGI.Value.Group}, CTI Kind: {VGI.Value.Kind} Slot: {VGI.Value.Slot}");
+                //    foreach (var item in VGI.Value.State)
+                //    {
+                //        Settings.Logger.LogWarning($"CTI state: {item}");
+                //    }
+                //}
+                //foreach (var VGI in chara)
+                //{
+                //    Settings.Logger.LogWarning($"{(ChaFileDefine.ClothesKind)CoordinateNum}, VGI Key: {VGI.Key}, VGI group: {VGI.Value.Group}, VGI Kind: {VGI.Value.Kind}, VGI Label: {VGI.Value.Label}, VGI Secondary: {VGI.Value.Secondary}");
+                //}
 
 
                 //call event
@@ -606,24 +605,24 @@ namespace Accessory_States
             }
         }
 
-        protected override void Update()
-        {
-            if (Input.anyKeyDown)
-            {
-                if (Input.GetKeyDown(KeyCode.N))
-                {
-                    foreach (var item in ThisCharactersData.ACC_Name_Dictionary[0])
-                    {
-                        Settings.Logger.LogWarning($"kind {item.Key} is called {item.Value}");
-                    }
-                    foreach (var item in ThisCharactersData.ACC_Binding_Dictionary[0])
-                    {
-                        Settings.Logger.LogWarning($"slot {item.Key} is part of kind {item.Value}");
-                    }
-                }
-            }
-            base.Update();
-        }
+        //protected override void Update()
+        //{
+        //    if (Input.anyKeyDown)
+        //    {
+        //        if (Input.GetKeyDown(KeyCode.N))
+        //        {
+        //            foreach (var item in ThisCharactersData.ACC_Name_Dictionary[0])
+        //            {
+        //                Settings.Logger.LogWarning($"kind {item.Key} is called {item.Value}");
+        //            }
+        //            foreach (var item in ThisCharactersData.ACC_Binding_Dictionary[0])
+        //            {
+        //                Settings.Logger.LogWarning($"slot {item.Key} is part of kind {item.Value}");
+        //            }
+        //        }
+        //    }
+        //    base.Update();
+        //}
 
         public void Register()
         {

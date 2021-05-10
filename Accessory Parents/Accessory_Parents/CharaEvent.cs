@@ -46,7 +46,6 @@ namespace Accessory_Parents
             MakerAPI.MakerStartedLoading -= MakerAPI_MakerStartedLoading;
             MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
             MakerAPI.RegisterCustomSubCategories -= MakerAPI_RegisterCustomSubCategories;
-
             base.OnDestroy();
         }
 

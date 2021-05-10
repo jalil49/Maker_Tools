@@ -37,7 +37,7 @@ namespace Accessory_States
                         ThisCharactersData.Update_Now_Coordinate();
                         ThisCharactersData.Controller.Refresh();
                     }
-                    Settings.Logger.LogWarning("length" + ThisCharactersData.Controller.ChaControl.fileStatus.clothesState.Length);
+                    //Settings.Logger.LogWarning("length" + ThisCharactersData.Controller.ChaControl.fileStatus.clothesState.Length);
                 }
                 Buttonlogic(i, false);
             }
@@ -86,12 +86,12 @@ namespace Accessory_States
                 list = new List<int>();
             }
             list.Reverse();
-            Settings.Logger.LogWarning("Enter delete");
+            //Settings.Logger.LogWarning("Enter delete");
             foreach (var item in list)
             {
                 DeleteButton(Female, Harem, item);
             }
-            Settings.Logger.LogWarning("clear");
+            //Settings.Logger.LogWarning("clear");
 
             ButtonList.Remove(Female);
 
@@ -100,7 +100,7 @@ namespace Accessory_States
                 ThisCharactersData.Update_Now_Coordinate();
             }
 
-            Settings.Logger.LogWarning("create");
+            //Settings.Logger.LogWarning("create");
 
             foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
             {
@@ -185,7 +185,7 @@ namespace Accessory_States
                 button.onClick.AddListener(delegate ()
                 {
                     state = (state + 1) % (final);
-                    Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
+                    //Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
                     CharacterData.Controller.Custom_Groups(kind, state);
                     Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                 });
@@ -196,7 +196,7 @@ namespace Accessory_States
                 button.onClick.AddListener(delegate ()
                 {
                     state = !state;
-                    Settings.Logger.LogWarning($"Setting {name} show to {state} state");
+                    //Settings.Logger.LogWarning($"Setting {name} show to {state} state");
                     CharacterData.Controller.Parent_toggle(name, state);
                     Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                 });

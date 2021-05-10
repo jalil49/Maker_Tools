@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace Accessory_Themes
 {
-    public partial class Required_ACC_Controller : CharaCustomFunctionController
+    public partial class CharaEvent : CharaCustomFunctionController
     {
         private bool[] PersonalClothingBools = new bool[9];
 
@@ -41,7 +41,7 @@ namespace Accessory_Themes
 
         List<ChaFileAccessory.PartsInfo> ACCData;
 
-        public Required_ACC_Controller()
+        public CharaEvent()
         {
             MakerAPI.MakerStartedLoading += MakerAPI_MakerStartedLoading;
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
@@ -167,7 +167,7 @@ namespace Accessory_Themes
             var CopiedSlots = e.CopiedSlotIndexes.ToArray();
             var Source = (int)e.CopySource;
             var Dest = (int)e.CopyDestination;
-            Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
+            //Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
             for (int i = 0; i < CopiedSlots.Length; i++)
             {
                 //Settings.Logger.LogWarning($"ACCKeep");
@@ -189,18 +189,18 @@ namespace Accessory_Themes
 
                 if (!ThemeNames[Dest].Contains(ThemeNames[Source][value]))
                 {
-                    Settings.Logger.LogWarning($"new theme; count {ThemeNames[Dest].Count}");
-                    foreach (var item in ACC_Theme_Dictionary[Dest])
-                    {
-                        Settings.Logger.LogWarning(item.Key);
-                    }
+                    //Settings.Logger.LogWarning($"new theme; count {ThemeNames[Dest].Count}");
+                    //foreach (var item in ACC_Theme_Dictionary[Dest])
+                    //{
+                    //    Settings.Logger.LogWarning(item.Key);
+                    //}
                     ThemeNames[Dest].Add(ThemeNames[Source][value]);
                     colors[Dest].Add(colors[Source][value]);
                     ACC_Theme_Dictionary[Dest].Add(CopiedSlots[i], ThemeNames[Dest].Count);
                 }
                 else
                 {
-                    Settings.Logger.LogWarning($"existing theme");
+                    //Settings.Logger.LogWarning($"existing theme");
                     int index = ThemeNames[Dest].IndexOf(ThemeNames[Source][value]);
                     ACC_Theme_Dictionary[Dest][CopiedSlots[i]] = index;
                 }
@@ -879,7 +879,7 @@ namespace Accessory_Themes
             }
             //Settings.Logger.LogWarning($"cvs {AccKeepToggles.Control.ControlObjects.Count() }");
 
-            Settings.Logger.LogWarning("ReloadCustomInterface fired");
+            //Settings.Logger.LogWarning("ReloadCustomInterface fired");
             GetALLACC();
             Update_ACC_Dropbox();
             Update_RelativeColor_Dropbox();

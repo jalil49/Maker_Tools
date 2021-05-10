@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Accessory_Themes
 {
-    public partial class Required_ACC_Controller : CharaCustomFunctionController
+    public partial class CharaEvent : CharaCustomFunctionController
     {
         MakerColor ACC_GUIslider1;
         MakerColor ACC_GUIslider2;
@@ -200,24 +200,24 @@ namespace Accessory_Themes
             var slider4 = new MakerColor("Color 4", true, category, Color.white, owner);
 
             ACC_GUIslider1 = MakerAPI.AddControl(slider1);
-            ACC_GUIslider1.BindToFunctionController<Required_ACC_Controller, Color>(
+            ACC_GUIslider1.BindToFunctionController<CharaEvent, Color>(
                                 (controller) => colors[CoordinateNum][ThemeNamesDropdown.Value][0],
                 (controller, value) => UpdateSliderColor(0, value)
                 );
 
             ACC_GUIslider2 = MakerAPI.AddControl(slider2);
-            ACC_GUIslider2.BindToFunctionController<Required_ACC_Controller, Color>(
+            ACC_GUIslider2.BindToFunctionController<CharaEvent, Color>(
                                 (controller) => colors[CoordinateNum][ThemeNamesDropdown.Value][1],
                 (controller, value) => UpdateSliderColor(1, value)
                 );
 
             ACC_GUIslider3 = MakerAPI.AddControl(slider3);
-            ACC_GUIslider3.BindToFunctionController<Required_ACC_Controller, Color>(
+            ACC_GUIslider3.BindToFunctionController<CharaEvent, Color>(
                                 (controller) => colors[CoordinateNum][ThemeNamesDropdown.Value][2],
                 (controller, value) => UpdateSliderColor(2, value)
                 );
             ACC_GUIslider4 = MakerAPI.AddControl(slider4);
-            ACC_GUIslider4.BindToFunctionController<Required_ACC_Controller, Color>(
+            ACC_GUIslider4.BindToFunctionController<CharaEvent, Color>(
                                 (controller) => colors[CoordinateNum][ThemeNamesDropdown.Value][3],
                 (controller, value) => UpdateSliderColor(3, value)
                 );

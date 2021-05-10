@@ -23,6 +23,7 @@ namespace Additional_Card_Info
         private bool[][] CoordinateSaveBools = new bool[Constants.CoordinateLength][];
         private bool[][] Height_Restriction = new bool[Constants.CoordinateLength][];
         private bool[][] Breastsize_Restriction = new bool[Constants.CoordinateLength][];
+        private bool[][] ClothNotData = new bool[Constants.CoordinateLength][];
 
         private int[] HstateType_Restriction = new int[Constants.CoordinateLength];
         private int[] ClubType_Restriction = new int[Constants.CoordinateLength];
@@ -56,6 +57,7 @@ namespace Additional_Card_Info
                 HstateType_Restriction[i] = 0;
                 CoordinateType[i] = 0;
                 SubSetNames[i] = "";
+                ClothNotData[i] = new bool[3];
             }
         }
 
@@ -88,6 +90,7 @@ namespace Additional_Card_Info
                 CoordinateType[i] = 0;
                 Height_Restriction[i] = new bool[Constants.HeightLength];
                 Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
+                ClothNotData[i] = new bool[3];
             }
 
             CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
@@ -178,6 +181,10 @@ namespace Additional_Card_Info
                 {
                     SubSetNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
                 }
+                if (MyData.data.TryGetValue("ClothNot", out ByteData) && ByteData != null)
+                {
+                    ClothNotData = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
+                }
             }
         }
 
@@ -209,6 +216,7 @@ namespace Additional_Card_Info
             MyData.data.Add("Creator", MessagePackSerializer.Serialize(CreatorNames[CoordinateNum]));
             MyData.data.Add("Set_Name", MessagePackSerializer.Serialize(SetNames[CoordinateNum]));
             MyData.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames[CoordinateNum]));
+            MyData.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData[CoordinateNum]));
 
             SetCoordinateExtendedData(coordinate, MyData);
         }
@@ -278,6 +286,11 @@ namespace Additional_Card_Info
                 {
                     SubSetNames[CoordinateNum] = MessagePackSerializer.Deserialize<string>((byte[])ByteData);
                 }
+                if (MyData.data.TryGetValue("ClothNot", out ByteData) && ByteData != null)
+                {
+                    ClothNotData[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
+                }
+
             }
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
             {

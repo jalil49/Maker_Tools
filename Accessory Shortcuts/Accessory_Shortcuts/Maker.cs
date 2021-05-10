@@ -103,7 +103,7 @@ namespace Accessory_Shortcuts
                         {
                             kind = 10;
                         }
-                        Settings.Logger.LogWarning($"Slot num {(int)CVS_Slot.slotNo}");
+                        //Settings.Logger.LogWarning($"Slot num {(int)CVS_Slot.slotNo}");
                         CVS_Slot.UpdateSelectAccessoryType(kind);
                         CVS_Slot.UpdateCustomUI();
                         CVS_Slot.tglAcsKind.isOn = true;

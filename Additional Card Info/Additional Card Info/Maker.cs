@@ -16,6 +16,7 @@ namespace Additional_Card_Info
         readonly MakerRadioButtons[] TraitToggles = new MakerRadioButtons[Constants.TraitsLength];
         readonly MakerToggle[] HeightToggles = new MakerToggle[Constants.HeightLength];
         readonly MakerToggle[] BreastsizeToggles = new MakerToggle[Constants.BreastsizeLength];
+        readonly MakerToggle[] ClothNotToggles = new MakerToggle[3];
 
         AccessoryControlWrapper<MakerToggle, bool> AccKeepToggles;
         AccessoryControlWrapper<MakerToggle, bool> HairKeepToggles;
@@ -187,11 +188,11 @@ namespace Additional_Card_Info
             {
                 Rows = 5
             };
-            Settings.Logger.LogWarning($"Subtype {buttons.Count / 4 + (buttons.Count % 4) % 2}");
+            //Settings.Logger.LogWarning($"Subtype {buttons.Count / 4 + (buttons.Count % 4) % 2}");
             e.AddControl(CoordinateSubTypeRadio).ValueChanged.Subscribe(x =>
             {
                 CoordinateSubType[CoordinateNum] = x;
-                Settings.Logger.LogWarning($"Setting coordiante sub to {buttons[x]}");
+                //Settings.Logger.LogWarning($"Setting coordiante sub to {buttons[x]}");
             });
             for (int i = 0; i < 3; i++)
             {
@@ -239,6 +240,20 @@ namespace Additional_Card_Info
             #endregion
 
             e.AddControl(new MakerSeparator(category, owner));
+
+            e.AddControl(new MakerText("Clothing Nots", category, owner));
+
+            for (int i = 0; i < 3; i++)
+            {
+                ClothNotsControls(i, e);
+            }
+            e.AddControl(new MakerButton("Get Nots", category, owner)).OnClick.AddListener(delegate ()
+            {
+                ClothNotToggles[0].SetValue(ChaControl.notBot);
+                ClothNotToggles[1].SetValue(ChaControl.notBra);
+                ClothNotToggles[2].SetValue(ChaControl.notShorts);
+            });
+            e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Breast Size Restrictions (exclusive)", category, owner));
             for (int i = 0; i < Constants.BreastsizeLength; i++)
             {
@@ -278,7 +293,7 @@ namespace Additional_Card_Info
             PersonalityToggles[PersonalityNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             PersonalityToggles[PersonalityNum].ValueChanged.Subscribe(x =>
             {
-                Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Personality)PersonalityNum}");
+                //Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Personality)PersonalityNum}");
                 if (--x == 0)
                 {
                     PersonalityType_Restriction[CoordinateNum].Remove(PersonalityNum);
@@ -293,7 +308,7 @@ namespace Additional_Card_Info
             TraitToggles[TraitNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Traits)TraitNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             TraitToggles[TraitNum].ValueChanged.Subscribe(x =>
             {
-                Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Traits)TraitNum}");
+                //Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Traits)TraitNum}");
                 if (--x == 0)
                 {
                     PersonalityType_Restriction[CoordinateNum].Remove(TraitNum);
@@ -306,19 +321,25 @@ namespace Additional_Card_Info
         private void ClothingKeepControls(int ClothingInt, RegisterSubCategoriesEvent e)
         {
             CoordinateKeepToggles[ClothingInt] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"Keep {((Constants.ClothingTypes)ClothingInt).ToString().Replace('_', ' ')}", false, Settings.Instance));
-            CoordinateKeepToggles[ClothingInt].ValueChanged.Subscribe(x => { CoordinateSaveBools[CoordinateNum][ClothingInt] = x; Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.ClothingTypes)ClothingInt}"); });
+            CoordinateKeepToggles[ClothingInt].ValueChanged.Subscribe(x => { CoordinateSaveBools[CoordinateNum][ClothingInt] = x; /*Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.ClothingTypes)ClothingInt}");*/ });
         }
 
         private void BreastSizeRestrictionControls(int size, RegisterSubCategoriesEvent e)
         {
             BreastsizeToggles[size] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"{((Constants.Breastsize)size)}", false, Settings.Instance));
-            BreastsizeToggles[size].ValueChanged.Subscribe(x => { Breastsize_Restriction[CoordinateNum][size] = x; Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Breastsize)size}"); });
+            BreastsizeToggles[size].ValueChanged.Subscribe(x => { Breastsize_Restriction[CoordinateNum][size] = x; /*Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Breastsize)size}");*/ });
         }
 
         private void HeightRestrictionControls(int size, RegisterSubCategoriesEvent e)
         {
             HeightToggles[size] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"{((Constants.Height)size)}", false, Settings.Instance));
-            HeightToggles[size].ValueChanged.Subscribe(x => { Height_Restriction[CoordinateNum][size] = x; Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Height)size}"); });
+            HeightToggles[size].ValueChanged.Subscribe(x => { Height_Restriction[CoordinateNum][size] = x; /*Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.Height)size}");*/ });
+        }
+
+        private void ClothNotsControls(int index, RegisterSubCategoriesEvent e)
+        {
+            ClothNotToggles[index] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), $"{((Constants.ClothesNot)index)}", false, Settings.Instance));
+            ClothNotToggles[index].ValueChanged.Subscribe(x => ClothNotData[CoordinateNum][index] = x);
         }
 
         private void AccHairKeep_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
@@ -434,6 +455,10 @@ namespace Additional_Card_Info
             {
                 BreastsizeToggles[i].SetValue(Breastsize_Restriction[CoordinateNum][i], false);
             }
+            for (int i = 0; i < 3; i++)
+            {
+                ClothNotToggles[i].SetValue(false, false);
+            }
             CoordinateTypeRadio.SetValue(CoordinateType[CoordinateNum], false);
             CoordinateSubTypeRadio.SetValue(CoordinateSubType[CoordinateNum], false);
             ClubTypeRadio.SetValue(ClubType_Restriction[CoordinateNum], false);
@@ -460,15 +485,15 @@ namespace Additional_Card_Info
             var CopiedSlots = e.CopiedSlotIndexes.ToArray();
             var Source = (int)e.CopySource;
             var Dest = (int)e.CopyDestination;
-            Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
+            //Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
             for (int i = 0; i < CopiedSlots.Length; i++)
             {
-                Settings.Logger.LogWarning($"ACCKeep");
+                //Settings.Logger.LogWarning($"ACCKeep");
                 if (AccKeep[Source].Contains(CopiedSlots[i]) && !AccKeep[Dest].Contains(CopiedSlots[i]))
                 {
                     AccKeep[Dest].Add(CopiedSlots[i]);
                 }
-                Settings.Logger.LogWarning($"HairKeep");
+                //Settings.Logger.LogWarning($"HairKeep");
                 if (HairAcc[Source].Contains(CopiedSlots[i]) && !HairAcc[Dest].Contains(CopiedSlots[i]))
                 {
                     HairAcc[Dest].Add(CopiedSlots[i]);

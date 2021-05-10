@@ -42,7 +42,7 @@ namespace Accessory_States
         public void Update_Now_Coordinate()
         {
             int outfitnum = (int)Controller.CurrentCoordinate.Value;
-            Settings.Logger.LogWarning((ChaFileDefine.CoordinateType)outfitnum);
+            //Settings.Logger.LogWarning((ChaFileDefine.CoordinateType)outfitnum);
             if (KKAPI.KoikatuAPI.GetCurrentGameMode() == KKAPI.GameMode.Maker)
             {
                 Now_ACC_Binding_Dictionary = ACC_Binding_Dictionary[outfitnum];
@@ -70,8 +70,16 @@ namespace Accessory_States
             var ParentedList = Now_Parented_Dictionary.Where(x => x.Value);
             foreach (var item in ParentedList)
             {
-                Settings.Logger.LogWarning($"Slot: {item.Key} is parented to {Controller.Accessorys_Parts[item.Key].parentKey} ");
-                Now_Parented_Name_Dictionary[item.Key] = Controller.Accessorys_Parts[item.Key].parentKey;
+                if (item.Key < 20)
+                {
+                    //Settings.Logger.LogWarning($"Slot: {item.Key} is parented to {Controller.ChaControl.nowCoordinate.accessory.parts[item.Key].parentKey} ");
+                    Now_Parented_Name_Dictionary[item.Key] = Controller.ChaControl.nowCoordinate.accessory.parts[item.Key].parentKey;
+                }
+                else
+                {
+                    //Settings.Logger.LogWarning($"Slot: {item.Key} is parented to {Controller.Accessorys_Parts[item.Key - 20].parentKey} ");
+                    Now_Parented_Name_Dictionary[item.Key] = Controller.Accessorys_Parts[item.Key - 20].parentKey;
+                }
             }
         }
         public void Clear_Now_Coordinate()

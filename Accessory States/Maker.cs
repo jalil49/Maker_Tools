@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
+using KKAPI.Maker.UI.Sidebar;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,8 +27,14 @@ namespace Accessory_States
 
         MakerButton ApplyTheme;
 
-        MakerDropdown Parented_Dropdown;
-        MakerDropdown Custom_Dropdown;
+        Rect _Custom_GroupsRect;
+
+        private Vector2 _accessorySlotsScrollPos = Vector2.zero;
+
+        private readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
+        private readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
+
+        private bool ShowInterface = false;
 
         public Dictionary<int, int> Gui_states = new Dictionary<int, int>();
 
@@ -55,7 +62,7 @@ namespace Accessory_States
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveModifyButton);
             ApplyTheme.OnClick.AddListener(delegate ()
             {
-                List<TMP_Dropdown.OptionData> options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
+                //List<TMP_Dropdown.OptionData> options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
                 var controlobjects = ACC_Appearance_dropdown.Control.ControlObjects.ToArray();
                 List<TMP_Dropdown.OptionData> options2 = controlobjects[ACC_Appearance_dropdown.CurrentlySelectedIndex].GetComponentInChildren<TMP_Dropdown>().options;
                 int kind = 0;
@@ -64,11 +71,11 @@ namespace Accessory_States
                 switch (radio.Value)
                 {
                     case 0:
-                        if (options.Any(x => x.text == ThemeText.Value))
+                        if (options2.Any(x => x.text == ThemeText.Value))
                         {
                             return;
                         }
-                        options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
+                        //options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
                         options2.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
                         kind = 15 + ThisCharactersData.Now_ACC_Name_Dictionary.Count();
                         ThisCharactersData.Now_ACC_Name_Dictionary[kind] = ThemeText.Value;
@@ -77,18 +84,6 @@ namespace Accessory_States
                         if (ThemeText.Value == "None")
                         {
                             return;
-                        }
-                        for (int i = 0; i < options.Count; i++)
-                        {
-                            if (options[i].text == ThemeText.Value)
-                            {
-                                index = i;
-                                break;
-                            }
-                            else if (i == options.Count - 1)
-                            {
-                                return;
-                            }
                         }
                         for (int i = 0; i < options2.Count; i++)
                         {
@@ -102,7 +97,6 @@ namespace Accessory_States
                                 return;
                             }
                         }
-                        options.RemoveAt(index);
                         options2.RemoveAt(index2);
                         kind = index + 15;
                         var removal = ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind);
@@ -124,7 +118,7 @@ namespace Accessory_States
                         {
                             return;
                         }
-                        foreach (var item in options)
+                        foreach (var item in options2)
                         {
                             if (item.text == ThemeText.Value)
                             {
@@ -132,11 +126,11 @@ namespace Accessory_States
                             }
                         }
                         var result = options2[ACC_Appearance_dropdown.GetSelectedValue()].text;
-                        for (int i = 0; i < options.Count; i++)
+                        for (int i = 0; i < options2.Count; i++)
                         {
-                            if (options[i].text == result)
+                            if (options2[i].text == result)
                             {
-                                options[i].text = ThemeText.Value;
+                                options2[i].text = ThemeText.Value;
                                 break;
                             }
                         }
@@ -174,20 +168,25 @@ namespace Accessory_States
             ACC_Is_Parented = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(Parented_Toggle);
             ACC_Is_Parented.ValueChanged += ACC_Is_Parented_ValueChanged;
 
-            e.AddControl(new MakerText("Accessory States Toggles", category, owner));
-            var Parented_View_Toggle = new MakerToggle(category, "toggle parent view", true, owner);
+            //e.AddControl(new MakerText("Accessory States Toggles", category, owner));
+            //var Parented_View_Toggle = new MakerToggle(category, "toggle parent view", true, owner);
 
-            Parented_Dropdown = new MakerDropdown("Parented options", new string[] { "None" }, category, 0, owner);
-            e.AddControl(Parented_Dropdown).ValueChanged.Subscribe(x => Parented_View_Toggle.SetValue(true, false));
+            //Parented_Dropdown = new MakerDropdown("Parented options", new string[] { "None" }, category, 0, owner);
+            //e.AddControl(Parented_Dropdown).ValueChanged.Subscribe(x => Parented_View_Toggle.SetValue(true, false));
 
-            e.AddControl(Parented_View_Toggle).ValueChanged.Subscribe(x => Parent_toggle(Parented_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options[Parented_Dropdown.Value].text, x));
+            //e.AddControl(Parented_View_Toggle).ValueChanged.Subscribe(x => Parent_toggle(Parented_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options[Parented_Dropdown.Value].text, x));
 
-            var Custom_View_Toggle = new MakerButton("toggle Custom view", category, owner);
+            //var Custom_View_Toggle = new MakerButton("toggle Custom view", category, owner);
 
-            Custom_Dropdown = new MakerDropdown("Custom options", new string[] { "None" }, category, 0, owner);
-            e.AddControl(Custom_Dropdown);
+            //Custom_Dropdown = new MakerDropdown("Custom options", new string[] { "None" }, category, 0, owner);
+            //e.AddControl(Custom_Dropdown);
 
-            e.AddControl(Custom_View_Toggle).OnClick.AddListener(delegate () { Custom_groups_GUI_Toggle(Custom_Dropdown.Value + 14); });
+            //e.AddControl(Custom_View_Toggle).OnClick.AddListener(delegate () { Custom_groups_GUI_Toggle(Custom_Dropdown.Value + 14); });
+
+            SetupInterface();
+
+            var interfacebutton = e.AddSidebarControl(new SidebarToggle("ACC States", true, owner));
+            interfacebutton.ValueChanged.Subscribe(x => ShowInterface = x);
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             ACC_Appearance_dropdown.Control.GroupingID = GroupingID;
@@ -229,10 +228,10 @@ namespace Accessory_States
 
         private void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
         {
-            ACC_Appearance_dropdown.SetValue(e.SlotIndex, 0);
-            ACC_Appearance_state.SetValue(e.SlotIndex, 0);
-            ACC_Appearance_state2.SetValue(e.SlotIndex, 3);
-            ACC_Is_Parented.SetValue(e.SlotIndex, false);
+            //ACC_Appearance_dropdown.SetValue(e.SlotIndex, 0);
+            //ACC_Appearance_state.SetValue(e.SlotIndex, 0);
+            //ACC_Appearance_state2.SetValue(e.SlotIndex, 3);
+            //ACC_Is_Parented.SetValue(e.SlotIndex, false);
             VisibiltyToggle();
         }
 
@@ -315,7 +314,7 @@ namespace Accessory_States
 
         private void ACC_Is_Parented_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
         {
-            List<TMP_Dropdown.OptionData> options = Parented_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
+            List<TMP_Dropdown.OptionData> options = ACC_Appearance_dropdown.Control.ControlObjects.ElementAt(e.SlotIndex).GetComponentInChildren<TMP_Dropdown>().options;
 
             if (e.NewValue)
             {
@@ -351,10 +350,6 @@ namespace Accessory_States
             {
                 data[0] = Mathf.RoundToInt(e.NewValue);
             }
-            if (ACC_Appearance_state2.GetValue(e.SlotIndex) < ACC_Appearance_state.GetValue(e.SlotIndex))
-            {
-                ACC_Appearance_state.SetValue(e.SlotIndex, ACC_Appearance_state2.GetValue(e.SlotIndex));
-            }
         }
 
         private void ACC_Appearance_state2_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<float> e)
@@ -370,17 +365,21 @@ namespace Accessory_States
             }
             var slider = ACC_Appearance_state.Control.ControlObjects.ToArray()[e.SlotIndex].GetComponentInChildren<Slider>();
             var slider2 = ACC_Appearance_state2.Control.ControlObjects.ToArray()[e.SlotIndex].GetComponentInChildren<Slider>();
-            if (ACC_Appearance_dropdown.GetValue(e.SlotIndex) > 8 && Mathf.RoundToInt(slider2.value) == Mathf.RoundToInt(slider2.maxValue))
+            if (ACC_Appearance_dropdown.GetValue(e.SlotIndex) > 8)
             {
-                slider.maxValue += 1;
-                slider2.maxValue += 1;
+                Update_Custom_GUI();
+                if (Mathf.RoundToInt(slider2.value) == Mathf.RoundToInt(slider2.maxValue))
+                {
+                    slider.maxValue += 1;
+                    slider2.maxValue += 1;
+                }
             }
         }
 
         private void ACC_Appearance_dropdown_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<int> e)
         {
             //{ "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
-            Settings.Logger.LogWarning($"Dropdown slot {e.SlotIndex}, value {e.NewValue}");
+            //Settings.Logger.LogWarning($"Dropdown slot {e.SlotIndex}, value {e.NewValue}");
 
             if (e.NewValue < 9)
             {
@@ -416,20 +415,20 @@ namespace Accessory_States
 
         private void Update_Drop_boxes()
         {
-            var Custom_Options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
-            var Parented_Options = Parented_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
+            //var Custom_Options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
+            //var Parented_Options = Parented_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
             var ACC_Appearance_dropdown_Controls = ACC_Appearance_dropdown.Control.ControlObjects.ToList();
             List<TMP_Dropdown.OptionData> Appearance_Options = new List<TMP_Dropdown.OptionData>(ACC_Appearance_dropdown_Controls[0].GetComponentInChildren<TMP_Dropdown>().options);
 
-            if (Custom_Options.Count > 1)
-            {
-                Custom_Options.RemoveRange(1, Custom_Options.Count - 1);
-            }
+            //if (Custom_Options.Count > 1)
+            //{
+            //    Custom_Options.RemoveRange(1, Custom_Options.Count - 1);
+            //}
 
-            if (Parented_Options.Count > 1)
-            {
-                Parented_Options.RemoveRange(1, Parented_Options.Count - 1);
-            }
+            //if (Parented_Options.Count > 1)
+            //{
+            //    Parented_Options.RemoveRange(1, Parented_Options.Count - 1);
+            //}
 
             if (Appearance_Options.Count > 9)
             {
@@ -439,14 +438,14 @@ namespace Accessory_States
             foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
             {
                 var temp = new TMP_Dropdown.OptionData(item.Value);
-                Custom_Options.Add(temp);
+                //Custom_Options.Add(temp);
                 Appearance_Options.Add(temp);
             }
 
-            foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary.Values.Distinct())
-            {
-                Parented_Options.Add(new TMP_Dropdown.OptionData(item));
-            }
+            //foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary.Values.Distinct())
+            //{
+            //    Parented_Options.Add(new TMP_Dropdown.OptionData(item));
+            //}
 
             foreach (var item in ACC_Appearance_dropdown.Control.ControlObjects)
             {
@@ -456,17 +455,13 @@ namespace Accessory_States
 
             foreach (var item in ThisCharactersData.Now_ACC_Binding_Dictionary)
             {
-                Settings.Logger.LogWarning($"slot {item.Key} value {item.Value} count {Appearance_Options.Count}");
-
                 if (item.Value < 9)
                 {
                     ACC_Appearance_dropdown.SetValue(item.Key, item.Value, false);
-                    Settings.Logger.LogWarning($"slot {item.Key} value {item.Value}");
                 }
                 else
                 {
                     ACC_Appearance_dropdown.SetValue(item.Key, item.Value - 6, false);
-                    Settings.Logger.LogWarning($"slot {item.Key} value {item.Value - 6}");
                 }
             }
         }
@@ -477,26 +472,42 @@ namespace Accessory_States
             {
                 yield break;
             }
-            ThisCharactersData.Update_Now_Coordinate();
-            Refresh();
             int ACCData = Accessorys_Parts.Count();
 
             while (ACC_Appearance_state.Control.ControlObjects.Count() < ACCData)
             {
                 yield return null;
             }
-            foreach (var item in ThisCharactersData.Now_ACC_State_array)
-            {
-                ACC_Appearance_state2.Control.ControlObjects.ElementAt(item.Key).GetComponentInChildren<Slider>().maxValue = Math.Max(3, item.Value[1]);
-                ACC_Appearance_state.Control.ControlObjects.ElementAt(item.Key).GetComponentInChildren<Slider>().maxValue = Math.Max(3, item.Value[1]);
-                ACC_Appearance_state2.SetValue(item.Key, item.Value[1], false);
-                ACC_Appearance_state.SetValue(item.Key, item.Value[0], false);
-            }
-            foreach (var item in ThisCharactersData.Now_Parented_Dictionary)
-            {
-                ACC_Is_Parented.SetValue(item.Key, item.Value, false);
-            }
+            ThisCharactersData.Update_Now_Coordinate();
+
+            Refresh();
+
             Update_Drop_boxes();
+
+            var ACCAPPS1 = ACC_Appearance_state.Control.ControlObjects;
+            var ACCAPPS2 = ACC_Appearance_state2.Control.ControlObjects;
+            for (int i = 0, n = ACCAPPS1.Count(); i < n; i++)
+            {
+                if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(i, out var states))
+                {
+                    states = new int[] { 0, 3 };
+                }
+                ACCAPPS2.ElementAt(i).GetComponentInChildren<Slider>().maxValue = Math.Max(3, states[1]);
+                ACCAPPS1.ElementAt(i).GetComponentInChildren<Slider>().maxValue = Math.Max(3, states[1]);
+                ACC_Appearance_state2.SetValue(i, states[1], false);
+                ACC_Appearance_state.SetValue(i, states[0], false);
+
+                ThisCharactersData.Now_Parented_Dictionary.TryGetValue(i, out bool IsParented);
+                ACC_Is_Parented.SetValue(i, IsParented, false);
+
+                ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(i, out var binding);
+                if (binding > 14)
+                {
+                    binding -= 6;
+                }
+                ACC_Appearance_dropdown.SetValue(i, binding, false);
+            }
+            Update_Custom_GUI();
             VisibiltyToggle();
         }
 
@@ -556,5 +567,103 @@ namespace Accessory_States
         //    //    }
         //    //}
         //}
+
+        private void SetupInterface()
+        {
+            float Height = 50f + Screen.height / 2;
+            float Margin = 5f;
+            float Width = 130f;
+
+            var distanceFromRightEdge = Screen.width / 10f;
+            var x = Screen.width - distanceFromRightEdge - Width - Margin;
+            var windowRect = new Rect(x, Margin, Width, Height);
+
+            _Custom_GroupsRect = windowRect;
+            _Custom_GroupsRect.x += 7;
+            _Custom_GroupsRect.width -= 7;
+            _Custom_GroupsRect.y += Height + Margin;
+            _Custom_GroupsRect.height = 300f;
+        }
+
+        private void Update_Custom_GUI()
+        {
+            foreach (var Custom in ThisCharactersData.Now_ACC_Name_Dictionary)
+            {
+                if (!GUI_Custom_Dict.TryGetValue(Custom.Key, out var States))
+                {
+                    States = new int[] { 0, 2 };
+                }
+                int max = 0;
+                var list = ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == Custom.Key);
+                var state_dic = ThisCharactersData.Now_ACC_State_array;
+                foreach (var item in list)
+                {
+                    max = Math.Max(max, state_dic[item.Key][1]);
+                }
+                States[1] = max + 2;
+                GUI_Custom_Dict[Custom.Key] = States;
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (!ShowInterface)
+                return;
+            //Custom Groups
+            GUILayout.BeginArea(_Custom_GroupsRect);
+            {
+                GUILayout.BeginScrollView(_accessorySlotsScrollPos);
+                {
+                    GUILayout.BeginVertical();
+                    {
+                        foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
+                        {
+                            DrawCustomButton(item.Key, item.Value);
+                        }
+                        //Parent
+                        foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary.Values.Distinct())
+                        {
+                            DrawParentButton(item);
+                        }
+                    }
+                    GUILayout.EndVertical();
+                }
+                GUILayout.EndScrollView();
+            }
+            GUILayout.EndArea();
+        }
+
+        private void DrawCustomButton(int Kind, string Name)
+        {
+            if (!GUI_Custom_Dict.TryGetValue(Kind, out int[] State))
+            {
+                State = new int[] { 0, 2 };
+            }
+
+            if (GUILayout.Button($"{Name}: {State[0]}"))
+            {
+                State[0] = (State[0] + 1) % State[1];
+                Custom_Groups(Kind, State[0]);
+            }
+            GUILayout.Space(-5);
+
+            GUI_Custom_Dict[Kind] = State;
+
+        }
+
+        private void DrawParentButton(string Parent)
+        {
+            if (!GUI_Parent_Dict.TryGetValue(Parent, out bool isOn))
+            {
+                isOn = true;
+            }
+            if (GUILayout.Button($"{Parent}: {(isOn ? "On" : "Off")}"))
+            {
+                isOn = !isOn;
+                Parent_toggle(Parent, isOn);
+            }
+            GUILayout.Space(-5);
+            GUI_Parent_Dict[Parent] = isOn;
+        }
     }
 }
