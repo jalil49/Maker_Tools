@@ -555,19 +555,6 @@ namespace Accessory_States
             }
         }
 
-        //private void RadioChanged(int value)
-        //{
-        //    //var ControlObjects = RadioToggle.ControlObjects.ToArray();
-        //    //foreach (var ControlObject in ControlObjects)
-        //    //{
-        //    //    var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
-        //    //    for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
-        //    //    {
-        //    //        Toggles[Index].isOn = value == Index;
-        //    //    }
-        //    //}
-        //}
-
         private void SetupInterface()
         {
             float Height = 50f + Screen.height / 2;
@@ -609,13 +596,13 @@ namespace Accessory_States
         {
             if (!ShowInterface)
                 return;
-            //Custom Groups
             GUILayout.BeginArea(_Custom_GroupsRect);
             {
                 GUILayout.BeginScrollView(_accessorySlotsScrollPos);
                 {
                     GUILayout.BeginVertical();
                     {
+                        //Custom Groups
                         foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
                         {
                             DrawCustomButton(item.Key, item.Value);

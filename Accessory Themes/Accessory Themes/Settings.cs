@@ -4,7 +4,6 @@ using BepInEx.Logging;
 using HarmonyLib;
 using KKAPI.Chara;
 using KKAPI.Studio;
-using System;
 
 namespace Accessory_Themes
 {

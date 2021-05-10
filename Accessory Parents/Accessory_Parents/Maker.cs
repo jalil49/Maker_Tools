@@ -74,13 +74,11 @@ namespace Accessory_Parents
 
             var Dropdown = new MakerDropdown("Parent", new string[] { "None" }, category, 0, owner);
             Parent_DropDown = MakerAPI.AddAccessoryWindowControl<MakerDropdown>(Dropdown);
-            //Parent_DropDown.ValueChanged += Parent_ValueChanged;
 
             textbox = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(new MakerTextbox(category, "Name", "", owner));
 
             radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }) { Unify_AccessoryWindowControl = true };
             MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
-            //radio.ValueChanged.Subscribe(x => RadioChanged(x));
 
             Modify_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Modify Parent", category, owner));
             Modify_Button.OnClick.AddListener(delegate ()
@@ -754,19 +752,6 @@ namespace Accessory_Parents
             }
             Update_Old_Parents();
         }
-
-        //private void RadioChanged(int value)
-        //{
-        //    var ControlObjects = radio.ControlObjects.ToArray();
-        //    foreach (var ControlObject in ControlObjects)
-        //    {
-        //        var Toggles = ControlObject.GetComponentsInChildren<Toggle>();
-        //        for (int Index = 0, n2 = Toggles.Length; Index < n2; Index++)
-        //        {
-        //            Toggles[Index].isOn = value == Index;
-        //        }
-        //    }
-        //}
 
         private void Update_DropBox()
         {

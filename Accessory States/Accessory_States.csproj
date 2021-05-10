@@ -118,7 +118,8 @@
   <Import Project="packages\IllusionLibs.Koikatu.UnityEngine.5.6.2.2\build\IllusionLibs.Koikatu.UnityEngine.targets" Condition="Exists('packages\IllusionLibs.Koikatu.UnityEngine.5.6.2.2\build\IllusionLibs.Koikatu.UnityEngine.targets')" />
   <Import Project="packages\IllusionLibs.Koikatu.UnityEngine.UI.5.6.2.2\build\IllusionLibs.Koikatu.UnityEngine.UI.targets" Condition="Exists('packages\IllusionLibs.Koikatu.UnityEngine.UI.5.6.2.2\build\IllusionLibs.Koikatu.UnityEngine.UI.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>XCOPY "$(TargetPath)" "F:\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins" /S /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetFileName)" "F:\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins" /S /Y /D
+xcopy "$(TargetFileName)" "C:\Program Files (x86)\Steam\steamapps\common\Koikatsu Party\BepInEx\plugins" /S /Y /D</PostBuildEvent>
   </PropertyGroup>
   <Import Project="packages\IllusionLibs.Koikatu.TextMeshPro.2019.4.27.2\build\IllusionLibs.Koikatu.TextMeshPro.targets" Condition="Exists('packages\IllusionLibs.Koikatu.TextMeshPro.2019.4.27.2\build\IllusionLibs.Koikatu.TextMeshPro.targets')" />
 </Project>
