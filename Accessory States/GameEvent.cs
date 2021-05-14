@@ -26,18 +26,10 @@ namespace Accessory_States
                 var ThisCharactersData = Constants.CharacterInfo.Find(x => heroines[i].chaCtrl.fileParam.personality == x.Personality && x.FullName == heroines[i].chaCtrl.fileParam.fullname && x.BirthDay == heroines[i].chaCtrl.fileParam.strBirthDay);
                 if (ThisCharactersData != null)
                 {
+                    ThisCharactersData.Controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
                     ThisCharactersData.Controller.Register();
-                    StartCoroutine(Wait());
-                    IEnumerator Wait()
-                    {
-                        while (ThisCharactersData.Controller.ChaControl.fileStatus.clothesState == null)
-                        {
-                            yield return null;
-                        }
-                        ThisCharactersData.Update_Now_Coordinate();
-                        ThisCharactersData.Controller.Refresh();
-                    }
-                    //Settings.Logger.LogWarning("length" + ThisCharactersData.Controller.ChaControl.fileStatus.clothesState.Length);
+                    ThisCharactersData.Update_Now_Coordinate();
+                    ThisCharactersData.Controller.Refresh();
                 }
                 Buttonlogic(i, false);
             }

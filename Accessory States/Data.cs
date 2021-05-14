@@ -41,7 +41,7 @@ namespace Accessory_States
 
         public void Update_Now_Coordinate()
         {
-            int outfitnum = (int)Controller.CurrentCoordinate.Value;
+            var outfitnum = (int)Controller.CurrentCoordinate.Value;
             //Settings.Logger.LogWarning((ChaFileDefine.CoordinateType)outfitnum);
             if (KKAPI.KoikatuAPI.GetCurrentGameMode() == KKAPI.GameMode.Maker)
             {

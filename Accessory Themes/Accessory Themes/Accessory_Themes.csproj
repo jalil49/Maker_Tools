@@ -37,8 +37,8 @@
       <HintPath>..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Additional Card Info">
-      <HintPath>..\..\Additional Card Info\Additional Card Info\bin\Debug\Additional Card Info.dll</HintPath>
+    <Reference Include="Additional_Card_Info">
+      <HintPath>..\..\Additional Card Info\Additional Card Info\bin\Debug\Additional_Card_Info.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IllusionLibs.Koikatu.Assembly-CSharp.2019.4.27.2\lib\net35\Assembly-CSharp.dll</HintPath>
@@ -60,8 +60,9 @@
       <HintPath>..\packages\ExtensibleSaveFormat.Koikatu.16.2.1\lib\net35\ExtensibleSaveFormat.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKAPI">
-      <HintPath>..\..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\KKAPI.dll</HintPath>
+    <Reference Include="KKAPI, Version=1.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\IllusionModdingAPI\bin\KKAPI.dll</HintPath>
     </Reference>
     <Reference Include="MoreAccessories">
       <HintPath>..\..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\MoreAccessories.dll</HintPath>

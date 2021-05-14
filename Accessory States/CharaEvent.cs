@@ -96,7 +96,7 @@ namespace Accessory_States
 
             if (!ThisCharactersData.processed || currentGameMode == GameMode.Maker || GameAPI.InsideHScene)
             {
-
+                ThisCharactersData.Controller = this;
                 chafile = ChaFileControl;
                 if (currentGameMode == GameMode.Maker)
                 {

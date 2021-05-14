@@ -52,7 +52,7 @@ namespace Accessory_States
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
             ThemeText = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(ThemeTextBox);
 
-            var radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" })
+            var radio = new MakerRadioButtons(category, owner, "Modify", new string[] { "Add", "Remove", "Rename" })
             {
                 Unify_AccessoryWindowControl = true
             };
@@ -167,21 +167,6 @@ namespace Accessory_States
             var Parented_Toggle = new MakerToggle(category, "Bind To Parent", false, owner);
             ACC_Is_Parented = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(Parented_Toggle);
             ACC_Is_Parented.ValueChanged += ACC_Is_Parented_ValueChanged;
-
-            //e.AddControl(new MakerText("Accessory States Toggles", category, owner));
-            //var Parented_View_Toggle = new MakerToggle(category, "toggle parent view", true, owner);
-
-            //Parented_Dropdown = new MakerDropdown("Parented options", new string[] { "None" }, category, 0, owner);
-            //e.AddControl(Parented_Dropdown).ValueChanged.Subscribe(x => Parented_View_Toggle.SetValue(true, false));
-
-            //e.AddControl(Parented_View_Toggle).ValueChanged.Subscribe(x => Parent_toggle(Parented_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options[Parented_Dropdown.Value].text, x));
-
-            //var Custom_View_Toggle = new MakerButton("toggle Custom view", category, owner);
-
-            //Custom_Dropdown = new MakerDropdown("Custom options", new string[] { "None" }, category, 0, owner);
-            //e.AddControl(Custom_Dropdown);
-
-            //e.AddControl(Custom_View_Toggle).OnClick.AddListener(delegate () { Custom_groups_GUI_Toggle(Custom_Dropdown.Value + 14); });
 
             SetupInterface();
 

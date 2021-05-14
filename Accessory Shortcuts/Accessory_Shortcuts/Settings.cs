@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using KKAPI.Chara;
+using KKAPI.Studio;
 
 namespace Accessory_Shortcuts
 {
@@ -17,6 +18,10 @@ namespace Accessory_Shortcuts
 
         public void Awake()
         {
+            if (StudioAPI.InsideStudio)
+            {
+                return;
+            }
             Instance = this;
             Logger = base.Logger;
             Hooks.Init();

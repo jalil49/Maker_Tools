@@ -59,7 +59,7 @@
     </Reference>
     <Reference Include="KKAPI, Version=1.18.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\KKAPI.dll</HintPath>
+      <HintPath>..\..\IllusionModdingAPI\bin\KKAPI.dll</HintPath>
     </Reference>
     <Reference Include="MoreAccessories">
       <HintPath>..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\MoreAccessories.dll</HintPath>

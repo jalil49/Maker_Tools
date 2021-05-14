@@ -1,4 +1,5 @@
-﻿using ExtensibleSaveFormat;
+﻿using Additional_Card_Info;
+using ExtensibleSaveFormat;
 using HarmonyLib;
 using KKAPI;
 using KKAPI.Chara;
@@ -36,8 +37,9 @@ namespace Accessory_Themes
 
         private Color[] PersonalColorSkew = new Color[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
 
-        private List<int>[] HairAcc = new List<int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Additional_Card_Info.CharaEvent AdditionalInfoController;
+        private Additional_Card_Info.CharaEvent ACI_Ref;
+
+        private List<int> HairAcc = new List<int>();
 
         List<ChaFileAccessory.PartsInfo> ACCData;
 
@@ -83,6 +85,7 @@ namespace Accessory_Themes
             {
                 return;
             }
+
             for (int i = 0; i < ThemeNames.Length; i++)
             {
                 ColorRelativity[i].Clear();
@@ -98,9 +101,9 @@ namespace Accessory_Themes
                 RelativeThemeBool[i].Add(false);
                 PersonalColorSkew[i] = Color.white;
             }
-            CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
+            CurrentCoordinate.Subscribe(x =>
             {
-                CoordinateNum = (int)value;
+                CoordinateNum = (int)x;
                 GetALLACC();
                 StartCoroutine(WaitForSlots());
             });
@@ -149,7 +152,8 @@ namespace Accessory_Themes
                     Relative_ACC_Dictionary = MessagePackSerializer.Deserialize<Dictionary<int, List<int[]>>[]>((byte[])ByteData);
                 }
             }
-            AdditionalInfoController = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
+
+            ACI_Ref = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
         }
 
         private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
@@ -170,17 +174,6 @@ namespace Accessory_Themes
             //Settings.Logger.LogWarning($"Source {Source} Dest {Dest}");
             for (int i = 0; i < CopiedSlots.Length; i++)
             {
-                //Settings.Logger.LogWarning($"ACCKeep");
-                //if (AccKeep[Source].Contains(CopiedSlots[i]) && !AccKeep[Dest].Contains(CopiedSlots[i]))
-                //{
-                //    AccKeep[Dest].Add(CopiedSlots[i]);
-                //}
-                //Settings.Logger.LogWarning($"HairKeep");
-                //if (HairAcc[Source].Contains(CopiedSlots[i]) && !HairAcc[Dest].Contains(CopiedSlots[i]))
-                //{
-                //    HairAcc[Dest].Add(CopiedSlots[i]);
-                //}
-
                 if (!ACC_Theme_Dictionary[Source].TryGetValue(CopiedSlots[i], out int value))
                 {
                     ACC_Theme_Dictionary[Dest].Remove(CopiedSlots[i]);
@@ -219,9 +212,6 @@ namespace Accessory_Themes
             MyData.data.Add("Relative_Theme_Bools", MessagePackSerializer.Serialize(RelativeThemeBool));
             MyData.data.Add("Color_Skews", MessagePackSerializer.Serialize(PersonalColorSkew));
             MyData.data.Add("Relative_ACC_Dictionary", MessagePackSerializer.Serialize(Relative_ACC_Dictionary));
-            //MyData.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready));
-            //MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc));
-            //MyData.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
 
             SetExtendedData(MyData);
         }
@@ -238,10 +228,6 @@ namespace Accessory_Themes
             MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity[CoordinateNum]));
             MyData.data.Add("Relative_Theme_Bools", MessagePackSerializer.Serialize(RelativeThemeBool[CoordinateNum]));
             MyData.data.Add("Relative_ACC_Dictionary", MessagePackSerializer.Serialize(Relative_ACC_Dictionary[CoordinateNum]));
-            //MyData.data.Add("Is_Underwear", MessagePackSerializer.Serialize(underwearbool));
-            //MyData.data.Add("CoordinateSaveBools", MessagePackSerializer.Serialize(CoordinateSaveBools[CoordinateNum]));
-            //MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc[CoordinateNum]));
-
             //Items to not color
             SetCoordinateExtendedData(coordinate, MyData);
         }
@@ -299,7 +285,7 @@ namespace Accessory_Themes
 
         private bool ChangeACCColor(int slot, int theme)
         {
-            if (ACCData[slot] != null && !HairAcc[CoordinateNum].Contains(slot) && theme != 0/* && !RelativeThemeBool[theme]*/)
+            if (ACCData[slot] != null && !HairAcc.Contains(slot) && theme != 0/* && !RelativeThemeBool[theme]*/)
             {
                 Color[] New_Color = new Color[] { colors[CoordinateNum][theme][0], colors[CoordinateNum][theme][1], colors[CoordinateNum][theme][2], colors[CoordinateNum][theme][3] };
                 ACCData[slot].color = New_Color;
@@ -364,7 +350,7 @@ namespace Accessory_Themes
             {
                 comparison = new string[] { Parentlist[ParentDropdown.Value] };
             }
-            HairAcc = AdditionalInfoController.HairAcc;
+            HairAcc = ACI_Ref.HairAcc[CoordinateNum];
             for (int slot = 0; slot < ACCData.Count; slot++)
             {
                 if (comparison.Contains(ACCData[slot].parentKey))
@@ -380,7 +366,7 @@ namespace Accessory_Themes
         private void UpdateSliderColor(int ColorNum, Color value, bool IsPersonal = false)
         {
             colors[CoordinateNum][ThemeNamesDropdown.Value][ColorNum] = value;
-            HairAcc = AdditionalInfoController.HairAcc;
+            HairAcc = ACI_Ref.HairAcc[CoordinateNum];
             foreach (var item in ACC_Theme_Dictionary[CoordinateNum])
             {
                 if (item.Value == ThemeNamesDropdown.Value)
@@ -650,7 +636,7 @@ namespace Accessory_Themes
             List<int[]> list = Relative_ACC_Dictionary[CoordinateNum][SimilarDropdown.Value];
             var clothes = ChaControl.chaFile.coordinate[CoordinateNum].clothes.parts;
             var clothes2 = ChaControl.nowCoordinate.clothes.parts;
-            HairAcc = AdditionalInfoController.HairAcc;
+            HairAcc = ACI_Ref.HairAcc[CoordinateNum];
             for (int i = 0; i < list.Count; i++)
             {
                 colors[CoordinateNum][list[i][0]][list[i][1]] = input;
@@ -697,7 +683,8 @@ namespace Accessory_Themes
             Color input = RelativeSkewColor.Value;
 
             Color.RGBToHSV(input, out float In_Hue, out float In_S, out float In_V);
-
+            In_S = SaturationSlider.Value;
+            In_V = ValuesSlider.Value;
             var list = Relative_ACC_Dictionary[CoordinateNum];
             var UndoACCQueue = new Queue<Color>();
             var ClothesUndoQueue = new Queue<Color>();
@@ -706,7 +693,7 @@ namespace Accessory_Themes
                 UndoACCQueue = UndoACCSkew[CoordinateNum].Pop();
                 ClothesUndoQueue = ClothsUndoSkew[CoordinateNum].Pop();
             }
-            HairAcc = AdditionalInfoController.HairAcc;
+            HairAcc = ACI_Ref.HairAcc[CoordinateNum];
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -721,30 +708,9 @@ namespace Accessory_Themes
                     else
                     {
                         UndoACCQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        //if (SubtractHue)
-                        //{
-                        //    T_Hue = T_Hue - (In_Hue);
-                        //}
-                        //else
-                        //{
-                        T_Hue += (In_Hue);
-                        //}
-                        //if (SubtractSaturation)
-                        //{
-                        //    T_S = T_S - (In_S);
-                        //}
-                        //else
-                        //{
-                        //    T_S = T_S + (In_S);
-                        //}
-                        //if (SubtractValue)
-                        //{
-                        //    T_V = T_V - (In_V);
-                        //}
-                        //else
-                        //{
-                        //    T_V = T_V + (In_V);
-                        //}
+                        T_Hue += In_Hue;
+                        T_S += In_S;
+                        T_V += In_V;
                         temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
                     }
                     colors[CoordinateNum][list[i][j][0]][list[i][j][1]] = temp;
@@ -770,30 +736,9 @@ namespace Accessory_Themes
                     else
                     {
                         ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        //if (SubtractHue)
-                        //{
-                        //    T_Hue = T_Hue - (In_Hue);
-                        //}
-                        //else
-                        //{
-                        T_Hue += (In_Hue);
-                        //}
-                        //if (SubtractSaturation)
-                        //{
-                        //    T_S = T_S - (In_S);
-                        //}
-                        //else
-                        //{
-                        //    T_S = T_S + (In_S);
-                        //}
-                        //if (SubtractValue)
-                        //{
-                        //    T_V = T_V - (In_V);
-                        //}
-                        //else
-                        //{
-                        //    T_V = T_V + (In_V);
-                        //}
+                        T_Hue += In_Hue;
+                        T_S += In_S;
+                        T_V += In_V;
                         temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
                     }
                     clothes[i].colorInfo[j].baseColor = temp;
@@ -808,30 +753,9 @@ namespace Accessory_Themes
                     else
                     {
                         ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        //if (SubtractHue)
-                        //{
-                        //    T_Hue = T_Hue - (In_Hue);
-                        //}
-                        //else
-                        //{
-                        T_Hue += (In_Hue);
-                        //}
-                        //if (SubtractSaturation)
-                        //{
-                        //    T_S = T_S - (In_S);
-                        //}
-                        //else
-                        //{
-                        //    T_S = T_S + (In_S);
-                        //}
-                        //if (SubtractValue)
-                        //{
-                        //    T_V = T_V - (In_V);
-                        //}
-                        //else
-                        //{
-                        //    T_V = T_V + (In_V);
-                        //}
+                        T_Hue += In_Hue;
+                        T_S += In_S;
+                        T_V += In_V;
                         temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
                     }
                     clothes[i].colorInfo[j].patternColor = temp;

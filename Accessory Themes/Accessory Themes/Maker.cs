@@ -41,6 +41,9 @@ namespace Accessory_Themes
         MakerDropdown ThemeNamesDropdown;
         MakerDropdown ParentDropdown;
 
+        MakerSlider ValuesSlider;
+        MakerSlider SaturationSlider;
+
         //MakerCoordinateLoadToggle PersonalSkew_Toggle;
 
         AccessoryControlWrapper<MakerDropdown, int> Themes;
@@ -66,7 +69,6 @@ namespace Accessory_Themes
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
             Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
         }
-
 
         private void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
         {
@@ -154,7 +156,7 @@ namespace Accessory_Themes
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
             ThemeText = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(ThemeTextBox);
 
-            radio = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }));
+            radio = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(new MakerRadioButtons(category, owner, "Modify", new string[] { "Add", "Remove", "Rename" }));
             radio.Unify_AccessoryWindowControl = true;
 
             var AddRemoveThemeButton = new MakerButton("Modify Theme", category, owner);
@@ -287,9 +289,9 @@ namespace Accessory_Themes
             RelativeSkewColor = new MakerColor("Skew Relative Base", false, category, Color.white, owner);
             RelativeSkewColor = e.AddControl(RelativeSkewColor);
 
-            //e.AddControl(new MakerToggle(category, "Subtract Hue", owner)).ValueChanged.Subscribe(b => SubtractHue = b);
-            //e.AddControl(new MakerToggle(category, "Subtract Saturation", owner)).ValueChanged.Subscribe(b => SubtractSaturation = b);
-            //e.AddControl(new MakerToggle(category, "Subtract Value", owner)).ValueChanged.Subscribe(b => SubtractValue = b);
+            SaturationSlider = e.AddControl(new MakerSlider(category, "Saturation", -1, 1, 0, owner));
+
+            ValuesSlider = e.AddControl(new MakerSlider(category, "Value", -1, 1, 0, owner));
 
             var SkewButton = new MakerButton("Apply Skew", category, owner);
             SkewButton.OnClick.AddListener(delegate ()
@@ -321,7 +323,7 @@ namespace Accessory_Themes
         {
             if (e.NewValue != 0)
             {
-                HairAcc = AdditionalInfoController.HairAcc;
+                HairAcc = ACI_Ref.HairAcc[CoordinateNum];
                 ACC_Theme_Dictionary[CoordinateNum][e.SlotIndex] = e.NewValue;
                 ChangeACCColor(e.SlotIndex, e.NewValue);
             }
