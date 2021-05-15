@@ -186,6 +186,7 @@ namespace Accessory_States
         internal void Maker_started()
         {
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
+            Hooks.SetClothesState += Settings_SetClothesState;
 
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
@@ -200,6 +201,7 @@ namespace Accessory_States
         internal void Maker_Ended()
         {
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
+            Hooks.SetClothesState -= Settings_SetClothesState;
 
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
