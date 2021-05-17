@@ -23,19 +23,9 @@ namespace Accessory_States
         private List<bool> Accessory_Show_Bools = new List<bool>();
         public List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
 
-        public CharaEvent()
-        {
-            MakerAPI.MakerStartedLoading += (s, e) => Maker_started();
-            MakerAPI.MakerExiting += (s, e) => Maker_Ended();
-            MakerAPI.RegisterCustomSubCategories += MakerAPI_RegisterCustomSubCategories;
-        }
 
         protected override void OnDestroy()
         {
-            MakerAPI.MakerStartedLoading -= (s, e) => Maker_started();
-            MakerAPI.MakerExiting -= (s, e) => Maker_Ended();
-            MakerAPI.RegisterCustomSubCategories -= MakerAPI_RegisterCustomSubCategories;
-
             Constants.CharacterInfo.Remove(ThisCharactersData);
             base.OnDestroy();
         }

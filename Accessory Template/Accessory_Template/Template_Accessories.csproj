@@ -7,8 +7,8 @@
     <ProjectGuid>{73F3996E-4290-4C1A-B472-31035B0A2F72}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Accessory_Parents</RootNamespace>
-    <AssemblyName>Accessory_Parents</AssemblyName>
+    <RootNamespace>Template_Accessories</RootNamespace>
+    <AssemblyName>Temp</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

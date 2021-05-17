@@ -64,6 +64,14 @@ namespace Accessory_States
             }
             Update_Parented_Name();
         }
+        public void Update_Now_Coordinate(int outfitnum)
+        {
+            Now_ACC_Binding_Dictionary = new Dictionary<int, int>(ACC_Binding_Dictionary[outfitnum]);
+            Now_ACC_Name_Dictionary = new Dictionary<int, string>(ACC_Name_Dictionary[outfitnum]);
+            Now_ACC_State_array = new Dictionary<int, int[]>(ACC_State_array[outfitnum]);
+            Now_Parented_Dictionary = new Dictionary<int, bool>(ACC_Parented_Dictionary[outfitnum]);
+            Update_Parented_Name();
+        }
         public void Update_Parented_Name()
         {
             Now_Parented_Name_Dictionary.Clear();

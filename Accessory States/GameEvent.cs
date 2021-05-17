@@ -65,10 +65,10 @@ namespace Accessory_States
 
         private void Hooks_HcoordChange(object sender, OnClickCoordinateChange e)
         {
-            Buttonlogic(e.Female, false);
+            Buttonlogic(e.Female, false, e.Coordinate);
         }
 
-        private void Buttonlogic(int Female, bool Coordloaded)
+        private void Buttonlogic(int Female, bool Coordloaded, int Coordchange = -1)
         {
             bool Harem = hScene.dataH.lstFemale.Count > 1;
             var Heroine_Ctrl = hScene.dataH.lstFemale[Female].chaCtrl;
@@ -87,9 +87,13 @@ namespace Accessory_States
 
             ButtonList.Remove(Female);
 
-            if (!Coordloaded)
+            if (!Coordloaded && Coordchange == -1)
             {
                 ThisCharactersData.Update_Now_Coordinate();
+            }
+            if (Coordchange > -1)
+            {
+                ThisCharactersData.Update_Now_Coordinate(Coordchange);
             }
 
             //Settings.Logger.LogWarning("create");
@@ -107,7 +111,7 @@ namespace Accessory_States
 
         private void DeleteButton(int Female, bool Harem, int Remove)
         {
-            Settings.Logger.LogWarning("deleting button");
+            //Settings.Logger.LogWarning("deleting button");
             Button ToRemove;
             HSceneSpriteCategory hSceneSpriteCategory;
             if (Harem)

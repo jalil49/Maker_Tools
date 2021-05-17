@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using KKAPI.Chara;
+using KKAPI.Maker;
 using KKAPI.Studio;
 
 namespace Additional_Card_Info
@@ -29,6 +30,8 @@ namespace Additional_Card_Info
             Harmony.CreateAndPatchAll(typeof(Hooks));
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "4", "Requires restarting maker");
             CreatorName = Config.Bind("User", "Creator", "", "Default Creator name for those who make a lot of coordinates");
+            MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
+            MakerAPI.RegisterCustomSubCategories += CharaEvent.RegisterCustomSubCategories;
         }
     }
 }

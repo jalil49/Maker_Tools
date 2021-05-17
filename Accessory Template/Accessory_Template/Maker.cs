@@ -16,17 +16,17 @@ namespace Template_Accessories
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        MakerDropdown Parent_DropDown;
-        MakerText ParentText;
-        MakerText ChildText;
-        MakerTextbox textbox;
-        MakerRadioButtons radio;
-        MakerButton Modify_Button;
-        MakerButton Replace_Button;
-        MakerButton Save_Relative_Button;
-        MakerButton Child_Button;
+        static MakerDropdown Parent_DropDown;
+        static MakerText ParentText;
+        static MakerText ChildText;
+        static MakerTextbox textbox;
+        static MakerRadioButtons radio;
+        static MakerButton Modify_Button;
+        static MakerButton Replace_Button;
+        static MakerButton Save_Relative_Button;
+        static MakerButton Child_Button;
 
-        private void MakerAPI_MakerExiting(object sender, EventArgs e)
+        private static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
             AccessoriesApi.AccessoriesCopied -= (s, es) => VisibiltyToggle();
             AccessoriesApi.AccessoryTransferred -= (s, es) => VisibiltyToggle();
@@ -40,7 +40,7 @@ namespace Template_Accessories
             Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
         }
 
-        private void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
+        private static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
             AccessoriesApi.AccessoriesCopied += (s, es) => VisibiltyToggle();
             AccessoriesApi.AccessoryTransferred += (s, es) => VisibiltyToggle();
@@ -54,7 +54,7 @@ namespace Template_Accessories
             Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
         }
 
-        private void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
+        private static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             var owner = Settings.Instance;
             var category = new MakerCategory("", "");
@@ -163,44 +163,47 @@ namespace Template_Accessories
             ChildText.GroupingID = GroupingID;
         }
 
-        private void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
+        private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
             Update_DropBox();
         }
 
-        private void AccessoriesApi_SelectedMakerAccSlotChanged(object sender, AccessorySlotEventArgs e)
+        private static void AccessoriesApi_SelectedMakerAccSlotChanged(object sender, AccessorySlotEventArgs e)
         {
-            StartCoroutine(Wait());
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            Controller.StartCoroutine(Wait());
             IEnumerator Wait()
             {
                 yield return null;
-                Update_More_Accessories();
+                Controller.Update_More_Accessories();
                 VisibiltyToggle();
             }
         }
 
-        private void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
+        private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
         {
-            StartCoroutine(Wait());
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
+            Controller.StartCoroutine(Wait());
             IEnumerator Wait()
             {
                 yield return null;
-                Update_More_Accessories();
+                Controller.Update_More_Accessories();
                 VisibiltyToggle();
             }
         }
 
-        private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
+        private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
             VisibiltyToggle();
         }
 
-        private void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
+        private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
         {
             VisibiltyToggle();
         }
 
-        private void VisibiltyToggle()
+        private static void VisibiltyToggle()
         {
             if (!MakerAPI.InsideMaker)
                 return;
@@ -232,7 +235,7 @@ namespace Template_Accessories
             }
         }
 
-        private void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
         {
             if (e.Type == 120)
             {
@@ -243,9 +246,11 @@ namespace Template_Accessories
             VisibiltyToggle();
         }
 
-        private void Update_DropBox()
+        private static void Update_DropBox()
         {
-            StartCoroutine(Wait());
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
+            Controller.StartCoroutine(Wait());
             IEnumerator Wait()
             {
                 yield return null;

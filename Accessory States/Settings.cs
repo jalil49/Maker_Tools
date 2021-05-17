@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using KKAPI.Chara;
 using KKAPI.MainGame;
+using KKAPI.Maker;
 using System;
 
 namespace Accessory_States
@@ -29,6 +30,9 @@ namespace Accessory_States
             }
             GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
+            MakerAPI.MakerStartedLoading += (s, e) => CharaEvent.Maker_started();
+            MakerAPI.MakerExiting += (s, e) => CharaEvent.Maker_Ended();
+            MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
         }
 
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)

@@ -16,29 +16,29 @@ namespace Accessory_States
 {
     partial class CharaEvent : CharaCustomFunctionController
     {
-        AccessoryControlWrapper<MakerDropdown, int> ACC_Appearance_dropdown;
-        AccessoryControlWrapper<MakerSlider, float> ACC_Appearance_state;
-        AccessoryControlWrapper<MakerSlider, float> ACC_Appearance_state2;
-        AccessoryControlWrapper<MakerToggle, bool> ACC_Is_Parented;
+        static AccessoryControlWrapper<MakerDropdown, int> ACC_Appearance_dropdown;
+        static AccessoryControlWrapper<MakerSlider, float> ACC_Appearance_state;
+        static AccessoryControlWrapper<MakerSlider, float> ACC_Appearance_state2;
+        static AccessoryControlWrapper<MakerToggle, bool> ACC_Is_Parented;
 
-        MakerTextbox ThemeText;
+        static MakerTextbox ThemeText;
 
-        MakerRadioButtons RadioToggle;
+        static MakerRadioButtons RadioToggle;
 
-        MakerButton ApplyTheme;
+        static MakerButton ApplyTheme;
+        //static MakerToggle testtoggle2;
+        static Rect _Custom_GroupsRect;
 
-        Rect _Custom_GroupsRect;
+        static private Vector2 _accessorySlotsScrollPos = Vector2.zero;
 
-        private Vector2 _accessorySlotsScrollPos = Vector2.zero;
+        static private readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
+        static private readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
 
-        private readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
-        private readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
+        static private bool ShowInterface = false;
 
-        private bool ShowInterface = false;
+        static public Dictionary<int, int> Gui_states = new Dictionary<int, int>();
 
-        public Dictionary<int, int> Gui_states = new Dictionary<int, int>();
-
-        private void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
+        public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             var owner = Settings.Instance;
             var category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 3, "Accessory Settings");
@@ -52,16 +52,16 @@ namespace Accessory_States
             var ThemeTextBox = new MakerTextbox(category, "Name: ", "", owner);
             ThemeText = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(ThemeTextBox);
 
-            var radio = new MakerRadioButtons(category, owner, "Modify", new string[] { "Add", "Remove", "Rename" })
-            {
-                Unify_AccessoryWindowControl = true
-            };
+            var radio = new MakerRadioButtons(category, owner, "Modify", new string[] { "Add", "Remove", "Rename" });
             RadioToggle = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
+            RadioToggle.ValueChanged.Subscribe(x => RadioChanged(x));
 
             var AddRemoveModifyButton = new MakerButton("Modify Group", category, owner);
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveModifyButton);
             ApplyTheme.OnClick.AddListener(delegate ()
             {
+                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
                 //List<TMP_Dropdown.OptionData> options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
                 var controlobjects = ACC_Appearance_dropdown.Control.ControlObjects.ToArray();
                 List<TMP_Dropdown.OptionData> options2 = controlobjects[ACC_Appearance_dropdown.CurrentlySelectedIndex].GetComponentInChildren<TMP_Dropdown>().options;
@@ -77,8 +77,8 @@ namespace Accessory_States
                         }
                         //options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
                         options2.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
-                        kind = 15 + ThisCharactersData.Now_ACC_Name_Dictionary.Count();
-                        ThisCharactersData.Now_ACC_Name_Dictionary[kind] = ThemeText.Value;
+                        kind = 15 + Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Count();
+                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary[kind] = ThemeText.Value;
                         break;
                     case 1:
                         if (ThemeText.Value == "None")
@@ -99,19 +99,19 @@ namespace Accessory_States
                         }
                         options2.RemoveAt(index2);
                         kind = index + 15;
-                        var removal = ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind);
+                        var removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind);
                         foreach (var item in removal)
                         {
-                            ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.Key);
+                            Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.Key);
                             ACC_Appearance_dropdown.SetValue(item.Key, 0, false);
                         }
-                        removal = ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value > kind);
+                        removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value > kind);
                         foreach (var item in removal)
                         {
-                            int Change = ThisCharactersData.Now_ACC_Binding_Dictionary[item.Key] -= 1;
+                            int Change = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[item.Key] -= 1;
                             ACC_Appearance_dropdown.SetValue(item.Key, Change, false);
                         }
-                        ThisCharactersData.Now_ACC_Name_Dictionary.Remove(kind);
+                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Remove(kind);
                         break;
                     case 2:
                         if (ACC_Appearance_dropdown.GetSelectedValue() < 9)
@@ -173,6 +173,11 @@ namespace Accessory_States
             var interfacebutton = e.AddSidebarControl(new SidebarToggle("ACC States", true, owner));
             interfacebutton.ValueChanged.Subscribe(x => ShowInterface = x);
 
+            //var testtoggle1 = new MakerToggle(category, "Unify", owner);
+            //MakerAPI.AddAccessoryWindowControl(testtoggle1).ValueChanged.Subscribe(x => { Settings.Logger.LogWarning($"Normal {testtoggle1.ControlObjects.Count()}"); });
+            //testtoggle2 = new MakerToggle(category, "unique", owner);
+            //MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(testtoggle2).ValueChanged += CharaEvent_ValueChanged;
+
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             ACC_Appearance_dropdown.Control.GroupingID = GroupingID;
             ACC_Appearance_state.Control.GroupingID = GroupingID;
@@ -183,10 +188,15 @@ namespace Accessory_States
             RadioToggle.GroupingID = GroupingID;
         }
 
-        internal void Maker_started()
+        //private static void CharaEvent_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
+        //{
+        //    { Settings.Logger.LogWarning($"unique {testtoggle2.ControlObjects.Count()}"); }
+        //}
+
+        public static void Maker_started()
         {
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            Hooks.SetClothesState += Settings_SetClothesState;
+            Hooks.SetClothesState += Maker_SetClothes;
 
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
@@ -198,10 +208,10 @@ namespace Accessory_States
             Hooks.Slot_ACC_Change += (s, e) => VisibiltyToggle();
         }
 
-        internal void Maker_Ended()
+        public static void Maker_Ended()
         {
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
-            Hooks.SetClothesState -= Settings_SetClothesState;
+            Hooks.SetClothesState -= Maker_SetClothes;
 
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
@@ -211,9 +221,17 @@ namespace Accessory_States
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
             Hooks.Slot_ACC_Change -= (s, e) => VisibiltyToggle();
+            ShowInterface = false;
         }
 
-        private void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
+        private static void Maker_SetClothes(object sender, ClothChangeEventArgs e)
+        {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            Controller.ChangedOutfit(e.clothesKind, e.state);
+            Controller.SetClothesState_switch(e.clothesKind, e.state);
+        }
+
+        private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
         {
             //ACC_Appearance_dropdown.SetValue(e.SlotIndex, 0);
             //ACC_Appearance_state.SetValue(e.SlotIndex, 0);
@@ -222,7 +240,7 @@ namespace Accessory_States
             VisibiltyToggle();
         }
 
-        private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
+        private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
             ACC_Appearance_dropdown.SetValue(e.DestinationSlotIndex, ACC_Appearance_dropdown.GetValue(e.SourceSlotIndex));
             ACC_Appearance_state.SetValue(e.DestinationSlotIndex, ACC_Appearance_state.GetValue(e.SourceSlotIndex));
@@ -231,8 +249,10 @@ namespace Accessory_States
             VisibiltyToggle();
         }
 
-        private void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
+        private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
         {
+            var ThisCharactersData = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().ThisCharactersData;
+
             var binder = ThisCharactersData.ACC_Binding_Dictionary;
             var states = ThisCharactersData.ACC_State_array;
             var parents = ThisCharactersData.ACC_Parented_Dictionary;
@@ -258,19 +278,22 @@ namespace Accessory_States
             VisibiltyToggle();
         }
 
-        private void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
+        private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
-            StartCoroutine(WaitForSlots());
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            Controller.StartCoroutine(Controller.WaitForSlots());
             VisibiltyToggle();
         }
 
-        private void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
+        private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
         {
-            StartCoroutine(Wait());
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
+            Controller.StartCoroutine(Wait());
             IEnumerator Wait()
             {
                 yield return null;
-                Update_More_Accessories();
+                Controller.Update_More_Accessories();
             }
         }
 
@@ -299,15 +322,16 @@ namespace Accessory_States
             Custom_Groups(kind, state);
         }
 
-        private void ACC_Is_Parented_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
+        private static void ACC_Is_Parented_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
         {
             List<TMP_Dropdown.OptionData> options = ACC_Appearance_dropdown.Control.ControlObjects.ElementAt(e.SlotIndex).GetComponentInChildren<TMP_Dropdown>().options;
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
             if (e.NewValue)
             {
-                var Changed_Option = new TMP_Dropdown.OptionData(Accessorys_Parts[e.SlotIndex].parentKey);
+                var Changed_Option = new TMP_Dropdown.OptionData(Controller.Accessorys_Parts[e.SlotIndex].parentKey);
 
-                ThisCharactersData.Now_Parented_Dictionary[e.SlotIndex] = true;
+                Controller.ThisCharactersData.Now_Parented_Dictionary[e.SlotIndex] = true;
                 if (!options.Any(x => x.text == Changed_Option.text))
                 {
                     options.Add(Changed_Option);
@@ -315,23 +339,25 @@ namespace Accessory_States
             }
             else
             {
-                var Dict = ThisCharactersData.Now_Parented_Name_Dictionary;
+                var Dict = Controller.ThisCharactersData.Now_Parented_Name_Dictionary;
 
                 Dict.TryGetValue(e.SlotIndex, out var name);
                 if (Dict.Where(x => x.Value == name).Count() == 1)
                 {
                     options.RemoveAll(x => x.text == name);
                 }
-                ThisCharactersData.Now_Parented_Dictionary.Remove(e.SlotIndex);
+                Controller.ThisCharactersData.Now_Parented_Dictionary.Remove(e.SlotIndex);
             }
-            ThisCharactersData.Update_Parented_Name();
+            Controller.ThisCharactersData.Update_Parented_Name();
         }
 
-        private void ACC_Appearance_state_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<float> e)
+        private static void ACC_Appearance_state_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<float> e)
         {
-            if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(e.SlotIndex, out int[] data))
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
+            if (!Controller.ThisCharactersData.Now_ACC_State_array.TryGetValue(e.SlotIndex, out int[] data))
             {
-                ThisCharactersData.Now_ACC_State_array.Add(e.SlotIndex, new int[] { Mathf.RoundToInt(e.NewValue), 3 });
+                Controller.ThisCharactersData.Now_ACC_State_array.Add(e.SlotIndex, new int[] { Mathf.RoundToInt(e.NewValue), 3 });
             }
             else
             {
@@ -339,12 +365,13 @@ namespace Accessory_States
             }
         }
 
-        private void ACC_Appearance_state2_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<float> e)
+        private static void ACC_Appearance_state2_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<float> e)
         {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
-            if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(e.SlotIndex, out int[] data))
+            if (!Controller.ThisCharactersData.Now_ACC_State_array.TryGetValue(e.SlotIndex, out int[] data))
             {
-                ThisCharactersData.Now_ACC_State_array.Add(e.SlotIndex, new int[] { 0, Mathf.RoundToInt(e.NewValue) });
+                Controller.ThisCharactersData.Now_ACC_State_array.Add(e.SlotIndex, new int[] { 0, Mathf.RoundToInt(e.NewValue) });
             }
             else
             {
@@ -354,7 +381,7 @@ namespace Accessory_States
             var slider2 = ACC_Appearance_state2.Control.ControlObjects.ToArray()[e.SlotIndex].GetComponentInChildren<Slider>();
             if (ACC_Appearance_dropdown.GetValue(e.SlotIndex) > 8)
             {
-                Update_Custom_GUI();
+                Controller.Update_Custom_GUI();
                 if (Mathf.RoundToInt(slider2.value) == Mathf.RoundToInt(slider2.maxValue))
                 {
                     slider.maxValue += 1;
@@ -363,24 +390,25 @@ namespace Accessory_States
             }
         }
 
-        private void ACC_Appearance_dropdown_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<int> e)
+        private static void ACC_Appearance_dropdown_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<int> e)
         {
             //{ "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
             //Settings.Logger.LogWarning($"Dropdown slot {e.SlotIndex}, value {e.NewValue}");
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
             if (e.NewValue < 9)
             {
-                ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue;
+                Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue;
             }
             else
             {
-                ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue + 6;
+                Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue + 6;
             }
 
             if (e.NewValue == 0)
             {
-                ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(e.SlotIndex);
-                ThisCharactersData.Now_ACC_State_array.Remove(e.SlotIndex);
+                Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(e.SlotIndex);
+                Controller.ThisCharactersData.Now_ACC_State_array.Remove(e.SlotIndex);
             }
             else if (e.NewValue < 5)
             {
@@ -459,9 +487,10 @@ namespace Accessory_States
             {
                 yield break;
             }
+            Update_More_Accessories();
             int ACCData = Accessorys_Parts.Count();
 
-            while (ACC_Appearance_state.Control.ControlObjects.Count() < ACCData)
+            while (ACC_Is_Parented.Control.ControlObjects.Count() < ACCData)
             {
                 yield return null;
             }
@@ -473,7 +502,7 @@ namespace Accessory_States
 
             var ACCAPPS1 = ACC_Appearance_state.Control.ControlObjects;
             var ACCAPPS2 = ACC_Appearance_state2.Control.ControlObjects;
-            for (int i = 0, n = ACCAPPS1.Count(); i < n; i++)
+            for (int i = 0; i < ACCData; i++)
             {
                 if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(i, out var states))
                 {
@@ -498,7 +527,7 @@ namespace Accessory_States
             VisibiltyToggle();
         }
 
-        private void VisibiltyToggle()
+        private static void VisibiltyToggle()
         {
             if (!MakerAPI.InsideMaker)
                 return;
@@ -527,11 +556,13 @@ namespace Accessory_States
                 var slider2 = ACC_Appearance_state2.Control.ControlObjects.ToArray()[Slot].GetComponentInChildren<Slider>();
                 if (ACC_Appearance_dropdown.GetValue(Slot) > 8)
                 {
+                    var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
                     var Max = 1;
-                    ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(Slot, out int Kind);
-                    foreach (var item in ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == Kind))
+                    Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(Slot, out int Kind);
+                    foreach (var item in Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == Kind))
                     {
-                        if (ThisCharactersData.Now_ACC_State_array.TryGetValue(item.Key, out var states))
+                        if (Controller.ThisCharactersData.Now_ACC_State_array.TryGetValue(item.Key, out var states))
                         {
                             Max = Math.Max(Max, states[1]);
                         }
@@ -542,7 +573,7 @@ namespace Accessory_States
             }
         }
 
-        private void SetupInterface()
+        private static void SetupInterface()
         {
             float Height = 50f + Screen.height / 2;
             float Margin = 5f;
@@ -625,8 +656,10 @@ namespace Accessory_States
 
         }
 
-        private void DrawParentButton(string Parent)
+        private static void DrawParentButton(string Parent)
         {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
             if (!GUI_Parent_Dict.TryGetValue(Parent, out bool isOn))
             {
                 isOn = true;
@@ -634,10 +667,22 @@ namespace Accessory_States
             if (GUILayout.Button($"{Parent}: {(isOn ? "On" : "Off")}"))
             {
                 isOn = !isOn;
-                Parent_toggle(Parent, isOn);
+                Controller.Parent_toggle(Parent, isOn);
             }
             GUILayout.Space(-5);
             GUI_Parent_Dict[Parent] = isOn;
+        }
+
+        private static void RadioChanged(int toggle)
+        {
+            foreach (var item in RadioToggle.ControlObjects)
+            {
+                var toggles = item.GetComponentsInChildren<Toggle>();
+                for (int i = 0; i < 3; i++)
+                {
+                    toggles[i].isOn = toggle == i;
+                }
+            }
         }
     }
 }

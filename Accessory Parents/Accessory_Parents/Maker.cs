@@ -16,21 +16,21 @@ namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        MakerDropdown Parent_DropDown;
+        static MakerDropdown Parent_DropDown;
 
-        MakerText ParentText;
-        MakerText ChildText;
+        static MakerText ParentText;
+        static MakerText ChildText;
 
-        MakerTextbox textbox;
+        static MakerTextbox textbox;
 
-        MakerRadioButtons radio;
+        static MakerRadioButtons radio;
 
-        MakerButton Modify_Button;
-        MakerButton Replace_Button;
-        MakerButton Save_Relative_Button;
-        MakerButton Child_Button;
+        static MakerButton Modify_Button;
+        static MakerButton Replace_Button;
+        static MakerButton Save_Relative_Button;
+        static MakerButton Child_Button;
 
-        private void MakerAPI_MakerExiting(object sender, EventArgs e)
+        public static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
             AccessoriesApi.AccessoriesCopied -= (s, es) => VisibiltyToggle();
             AccessoriesApi.AccessoryTransferred -= (s, es) => VisibiltyToggle();
@@ -47,7 +47,7 @@ namespace Accessory_Parents
             Hooks.ACC_Scale_Change -= Hooks_ACC_Scale_Change;
         }
 
-        private void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
+        public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
             AccessoriesApi.AccessoriesCopied += (s, es) => VisibiltyToggle();
             AccessoriesApi.AccessoryTransferred += (s, es) => VisibiltyToggle();
@@ -64,7 +64,7 @@ namespace Accessory_Parents
             Hooks.ACC_Scale_Change += Hooks_ACC_Scale_Change;
         }
 
-        private void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
+        public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             var owner = Settings.Instance;
             var category = new MakerCategory("", "");
@@ -77,43 +77,45 @@ namespace Accessory_Parents
 
             textbox = MakerAPI.AddAccessoryWindowControl<MakerTextbox>(new MakerTextbox(category, "Name", "", owner));
 
-            radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" }) { Unify_AccessoryWindowControl = true };
-            MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
+            radio = new MakerRadioButtons(category, owner, "Modify", 0, new string[] { "Add", "Remove", "Rename" });
+            MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio).ValueChanged.Subscribe(x => RadioChanged(x));
 
             Modify_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Modify Parent", category, owner));
             Modify_Button.OnClick.AddListener(delegate ()
             {
-                Modify_Dropdown();
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Modify_Dropdown();
             });
             Replace_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Replace Parent", category, owner));
             Replace_Button.OnClick.AddListener(delegate ()
                 {
+                    CharaEvent controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+                    var CoordinateNum = controller.CoordinateNum;
                     if (Dropdown.Value == 0)
                     {
                         return;
                     }
                     var options = Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
                     var Slot = AccessoriesApi.SelectedMakerAccSlot;
-                    var Replace = Custom_Names[CoordinateNum][options[Dropdown.Value].text];
-                    var update = Child[CoordinateNum].Where(x => x.Value == Replace).ToArray();
+                    var Replace = controller.Custom_Names[CoordinateNum][options[Dropdown.Value].text];
+                    var update = controller.Child[CoordinateNum].Where(x => x.Value == Replace).ToArray();
                     foreach (var item in update)
                     {
-                        Child[CoordinateNum][item.Key] = Slot;
+                        controller.Child[CoordinateNum][item.Key] = Slot;
                     }
-                    Child[CoordinateNum].Remove(Slot);
-                    Custom_Names[CoordinateNum][options[Dropdown.Value].text] = Slot;
-                    Update_Parenting();
+                    controller.Child[CoordinateNum].Remove(Slot);
+                    controller.Custom_Names[CoordinateNum][options[Dropdown.Value].text] = Slot;
+                    controller.Update_Parenting();
                     VisibiltyToggle();
                 });
             Child_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Make Child", category, owner));
             Child_Button.OnClick.AddListener(delegate ()
             {
-                MakeChild();
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MakeChild();
             });
             Save_Relative_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Save Position", category, owner));
             Save_Relative_Button.OnClick.AddListener(delegate ()
             {
-                Save_Relative_data(AccessoriesApi.SelectedMakerAccSlot);
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Save_Relative_data(AccessoriesApi.SelectedMakerAccSlot);
             });
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
@@ -128,56 +130,49 @@ namespace Accessory_Parents
             ChildText.GroupingID = GroupingID;
         }
 
-        private void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
+        public static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
-            Update_DropBox();
+            MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Update_DropBox();
         }
 
-        private void AccessoriesApi_SelectedMakerAccSlotChanged(object sender, AccessorySlotEventArgs e)
+        private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
         {
-            StartCoroutine(Wait());
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            Controller.StartCoroutine(Wait());
             IEnumerator Wait()
             {
                 yield return null;
-                Update_More_Accessories();
+                Controller.Update_More_Accessories();
                 VisibiltyToggle();
             }
         }
 
-        private void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
-        {
-            StartCoroutine(Wait());
-            IEnumerator Wait()
-            {
-                yield return null;
-                Update_More_Accessories();
-                VisibiltyToggle();
-            }
-        }
-
-        private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
+        private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
             VisibiltyToggle();
         }
 
-        private void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
+        private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
         {
-            if (Child[CoordinateNum].TryGetValue(e.SlotIndex, out var ParentKey))
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var CoordinateNum = Controller.CoordinateNum;
+            if (Controller.Child[CoordinateNum].TryGetValue(e.SlotIndex, out var ParentKey))
             {
-                Keep_Last_Data(e.SlotIndex, ParentKey);
+                Controller.Keep_Last_Data(e.SlotIndex, ParentKey);
             }
-            else if (Old_Parent[CoordinateNum].ContainsKey(e.SlotIndex) && Relative_Data[CoordinateNum].ContainsKey(e.SlotIndex))
+            else if (Controller.Old_Parent[CoordinateNum].ContainsKey(e.SlotIndex) && Controller.Relative_Data[CoordinateNum].ContainsKey(e.SlotIndex))
             {
+
                 //foreach (var item in Old_Parent[CoordinateNum])
                 //{
                 //    Logger.LogWarning($"Kind Changed Slot {item.Key} has parent {item.Value}");
                 //}
-                Keep_Last_Data(e.SlotIndex);
+                Controller.Keep_Last_Data(e.SlotIndex);
             }
             VisibiltyToggle();
         }
 
-        private void VisibiltyToggle()
+        private static void VisibiltyToggle()
         {
             if (!MakerAPI.InsideMaker)
                 return;
@@ -206,12 +201,16 @@ namespace Accessory_Parents
                 Child_Button.Visible.OnNext(true);
                 Save_Relative_Button.Visible.OnNext(true);
                 ChildText.Visible.OnNext(true);
-                Update_Text(AccessoriesApi.SelectedMakerAccSlot);
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Update_Text(AccessoriesApi.SelectedMakerAccSlot);
             }
         }
 
         private void Update_Text(int slot)
         {
+            if (ParentText.ControlObjects.Count() <= slot)
+            {
+                return;
+            }
             string output = "Slot " + (slot + 1).ToString();
             var find = Custom_Names[CoordinateNum].Where(x => x.Value == slot).ToArray();
             if (find.Length > 0)
@@ -250,402 +249,405 @@ namespace Accessory_Parents
             ChildText.ControlObjects.ElementAt(slot).GetComponentInChildren<TextMeshProUGUI>().text = output2;
         }
 
-        private void Hooks_ACC_Scale_Change(object sender, Acc_modifier_Event_ARG e)
+        private static void Hooks_ACC_Scale_Change(object sender, Acc_modifier_Event_ARG e)
         {
             if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
             {
                 return;
             }
-            if (e.Character == ChaControl)
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var CoordinateNum = Controller.CoordinateNum;
+            if (!e.Add && e.Value == 1f && Controller.Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
             {
-                if (!e.Add && e.Value == 1f && Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
+                float Value;
+                if (Controller.Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
                 {
-                    float Value;
-                    if (Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
+                    if (e.Flags == 1)
                     {
-                        if (e.Flags == 1)
-                        {
-                            Value = vectors[0, 2].x;
-                        }
-                        else if (e.Flags == 2)
-                        {
-                            Value = vectors[0, 2].y;
-                        }
-                        else if (e.Flags == 4)
-                        {
-                            Value = vectors[0, 2].z;
-                        }
-                        else
-                        {
-                            Value = 1f;
-                        }
+                        Value = vectors[0, 2].x;
+                    }
+                    else if (e.Flags == 2)
+                    {
+                        Value = vectors[0, 2].y;
+                    }
+                    else if (e.Flags == 4)
+                    {
+                        Value = vectors[0, 2].z;
                     }
                     else
                     {
                         Value = 1f;
                     }
-                    if (Value != 1f)
+                }
+                else
+                {
+                    Value = 1f;
+                }
+                if (Value != 1f)
+                {
+                    Controller.ChaControl.SetAccessoryScl(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
+                    return;
+                }
+            }
+
+            if (Controller.Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+            {
+                if (e.Add)
+                {
+                    foreach (var item in parentList)
                     {
-                        ChaControl.SetAccessoryScl(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
-                        return;
+                        Controller.ChaControl.SetAccessoryScl(item, e.CorrectNo, e.Value, e.Add, e.Flags);
                     }
                 }
-
-                if (Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+                else
                 {
-                    if (e.Add)
+                    foreach (var item in parentList)
                     {
-                        foreach (var item in parentList)
+                        float Value;
+                        if (Controller.Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
                         {
-                            ChaControl.SetAccessoryScl(item, e.CorrectNo, e.Value, e.Add, e.Flags);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var item in parentList)
-                        {
-                            float Value;
-                            if (Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                            if (e.Flags == 1)
                             {
-                                if (e.Flags == 1)
-                                {
-                                    Value = vectors[0, 2].x;
-                                }
-                                else if (e.Flags == 2)
-                                {
-                                    Value = vectors[0, 2].y;
-                                }
-                                else if (e.Flags == 4)
-                                {
-                                    Value = vectors[0, 2].z;
-                                }
-                                else
-                                {
-                                    Value = 1;
-                                }
+                                Value = vectors[0, 2].x;
+                            }
+                            else if (e.Flags == 2)
+                            {
+                                Value = vectors[0, 2].y;
+                            }
+                            else if (e.Flags == 4)
+                            {
+                                Value = vectors[0, 2].z;
                             }
                             else
                             {
                                 Value = 1;
                             }
-                            ChaControl.SetAccessoryScl(item, e.CorrectNo, Value, e.Add, e.Flags);
                         }
+                        else
+                        {
+                            Value = 1;
+                        }
+                        Controller.ChaControl.SetAccessoryScl(item, e.CorrectNo, Value, e.Add, e.Flags);
                     }
                 }
+
             }
         }
 
-        private void Hooks_ACC_Rotation_Change(object sender, Acc_modifier_Event_ARG e)
+        private static void Hooks_ACC_Rotation_Change(object sender, Acc_modifier_Event_ARG e)
         {
             if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
             {
                 return;
             }
-            if (e.Character == ChaControl)
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var CoordinateNum = Controller.CoordinateNum;
+
+            if (!e.Add && e.Value == 0 && Controller.Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
             {
-
-                if (!e.Add && e.Value == 0 && Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
+                float Value;
+                if (Controller.Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
                 {
-                    float Value;
-                    if (Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
-                    {
-                        if (e.Flags == 1)
-                        {
-                            Value = vectors[0, 1].x;
-                        }
-                        else if (e.Flags == 2)
-                        {
-                            Value = vectors[0, 1].y;
-                        }
-                        else if (e.Flags == 4)
-                        {
-                            Value = vectors[0, 1].z;
-                        }
-                        else
-                        {
-                            Value = 0f;
-                        }
-                    }
-                    else
-                    {
-                        Value = 0f;
-                    }
-                    if (Value != 0f)
-                    {
-                        ChaControl.SetAccessoryRot(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
-                        return;
-                    }
-                }
-
-                if (Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
-                {
-                    Vector3 Rot = Vector3.zero;
-
                     if (e.Flags == 1)
                     {
-                        Rot.x = e.Value;
+                        Value = vectors[0, 1].x;
                     }
                     else if (e.Flags == 2)
                     {
-                        Rot.y = e.Value;
+                        Value = vectors[0, 1].y;
                     }
                     else if (e.Flags == 4)
                     {
-                        Rot.z = e.Value;
-                    }
-
-                    Vector3[,] store;
-                    if (e.SlotNo < 20)
-                    {
-                        store = ChaControl.nowCoordinate.accessory.parts[e.SlotNo].addMove;
-                    }
-                    else
-                    {
-                        store = Accessorys_Parts[e.SlotNo - 20].addMove;
-                    }
-                    Vector3 original_pos;
-                    original_pos = new Vector3(store[0, 0].x, store[0, 0].y, store[0, 0].z);
-
-                    if (e.Add)
-                    {
-                        Vector3 New_pos;
-                        foreach (var item in parentList)
-                        {
-                            Vector3[,] store2;
-                            ChaControl.SetAccessoryRot(item, e.CorrectNo, e.Value, e.Add, e.Flags);
-                            if (item < 20)
-                            {
-                                store2 = ChaControl.nowCoordinate.accessory.parts[item].addMove;
-                            }
-                            else
-                            {
-                                store2 = Accessorys_Parts[item - 20].addMove;
-                            }
-                            New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-                            //Logger.LogWarning($"Old X: {New_pos.x}, Old Y: {New_pos.y}, Old Z: {New_pos.z}");
-                            New_pos = Quaternion.Euler(Rot) * New_pos;
-                            New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-                            //Logger.LogWarning($"New X: {New_pos.x}, New Y: {New_pos.y}, New Z: {New_pos.z}");
-                            for (int i = 0; i < 3; i++)
-                            {
-                                int flag;
-                                switch (i)
-                                {
-                                    case 0:
-                                        flag = 1;
-                                        break;
-                                    case 1:
-                                        flag = 2;
-                                        break;
-                                    default:
-                                        flag = 4;
-                                        break;
-                                }
-                                ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
-                            }
-                            if (item < 20)
-                            {
-                                ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //Vector3 New_pos;
-                        float Value;
-                        foreach (var item in parentList)
-                        {
-                            //Vector3 Rot2 = Vector3.zero;
-                            Vector3[,] store2;
-                            if (item < 20)
-                            {
-                                store2 = ChaControl.nowCoordinate.accessory.parts[item].addMove;
-                            }
-                            else
-                            {
-                                store2 = Accessorys_Parts[item - 20].addMove;
-                            }
-
-                            if (Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
-                            {
-                                if (e.Flags == 1)
-                                {
-                                    Value = vectors[0, 1].x;
-                                    //Rot2.x = vectors[0, 1].x - store2[e.CorrectNo, 1].x;
-                                }
-                                else if (e.Flags == 2)
-                                {
-                                    Value = vectors[0, 1].y;
-
-                                    //Rot2.y = vectors[0, 1].y - store2[e.CorrectNo, 1].y;
-                                }
-                                else if (e.Flags == 4)
-                                {
-                                    Value = vectors[0, 1].z;
-                                    //Rot2.z = vectors[0, 1].z - store2[e.CorrectNo, 1].z;
-                                }
-                                else
-                                {
-                                    Value = 0;
-                                }
-                            }
-                            else
-                            {
-                                Value = 0;
-                            }
-                            ChaControl.SetAccessoryRot(item, e.CorrectNo, Value, e.Add, e.Flags);
-
-                            //New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-                            //New_pos = Quaternion.Euler(Rot2) * New_pos;
-                            //New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
-
-                            //for (int i = 0; i < 3; i++)
-                            //{
-                            //    int flag;
-                            //    switch (i)
-                            //    {
-                            //        case 0:
-                            //            flag = 1;
-                            //            break;
-                            //        case 1:
-                            //            flag = 2;
-                            //            break;
-                            //        default:
-                            //            flag = 4;
-                            //            break;
-                            //    }
-                            //    ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
-                            //}
-
-
-                            if (item < 20)
-                            {
-                                ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void Hooks_ACC_Position_Change(object sender, Acc_modifier_Event_ARG e)
-        {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
-            {
-                return;
-            }
-
-            if (e.Character == ChaControl)
-            {
-                if (!e.Add && e.Value == 0 && Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
-                {
-                    float Value;
-                    if (Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
-                    {
-                        if (e.Flags == 1)
-                        {
-                            Value = vectors[0, 0].x;
-                        }
-                        else if (e.Flags == 2)
-                        {
-                            Value = vectors[0, 0].y;
-                        }
-                        else if (e.Flags == 4)
-                        {
-                            Value = vectors[0, 0].z;
-                        }
-                        else
-                        {
-                            Value = 0f;
-                        }
+                        Value = vectors[0, 1].z;
                     }
                     else
                     {
                         Value = 0f;
                     }
-                    if (Value != 0f)
-                    {
-                        ChaControl.SetAccessoryPos(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
-                        return;
-                    }
+                }
+                else
+                {
+                    Value = 0f;
+                }
+                if (Value != 0f)
+                {
+                    Controller.ChaControl.SetAccessoryRot(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
+                    return;
+                }
+            }
+
+            if (Controller.Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+            {
+                Vector3 Rot = Vector3.zero;
+
+                if (e.Flags == 1)
+                {
+                    Rot.x = e.Value;
+                }
+                else if (e.Flags == 2)
+                {
+                    Rot.y = e.Value;
+                }
+                else if (e.Flags == 4)
+                {
+                    Rot.z = e.Value;
                 }
 
-                if (Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+                Vector3[,] store;
+                if (e.SlotNo < 20)
                 {
-                    if (e.Add)
+                    store = Controller.ChaControl.nowCoordinate.accessory.parts[e.SlotNo].addMove;
+                }
+                else
+                {
+                    store = Controller.Accessorys_Parts[e.SlotNo - 20].addMove;
+                }
+                Vector3 original_pos;
+                original_pos = new Vector3(store[0, 0].x, store[0, 0].y, store[0, 0].z);
+
+                if (e.Add)
+                {
+                    Vector3 New_pos;
+                    foreach (var item in parentList)
                     {
-                        foreach (var item in parentList)
+                        Vector3[,] store2;
+                        Controller.ChaControl.SetAccessoryRot(item, e.CorrectNo, e.Value, e.Add, e.Flags);
+                        if (item < 20)
                         {
-                            ChaControl.SetAccessoryPos(item, e.CorrectNo, e.Value, e.Add, e.Flags);
-                            if (item < 20)
+                            store2 = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                        }
+                        else
+                        {
+                            store2 = Controller.Accessorys_Parts[item - 20].addMove;
+                        }
+                        New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
+                        //Logger.LogWarning($"Old X: {New_pos.x}, Old Y: {New_pos.y}, Old Z: {New_pos.z}");
+                        New_pos = Quaternion.Euler(Rot) * New_pos;
+                        New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
+                        //Logger.LogWarning($"New X: {New_pos.x}, New Y: {New_pos.y}, New Z: {New_pos.z}");
+                        for (int i = 0; i < 3; i++)
+                        {
+                            int flag;
+                            switch (i)
                             {
-                                ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                                case 0:
+                                    flag = 1;
+                                    break;
+                                case 1:
+                                    flag = 2;
+                                    break;
+                                default:
+                                    flag = 4;
+                                    break;
                             }
+                            Controller.ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
+                        }
+                        if (item < 20)
+                        {
+                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
-                    else
+                }
+                else
+                {
+                    //Vector3 New_pos;
+                    float Value;
+                    foreach (var item in parentList)
                     {
-                        float Value;
-                        foreach (var item in parentList)
+                        //Vector3 Rot2 = Vector3.zero;
+                        Vector3[,] store2;
+                        if (item < 20)
                         {
-                            if (Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                            store2 = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                        }
+                        else
+                        {
+                            store2 = Controller.Accessorys_Parts[item - 20].addMove;
+                        }
+
+                        if (Controller.Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                        {
+                            if (e.Flags == 1)
                             {
-                                if (e.Flags == 1)
-                                {
-                                    Value = vectors[0, 0].x;
-                                }
-                                else if (e.Flags == 2)
-                                {
-                                    Value = vectors[0, 0].y;
-                                }
-                                else if (e.Flags == 4)
-                                {
-                                    Value = vectors[0, 0].z;
-                                }
-                                else
-                                {
-                                    Value = 0;
-                                }
+                                Value = vectors[0, 1].x;
+                                //Rot2.x = vectors[0, 1].x - store2[e.CorrectNo, 1].x;
+                            }
+                            else if (e.Flags == 2)
+                            {
+                                Value = vectors[0, 1].y;
+
+                                //Rot2.y = vectors[0, 1].y - store2[e.CorrectNo, 1].y;
+                            }
+                            else if (e.Flags == 4)
+                            {
+                                Value = vectors[0, 1].z;
+                                //Rot2.z = vectors[0, 1].z - store2[e.CorrectNo, 1].z;
                             }
                             else
                             {
                                 Value = 0;
                             }
-                            ChaControl.SetAccessoryPos(item, e.CorrectNo, Value, false, e.Flags);
-                            if (item < 20)
-                            {
-                                ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
-                            }
+                        }
+                        else
+                        {
+                            Value = 0;
+                        }
+                        Controller.ChaControl.SetAccessoryRot(item, e.CorrectNo, Value, e.Add, e.Flags);
+
+                        //New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
+                        //New_pos = Quaternion.Euler(Rot2) * New_pos;
+                        //New_pos -= new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
+
+                        //for (int i = 0; i < 3; i++)
+                        //{
+                        //    int flag;
+                        //    switch (i)
+                        //    {
+                        //        case 0:
+                        //            flag = 1;
+                        //            break;
+                        //        case 1:
+                        //            flag = 2;
+                        //            break;
+                        //        default:
+                        //            flag = 4;
+                        //            break;
+                        //    }
+                        //    ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
+                        //}
+
+
+                        if (item < 20)
+                        {
+                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
+                }
+
+            }
+        }
+
+        private static void Hooks_ACC_Position_Change(object sender, Acc_modifier_Event_ARG e)
+        {
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            {
+                return;
+            }
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var CoordinateNum = Controller.CoordinateNum;
+
+            if (!e.Add && e.Value == 0 && Controller.Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
+            {
+                float Value;
+                if (Controller.Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
+                {
+                    if (e.Flags == 1)
+                    {
+                        Value = vectors[0, 0].x;
+                    }
+                    else if (e.Flags == 2)
+                    {
+                        Value = vectors[0, 0].y;
+                    }
+                    else if (e.Flags == 4)
+                    {
+                        Value = vectors[0, 0].z;
+                    }
+                    else
+                    {
+                        Value = 0f;
+                    }
+                }
+                else
+                {
+                    Value = 0f;
+                }
+                if (Value != 0f)
+                {
+                    Controller.ChaControl.SetAccessoryPos(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
+                    return;
+                }
+            }
+
+            if (Controller.Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+            {
+                if (e.Add)
+                {
+                    foreach (var item in parentList)
+                    {
+                        Controller.ChaControl.SetAccessoryPos(item, e.CorrectNo, e.Value, e.Add, e.Flags);
+                        if (item < 20)
+                        {
+                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                        }
+                    }
+                }
+                else
+                {
+                    float Value;
+                    foreach (var item in parentList)
+                    {
+                        if (Controller.Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                        {
+                            if (e.Flags == 1)
+                            {
+                                Value = vectors[0, 0].x;
+                            }
+                            else if (e.Flags == 2)
+                            {
+                                Value = vectors[0, 0].y;
+                            }
+                            else if (e.Flags == 4)
+                            {
+                                Value = vectors[0, 0].z;
+                            }
+                            else
+                            {
+                                Value = 0;
+                            }
+                        }
+                        else
+                        {
+                            Value = 0;
+                        }
+                        Controller.ChaControl.SetAccessoryPos(item, e.CorrectNo, Value, false, e.Flags);
+                        if (item < 20)
+                        {
+                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                        }
+                    }
+
                 }
             }
         }
 
-        private void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
         {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var CoordinateNum = Controller.CoordinateNum;
+
             if (e.Type == 120)
             {
-                Child[CoordinateNum].Remove(e.SlotNo);
-                var test = Custom_Names[CoordinateNum].Where(x => x.Value == e.SlotNo).ToArray();
+                Controller.Child[CoordinateNum].Remove(e.SlotNo);
+                var test = Controller.Custom_Names[CoordinateNum].Where(x => x.Value == e.SlotNo).ToArray();
                 for (int i = 0; i < test.Length; i++)
                 {
-                    Custom_Names[CoordinateNum].Remove(test[i].Key);
+                    Controller.Custom_Names[CoordinateNum].Remove(test[i].Key);
                 }
-                Relative_Data[CoordinateNum].Remove(e.SlotNo);
+                Controller.Relative_Data[CoordinateNum].Remove(e.SlotNo);
                 Parent_DropDown.SetValue(0);
-                Update_Parenting();
-                Update_DropBox();
+                Controller.Update_Parenting();
+                Controller.Update_DropBox();
             }
             else
             {
-                if (Child[CoordinateNum].TryGetValue(e.SlotNo, out var ParentKey))
+                if (Controller.Child[CoordinateNum].TryGetValue(e.SlotNo, out var ParentKey))
                 {
-                    Keep_Last_Data(e.SlotNo, ParentKey);
+                    Controller.Keep_Last_Data(e.SlotNo, ParentKey);
                 }
-                else if (Old_Parent[CoordinateNum].ContainsKey(e.SlotNo) && Relative_Data[CoordinateNum].ContainsKey(e.SlotNo))
+                else if (Controller.Old_Parent[CoordinateNum].ContainsKey(e.SlotNo) && Controller.Relative_Data[CoordinateNum].ContainsKey(e.SlotNo))
                 {
-                    Keep_Last_Data(e.SlotNo);
+                    Controller.Keep_Last_Data(e.SlotNo);
                 }
             }
             VisibiltyToggle();
@@ -1013,6 +1015,18 @@ namespace Accessory_Parents
                 }
             }
             base.Update();
+        }
+
+        private static void RadioChanged(int toggle)
+        {
+            foreach (var item in radio.ControlObjects)
+            {
+                var toggles = item.GetComponentsInChildren<Toggle>();
+                for (int i = 0; i < 3; i++)
+                {
+                    toggles[i].isOn = toggle == i;
+                }
+            }
         }
     }
 }

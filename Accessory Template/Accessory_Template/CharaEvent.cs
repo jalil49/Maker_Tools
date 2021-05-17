@@ -25,20 +25,9 @@ namespace Template_Accessories
             for (int i = 0; i < Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length; i++)
             {
             }
-            MakerAPI.MakerStartedLoading += MakerAPI_MakerStartedLoading;
-            MakerAPI.MakerExiting += MakerAPI_MakerExiting;
-            MakerAPI.RegisterCustomSubCategories += MakerAPI_RegisterCustomSubCategories;
             Logger = Settings.Logger;
         }
 
-        protected override void OnDestroy()
-        {
-            MakerAPI.MakerStartedLoading -= MakerAPI_MakerStartedLoading;
-            MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
-            MakerAPI.RegisterCustomSubCategories -= MakerAPI_RegisterCustomSubCategories;
-
-            base.OnDestroy();
-        }
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {

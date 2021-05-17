@@ -1,9 +1,7 @@
-﻿using BepInEx.Logging;
-using ExtensibleSaveFormat;
+﻿using ExtensibleSaveFormat;
 using HarmonyLib;
 using KKAPI;
 using KKAPI.Chara;
-using KKAPI.Maker;
 using MessagePack;
 using MoreAccessoriesKOI;
 using System;
@@ -17,13 +15,13 @@ namespace Accessory_Parents
     public partial class CharaEvent : CharaCustomFunctionController
     {
         private Dictionary<int, List<int>>[] Bindings = new Dictionary<int, List<int>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Dictionary<int, int>[] Child = new Dictionary<int, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        private readonly Dictionary<int, int>[] Child = new Dictionary<int, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private Dictionary<string, int>[] Custom_Names = new Dictionary<string, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Dictionary<int, string>[] Old_Parent = new Dictionary<int, string>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        private readonly Dictionary<int, string>[] Old_Parent = new Dictionary<int, string>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private Dictionary<int, Vector3[,]>[] Relative_Data = new Dictionary<int, Vector3[,]>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private int CoordinateNum = 0;
         public List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
-        readonly ManualLogSource Logger;
+        //readonly ManualLogSource Logger;
 
         public CharaEvent()
         {
@@ -35,18 +33,7 @@ namespace Accessory_Parents
                 Child[i] = new Dictionary<int, int>();
                 Old_Parent[i] = new Dictionary<int, string>();
             }
-            MakerAPI.MakerStartedLoading += MakerAPI_MakerStartedLoading;
-            MakerAPI.MakerExiting += MakerAPI_MakerExiting;
-            MakerAPI.RegisterCustomSubCategories += MakerAPI_RegisterCustomSubCategories;
-            Logger = Settings.Logger;
-        }
-
-        protected override void OnDestroy()
-        {
-            MakerAPI.MakerStartedLoading -= MakerAPI_MakerStartedLoading;
-            MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
-            MakerAPI.RegisterCustomSubCategories -= MakerAPI_RegisterCustomSubCategories;
-            base.OnDestroy();
+            //Logger = Settings.Logger;
         }
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)

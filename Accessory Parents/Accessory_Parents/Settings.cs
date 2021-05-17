@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using KKAPI.Chara;
+using KKAPI.Maker;
 using KKAPI.Studio;
 
 namespace Accessory_Parents
@@ -27,6 +28,10 @@ namespace Accessory_Parents
             Hooks.Init();
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "1", "Requires restarting maker");
+            MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
+            MakerAPI.MakerExiting += CharaEvent.MakerAPI_MakerExiting;
+            MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
+            MakerAPI.ReloadCustomInterface += CharaEvent.MakerAPI_ReloadCustomInterface;
         }
     }
 }

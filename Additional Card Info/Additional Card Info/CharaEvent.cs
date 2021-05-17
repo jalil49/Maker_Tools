@@ -1,12 +1,10 @@
 ﻿using ExtensibleSaveFormat;
 using KKAPI;
 using KKAPI.Chara;
-using KKAPI.Maker;
 using MessagePack;
 using System;
 using System.Collections.Generic;
 using UniRx;
-using UnityEngine;
 
 namespace Additional_Card_Info
 {
@@ -34,15 +32,14 @@ namespace Additional_Card_Info
         private string[] SetNames = new string[Constants.CoordinateLength];
         private string[] SubSetNames = new string[Constants.CoordinateLength];
 
+        private int[] GenderType = new int[Constants.CoordinateLength];
+
         private int CoordinateNum = 0;
 
         private bool Character_Cosplay_Ready = false;
 
         public CharaEvent()
         {
-            MakerAPI.MakerStartedLoading += MakerAPI_MakerStartedLoading;
-            MakerAPI.RegisterCustomSubCategories += RegisterCustomSubCategories;
-
             for (int i = 0; i < AccKeep.Length; i++)
             {
                 AccKeep[i] = new List<int>();
@@ -58,15 +55,8 @@ namespace Additional_Card_Info
                 CoordinateType[i] = 0;
                 SubSetNames[i] = "";
                 ClothNotData[i] = new bool[3];
+                GenderType[i] = 0;
             }
-        }
-
-        protected override void OnDestroy()
-        {
-            MakerAPI.MakerStartedLoading -= MakerAPI_MakerStartedLoading;
-            MakerAPI.RegisterCustomSubCategories -= RegisterCustomSubCategories;
-
-            base.OnDestroy();
         }
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
@@ -91,6 +81,7 @@ namespace Additional_Card_Info
                 Height_Restriction[i] = new bool[Constants.HeightLength];
                 Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
                 ClothNotData[i] = new bool[3];
+                GenderType[i] = 0;
             }
 
             CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
@@ -185,6 +176,10 @@ namespace Additional_Card_Info
                 {
                     ClothNotData = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
                 }
+                if (MyData.data.TryGetValue("GenderType", out ByteData) && ByteData != null)
+                {
+                    GenderType = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
+                }
             }
         }
 
@@ -217,6 +212,7 @@ namespace Additional_Card_Info
             MyData.data.Add("Set_Name", MessagePackSerializer.Serialize(SetNames[CoordinateNum]));
             MyData.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames[CoordinateNum]));
             MyData.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData[CoordinateNum]));
+            MyData.data.Add("GenderType", MessagePackSerializer.Serialize(GenderType[CoordinateNum]));
 
             SetCoordinateExtendedData(coordinate, MyData);
         }
@@ -290,17 +286,15 @@ namespace Additional_Card_Info
                 {
                     ClothNotData[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
                 }
-
+                if (MyData.data.TryGetValue("GenderType", out ByteData) && ByteData != null)
+                {
+                    GenderType[CoordinateNum] = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
+                }
             }
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
             {
                 StartCoroutine(UpdateSlots());
             }
-        }
-
-        protected override void Update()
-        {
-            base.Update();
         }
     }
 }

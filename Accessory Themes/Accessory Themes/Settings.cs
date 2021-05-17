@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using KKAPI.Chara;
+using KKAPI.Maker;
 using KKAPI.Studio;
 
 namespace Accessory_Themes
@@ -29,6 +30,9 @@ namespace Accessory_Themes
             Harmony.CreateAndPatchAll(typeof(Hooks));
 
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "3", "Requires restarting maker");
+            MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
+            MakerAPI.RegisterCustomSubCategories += CharaEvent.RegisterCustomSubCategories;
+            MakerAPI.MakerExiting += CharaEvent.MakerAPI_MakerExiting;
         }
 
         //private static void ShowTypeInfo(Type t)
