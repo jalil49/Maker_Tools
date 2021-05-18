@@ -56,7 +56,7 @@ namespace Accessory_States
             RadioToggle = MakerAPI.AddAccessoryWindowControl<MakerRadioButtons>(radio);
             RadioToggle.ValueChanged.Subscribe(x => RadioChanged(x));
 
-            var AddRemoveModifyButton = new MakerButton("Modify Group", category, owner);
+            var AddRemoveModifyButton = new MakerButton("Modify State Group", category, owner);
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveModifyButton);
             ApplyTheme.OnClick.AddListener(delegate ()
             {
@@ -487,6 +487,8 @@ namespace Accessory_States
             {
                 yield break;
             }
+            yield return null;
+
             Update_More_Accessories();
             int ACCData = Accessorys_Parts.Count();
 
