@@ -59,8 +59,8 @@ namespace Accessory_States
             var Accessory_list = ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value - 1 == clothesKind);
             foreach (var item in Accessory_list)
             {
-                //Settings.Logger.LogWarning($"attempting to change accessory {item.Key}");
-                if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(item.Key, out var data))
+
+                if (!ThisCharactersData.Now_ACC_State_array.TryGetValue(item.Key, out var data) || Accessorys_Parts.Count() <= item.Key)
                 {
                     continue;
                 }
@@ -83,7 +83,6 @@ namespace Accessory_States
                 ThisCharactersData = new Data(ChaControl.fileParam.personality, ChaControl.fileParam.strBirthDay, ChaControl.fileParam.fullname, this);
                 Constants.CharacterInfo.Add(ThisCharactersData);
             }
-
             if (!ThisCharactersData.processed || currentGameMode == GameMode.Maker || GameAPI.InsideHScene)
             {
                 ThisCharactersData.Controller = this;
@@ -93,15 +92,11 @@ namespace Accessory_States
                     chafile = MakerAPI.LastLoadedChaFile;
                 }
 
-
                 ThisCharactersData.Clear();
-
 
                 ThisCharactersData.Clear_Now_Coordinate();
 
-
                 Update_More_Accessories();
-
 
                 var Extended_Data = GetExtendedData();
                 if (Extended_Data != null)
