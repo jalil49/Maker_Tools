@@ -21,6 +21,8 @@ namespace Additional_Card_Info
         static readonly MakerToggle[] BreastsizeToggles = new MakerToggle[Constants.BreastsizeLength];
         static readonly MakerToggle[] ClothNotToggles = new MakerToggle[3];
 
+        static MakerToggle Character_Cosplay_Ready;
+
         static AccessoryControlWrapper<MakerToggle, bool> AccKeepToggles;
         static AccessoryControlWrapper<MakerToggle, bool> HairKeepToggles;
 
@@ -47,10 +49,7 @@ namespace Additional_Card_Info
                 Controller.StartCoroutine(Controller.UpdateSlots());
             };
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
-            MakerAPI.MakerFinishedLoading += (s, e2) =>
-            {
-                VisibiltyToggle();
-            };
+            MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
             Hooks.Slot_ACC_Change += (s, e2) => VisibiltyToggle();
         }
 
@@ -80,7 +79,25 @@ namespace Additional_Card_Info
             e.AddControl(new MakerText("Toggle when all Hair accessories and accessories you want to keep on this character are ready.", category, owner));
             e.AddControl(new MakerText("Example Mecha Chika who requires her arm and legs accessories", category, owner));
 
-            e.AddControl(new MakerToggle(category, "Cosplay Academy Ready", false, owner)).ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Character_Cosplay_Ready = x);
+            e.AddControl(new MakerButton("Keep All Accessories", category, owner)).OnClick.AddListener(delegate ()
+            {
+                var ChaControl = MakerAPI.GetCharacterControl();
+                var Controller = ChaControl.GetComponent<CharaEvent>();
+                var ACCKeep = Controller.AccKeep[Controller.CoordinateNum];
+                for (int i = 0, n = AccKeepToggles.Control.ControlObjects.Count(); i < n; i++)
+                {
+                    if (ChaControl.GetAccessoryObject(i) != null)
+                    {
+                        AccKeepToggles.SetValue(i, true);
+                        if (!ACCKeep.Contains(i))
+                        {
+                            ACCKeep.Add(i);
+                        }
+                    }
+                }
+            });
+
+            Character_Cosplay_Ready = e.AddControl(new MakerToggle(category, "Cosplay Academy Ready", false, owner));
 
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Select data that shouldn't be overwritten by other mods.", category, owner));

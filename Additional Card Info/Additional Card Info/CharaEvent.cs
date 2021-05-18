@@ -36,8 +36,6 @@ namespace Additional_Card_Info
 
         private int CoordinateNum = 0;
 
-        private bool Character_Cosplay_Ready = false;
-
         public CharaEvent()
         {
             for (int i = 0; i < AccKeep.Length; i++)
@@ -83,7 +81,10 @@ namespace Additional_Card_Info
                 ClothNotData[i] = new bool[3];
                 GenderType[i] = 0;
             }
-
+            if (Character_Cosplay_Ready != null)
+            {
+                Character_Cosplay_Ready.SetValue(false);
+            }
             CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
             {
                 CoordinateNum = (int)value;
@@ -116,7 +117,7 @@ namespace Additional_Card_Info
                 }
                 if (MyData.data.TryGetValue("Cosplay_Academy_Ready", out ByteData) && ByteData != null)
                 {
-                    Character_Cosplay_Ready = MessagePackSerializer.Deserialize<bool>((byte[])ByteData);
+                    Character_Cosplay_Ready.SetValue(MessagePackSerializer.Deserialize<bool>((byte[])ByteData));
                 }
 
 
@@ -189,7 +190,7 @@ namespace Additional_Card_Info
             MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc));
             MyData.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
             MyData.data.Add("Personal_Clothing_Save", MessagePackSerializer.Serialize(PersonalClothingBools));
-            MyData.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready));
+            MyData.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready.Value));
             SetExtendedData(MyData);
         }
 
