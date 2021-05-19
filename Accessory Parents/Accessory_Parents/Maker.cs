@@ -937,6 +937,10 @@ namespace Accessory_Parents
             }
             List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
             int index = 0;
+            if (Generic)
+            {
+                radio.SetValue(0);
+            }
             switch (radio.Value)
             {
                 case 0:
@@ -969,6 +973,7 @@ namespace Accessory_Parents
                             return;
                         }
                     }
+                    Bindings[CoordinateNum].Remove(Custom_Names[CoordinateNum][textbox.Value]);
                     Custom_Names[CoordinateNum].Remove(textbox.Value);
                     options.RemoveAt(index);
                     break;
@@ -977,13 +982,12 @@ namespace Accessory_Parents
                     {
                         return;
                     }
-                    foreach (var item in options)
+                    if (options.Any(x => x.text == textbox.Value))
                     {
-                        if (item.text == textbox.Value)
-                        {
-                            return;
-                        }
+                        return;
                     }
+                    Custom_Names[CoordinateNum][textbox.Value] = Custom_Names[CoordinateNum][options[Parent_DropDown.Value].text];
+                    Custom_Names[CoordinateNum].Remove(options[Parent_DropDown.Value].text);
                     options[Parent_DropDown.Value].text = textbox.Value;
                     break;
                 default:
