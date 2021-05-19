@@ -40,6 +40,7 @@ namespace Accessory_Parents
 
             AccessoriesApi.AccessoryKindChanged -= AccessoriesApi_AccessoryKindChanged;
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
+            MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
 
             Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
             Hooks.ACC_Position_Change -= Hooks_ACC_Position_Change;
@@ -50,11 +51,16 @@ namespace Accessory_Parents
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
             AccessoriesApi.AccessoriesCopied += (s, es) => VisibiltyToggle();
             AccessoriesApi.AccessoryTransferred += (s, es) => VisibiltyToggle();
             AccessoriesApi.MakerAccSlotAdded += (s, es) => VisibiltyToggle();
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, es) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, es) => VisibiltyToggle();
+            MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
@@ -68,6 +74,10 @@ namespace Accessory_Parents
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
             var owner = Settings.Instance;
             var category = new MakerCategory("", "");
 
@@ -771,7 +781,7 @@ namespace Accessory_Parents
             {
                 yield return null;
                 VisibiltyToggle();
-                if (Parent_DropDown == null || Parent_DropDown.ControlObject == null)
+                if (!MakerAPI.InsideAndLoaded || Parent_DropDown == null || Parent_DropDown.ControlObject == null)
                 {
                     yield break;
                 }

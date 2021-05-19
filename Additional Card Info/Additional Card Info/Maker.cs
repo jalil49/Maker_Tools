@@ -50,9 +50,10 @@ namespace Additional_Card_Info
             };
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
-            Hooks.Slot_ACC_Change += (s, e2) => VisibiltyToggle();
+            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
             Hooks.MovIt += Hooks_MovIt;
         }
+
 
         private static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
@@ -65,7 +66,7 @@ namespace Additional_Card_Info
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
             MakerAPI.ReloadCustomInterface -= (s, e2) => { var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>(); Controller.StartCoroutine(Controller.UpdateSlots()); };
-            Hooks.Slot_ACC_Change -= (s, e2) => VisibiltyToggle();
+            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
             Hooks.MovIt -= Hooks_MovIt;
         }
 
@@ -415,6 +416,19 @@ namespace Additional_Card_Info
             }
         }
 
+        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        {
+            if (e.Type == 120)
+            {
+                AccKeepToggles.SetValue(e.SlotNo, false, false);
+                HairKeepToggles.SetValue(e.SlotNo, false, false);
+                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+                Controller.HairAcc[Controller.CoordinateNum].Remove(e.SlotNo);
+                Controller.AccKeep[Controller.CoordinateNum].Remove(e.SlotNo);
+            }
+            VisibiltyToggle();
+        }
+
         private static void VisibiltyToggle()
         {
             if (!MakerAPI.InsideMaker)
@@ -436,8 +450,9 @@ namespace Additional_Card_Info
 
         private IEnumerator UpdateSlots()
         {
+            yield return null;
             var count = AccessoryCount();
-            while (AccKeepToggles.Control.ControlObjects.Count() < count)
+            while (!MakerAPI.InsideAndLoaded || AccKeepToggles.Control.ControlObjects.Count() < count)
             {
                 yield return null;
             }

@@ -40,7 +40,7 @@ namespace Accessory_Parents
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (currentGameMode != GameMode.Maker)
+            if (currentGameMode != GameMode.Maker || !Settings.Enable.Value)
             {
                 return;
             }
@@ -76,7 +76,7 @@ namespace Accessory_Parents
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !Settings.Enable.Value)
             {
                 return;
             }
@@ -101,7 +101,7 @@ namespace Accessory_Parents
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !Settings.Enable.Value)
             {
                 return;
             }
@@ -114,11 +114,11 @@ namespace Accessory_Parents
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            Update_Parenting();
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !Settings.Enable.Value)
             {
                 return;
             }
+            Update_Parenting();
             PluginData data = new PluginData();
             data.data.Add("Parenting_Data", MessagePackSerializer.Serialize(Bindings));
             data.data.Add("Parenting_Names", MessagePackSerializer.Serialize(Custom_Names));

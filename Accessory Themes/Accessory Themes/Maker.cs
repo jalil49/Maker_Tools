@@ -55,17 +55,24 @@ namespace Accessory_Themes
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+            MakerAPI.MakerExiting += MakerAPI_MakerExiting;
+
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            Hooks.Slot_ACC_Change += (s, e2) => VisibiltyToggle();
+            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change; ;
         }
 
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
+            MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
@@ -73,12 +80,17 @@ namespace Accessory_Themes
             MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
 
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
-            Hooks.Slot_ACC_Change -= (s, e2) => VisibiltyToggle();
+            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
             Hooks.MovIt += Hooks_MovIt;
         }
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             var owner = Settings.Instance;
             #region Personal Settings
             MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
@@ -319,6 +331,16 @@ namespace Accessory_Themes
             radio.GroupingID = GroupingID;
         }
 
+        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        {
+            if (e.SlotNo == 120)
+            {
+                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+                Controller.ACC_Theme_Dictionary[Controller.CoordinateNum].Remove(e.SlotNo);
+            }
+            VisibiltyToggle();
+        }
+
         private static void Themes_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<int> e)
         {
             var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
@@ -419,13 +441,13 @@ namespace Accessory_Themes
         private void Update_ACC_Dropbox()
         {
             List<TMP_Dropdown.OptionData> list = ThemeNames[CoordinateNum].Select(x => new TMP_Dropdown.OptionData(x)).ToList();
-
             var acc_slots = ThemesDropDown_ACC.ControlObjects;
 
             for (int slot = 0, n = acc_slots.Count(); slot < n; slot++)
             {
                 acc_slots.ElementAt(slot).GetComponentInChildren<TMP_Dropdown>().options = list;
             }
+
             ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options = list;
         }
 
@@ -455,17 +477,16 @@ namespace Accessory_Themes
 
         private IEnumerator WaitForSlots()
         {
+            yield return null;
             GetALLACC();
-            while (Themes.Control.ControlObjects.Count() < ACCData.Count)
+            while (!MakerAPI.InsideAndLoaded || Themes.Control.ControlObjects.Count() < ACCData.Count)
             {
                 yield return 0;
             }
 
-            Update_ACC_Dropbox();
-            Update_RelativeColor_Dropbox();
             var set = ACC_Theme_Dictionary[CoordinateNum];
             Update_ACC_Dropbox();
-
+            Update_RelativeColor_Dropbox();
             for (int SlotIndex = 0, ACC_Count = ACCData.Count; SlotIndex < ACC_Count; SlotIndex++)
             {
                 if (set.ContainsKey(SlotIndex))

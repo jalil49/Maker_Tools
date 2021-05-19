@@ -17,6 +17,7 @@ namespace Accessory_States
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }
+        public static ConfigEntry<bool> Enable { get; private set; }
 
         public void Awake()
         {
@@ -30,8 +31,8 @@ namespace Accessory_States
             }
             GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
+            Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             MakerAPI.MakerStartedLoading += (s, e) => CharaEvent.Maker_started();
-            MakerAPI.MakerExiting += (s, e) => CharaEvent.Maker_Ended();
             MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
         }
 

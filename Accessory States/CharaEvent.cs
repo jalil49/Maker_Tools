@@ -75,6 +75,10 @@ namespace Accessory_States
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
+            if (currentGameMode == GameMode.Maker && !Settings.Enable.Value)
+            {
+                return;
+            }
             ThisCharactersData = Constants.CharacterInfo.Find(x => ChaControl.fileParam.personality == x.Personality && x.FullName == ChaControl.fileParam.fullname && x.BirthDay == ChaControl.fileParam.strBirthDay);
             if (ThisCharactersData == null)
             {
@@ -270,6 +274,11 @@ namespace Accessory_States
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             PluginData MyData = new PluginData();
             MyData.data.Add("ACC_Binding_Dictionary", MessagePackSerializer.Serialize(ThisCharactersData.ACC_Binding_Dictionary));
             MyData.data.Add("ACC_State_array", MessagePackSerializer.Serialize(ThisCharactersData.ACC_State_array));
@@ -280,6 +289,11 @@ namespace Accessory_States
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             PluginData MyData = new PluginData();
             MyData.data.Add("ACC_Binding_Dictionary", MessagePackSerializer.Serialize(ThisCharactersData.Now_ACC_Binding_Dictionary));
             MyData.data.Add("ACC_State_array", MessagePackSerializer.Serialize(ThisCharactersData.Now_ACC_State_array));
@@ -290,6 +304,11 @@ namespace Accessory_States
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
+            if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker && !Settings.Enable.Value)
+            {
+                return;
+            }
+
             var MyData = GetCoordinateExtendedData(coordinate);
             ThisCharactersData.Clear_Now_Coordinate();
             if (MyData != null)

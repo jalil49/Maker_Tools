@@ -16,6 +16,7 @@ namespace Accessory_Parents
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }
+        public static ConfigEntry<bool> Enable { get; private set; }
 
         public void Awake()
         {
@@ -28,8 +29,9 @@ namespace Accessory_Parents
             Hooks.Init();
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "1", "Requires restarting maker");
+            Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
+
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
-            MakerAPI.MakerExiting += CharaEvent.MakerAPI_MakerExiting;
             MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
             MakerAPI.ReloadCustomInterface += CharaEvent.MakerAPI_ReloadCustomInterface;
         }

@@ -44,6 +44,11 @@ namespace Accessory_States
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             var owner = Settings.Instance;
             var category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 3, "Accessory Settings");
             e.AddSubCategory(category);
@@ -186,6 +191,12 @@ namespace Accessory_States
 
         public static void Maker_started()
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+            MakerAPI.MakerExiting += (s, e) => Maker_Ended();
+
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
             Hooks.SetClothesState += Maker_SetClothes;
 
@@ -218,6 +229,8 @@ namespace Accessory_States
 
         public static void Maker_Ended()
         {
+            MakerAPI.MakerExiting -= (s, e) => Maker_Ended();
+
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
             Hooks.SetClothesState -= Maker_SetClothes;
 
@@ -228,9 +241,10 @@ namespace Accessory_States
 
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
-            Hooks.Slot_ACC_Change -= (s, e) => VisibiltyToggle();
-            ShowInterface = false;
+            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
             Hooks.MovIt -= Hooks_MovIt;
+
+            ShowInterface = false;
         }
 
         private static void Maker_SetClothes(object sender, ClothChangeEventArgs e)
@@ -242,10 +256,6 @@ namespace Accessory_States
 
         private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
         {
-            //ACC_Appearance_dropdown.SetValue(e.SlotIndex, 0);
-            //ACC_Appearance_state.SetValue(e.SlotIndex, 0);
-            //ACC_Appearance_state2.SetValue(e.SlotIndex, 3);
-            //ACC_Is_Parented.SetValue(e.SlotIndex, false);
             VisibiltyToggle();
         }
 
@@ -623,7 +633,7 @@ namespace Accessory_States
 
         private void OnGUI()
         {
-            if (!ShowInterface)
+            if (!ShowInterface || !MakerAPI.IsInterfaceVisible())
                 return;
             GUILayout.BeginArea(_Custom_GroupsRect);
             {

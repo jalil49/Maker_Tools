@@ -59,6 +59,11 @@ namespace Accessory_Themes
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             if (currentGameMode != GameMode.Maker)
             {
                 return;
@@ -128,6 +133,11 @@ namespace Accessory_Themes
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             PluginData MyData = new PluginData();
             MyData.data.Add("Theme_Names", MessagePackSerializer.Serialize(ThemeNames));
             MyData.data.Add("Theme_dic", MessagePackSerializer.Serialize(ACC_Theme_Dictionary));
@@ -142,6 +152,11 @@ namespace Accessory_Themes
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
+            if (!Settings.Enable.Value)
+            {
+                return;
+            }
+
             PluginData MyData = new PluginData();
             //clothing to keep
             //Do not keep accessory
@@ -158,7 +173,7 @@ namespace Accessory_Themes
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !Settings.Enable.Value)
             {
                 return;
             }
@@ -331,18 +346,6 @@ namespace Accessory_Themes
             {
                 ChangeACCColor(item.Key, ThemeNamesDropdown.Value);
             }
-        }
-
-        protected override void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.N))
-            {
-                foreach (var item in ACC_Theme_Dictionary[CoordinateNum])
-                {
-                    Settings.Logger.LogWarning($"Key {item.Key}, value {item.Value}");
-                }
-            }
-            base.Update();
         }
 
         private bool ColorComparison(Color C1, Color C2)
