@@ -64,52 +64,51 @@ namespace Accessory_States
 
                 //List<TMP_Dropdown.OptionData> options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
                 var controlobjects = ACC_Appearance_dropdown.Control.ControlObjects.ToArray();
-                List<TMP_Dropdown.OptionData> options2 = controlobjects[ACC_Appearance_dropdown.CurrentlySelectedIndex].GetComponentInChildren<TMP_Dropdown>().options;
+                List<TMP_Dropdown.OptionData> options = controlobjects[ACC_Appearance_dropdown.CurrentlySelectedIndex].GetComponentInChildren<TMP_Dropdown>().options;
                 int kind = 0;
-                int index = 0;
-                int index2 = 0;
+                int index = -1;
                 switch (radio.Value)
                 {
                     case 0:
-                        if (options2.Any(x => x.text == ThemeText.Value))
+                        if (options.Any(x => x.text == ThemeText.Value))
                         {
                             return;
                         }
                         //options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
-                        options2.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
-                        kind = 15 + Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Count();
+                        options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
+                        kind = 9 + Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Count();
                         Controller.ThisCharactersData.Now_ACC_Name_Dictionary[kind] = ThemeText.Value;
                         break;
                     case 1:
-                        if (ThemeText.Value == "None")
+                        for (int i = 9; i < options.Count; i++)
                         {
-                            return;
-                        }
-                        for (int i = 0; i < options2.Count; i++)
-                        {
-                            if (options2[i].text == ThemeText.Value)
+                            if (options[i].text == ThemeText.Value)
                             {
-                                index2 = i;
+                                index = i;
                                 break;
                             }
-                            else if (i == options2.Count - 1)
+                            else if (i == options.Count - 1)
                             {
                                 return;
                             }
                         }
-                        options2.RemoveAt(index2);
-                        kind = index + 15;
-                        var removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind);
-                        foreach (var item in removal)
+                        if (index == -1)
                         {
-                            Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.Key);
-                            ACC_Appearance_dropdown.SetValue(item.Key, 0, false);
+                            return;
                         }
-                        removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value > kind);
-                        foreach (var item in removal)
+                        options.RemoveAt(index);
+                        kind = index + 6;
+                        var removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind).ToArray();
+                        for (int i = 0; i < removal.Length; i++)
                         {
-                            int Change = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[item.Key] -= 1;
-                            ACC_Appearance_dropdown.SetValue(item.Key, Change, false);
+                            Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(removal[i].Key);
+                            ACC_Appearance_dropdown.SetValue(removal[i].Key, 0, false);
+                        }
+                        removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value > kind).ToArray();
+                        for (int i = 0; i < removal.Length; i++)
+                        {
+                            int Change = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[removal[i].Key] -= 1;
+                            ACC_Appearance_dropdown.SetValue(removal[i].Key, Change, false);
                         }
                         Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Remove(kind);
                         break;
@@ -118,30 +117,23 @@ namespace Accessory_States
                         {
                             return;
                         }
-                        foreach (var item in options2)
+                        foreach (var item in options)
                         {
                             if (item.text == ThemeText.Value)
                             {
                                 return;
                             }
                         }
-                        var result = options2[ACC_Appearance_dropdown.GetSelectedValue()].text;
-                        for (int i = 0; i < options2.Count; i++)
-                        {
-                            if (options2[i].text == result)
-                            {
-                                options2[i].text = ThemeText.Value;
-                                break;
-                            }
-                        }
-                        result = ThemeText.Value;
+                        var text = Controller.ThisCharactersData.Now_ACC_Name_Dictionary.First(x => x.Value == options[ACC_Appearance_dropdown.GetSelectedValue()].text);
+                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary[text.Key] = ThemeText.Value;
+                        options[ACC_Appearance_dropdown.GetSelectedValue()].text = ThemeText.Value;
                         break;
                     default:
                         break;
                 }
                 foreach (var item in ACC_Appearance_dropdown.Control.ControlObjects)
                 {
-                    item.GetComponentInChildren<TMP_Dropdown>().options = options2;
+                    item.GetComponentInChildren<TMP_Dropdown>().options = options;
                 }
                 if (radio.Value == 0)
                 {
