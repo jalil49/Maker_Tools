@@ -26,7 +26,7 @@ namespace Accessory_States
         static MakerRadioButtons RadioToggle;
 
         static MakerButton ApplyTheme;
-        //static MakerToggle testtoggle2;
+
         static Rect _Custom_GroupsRect;
 
         static private Vector2 _accessorySlotsScrollPos = Vector2.zero;
@@ -38,6 +38,9 @@ namespace Accessory_States
         static private bool ShowInterface = false;
 
         static public Dictionary<int, int> Gui_states = new Dictionary<int, int>();
+
+        const int Defined_Bindings = 8;
+        const int Binding_offset = 6;
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
@@ -77,11 +80,11 @@ namespace Accessory_States
                         }
                         //options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
                         options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
-                        kind = 9 + Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Count();
+                        kind = Defined_Bindings + 1 + Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Count();
                         Controller.ThisCharactersData.Now_ACC_Name_Dictionary[kind] = ThemeText.Value;
                         break;
                     case 1:
-                        for (int i = 9; i < options.Count; i++)
+                        for (int i = Defined_Bindings + 1; i < options.Count; i++)
                         {
                             if (options[i].text == ThemeText.Value)
                             {
@@ -98,7 +101,7 @@ namespace Accessory_States
                             return;
                         }
                         options.RemoveAt(index);
-                        kind = index + 6;
+                        kind = index + Binding_offset;
                         var removal = Controller.ThisCharactersData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind).ToArray();
                         for (int i = 0; i < removal.Length; i++)
                         {
@@ -114,7 +117,7 @@ namespace Accessory_States
                         Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Remove(kind);
                         break;
                     case 2:
-                        if (ACC_Appearance_dropdown.GetSelectedValue() < 9)
+                        if (ACC_Appearance_dropdown.GetSelectedValue() < Defined_Bindings + 1)
                         {
                             return;
                         }
@@ -402,13 +405,13 @@ namespace Accessory_States
             //Settings.Logger.LogWarning($"Dropdown slot {e.SlotIndex}, value {e.NewValue}");
             var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
-            if (e.NewValue < 9)
+            if (e.NewValue < Defined_Bindings + 1)
             {
                 Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue;
             }
             else
             {
-                Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue + 6;
+                Controller.ThisCharactersData.Now_ACC_Binding_Dictionary[e.SlotIndex] = e.NewValue + Binding_offset;
             }
 
             if (e.NewValue == 0)
@@ -421,7 +424,7 @@ namespace Accessory_States
                 ACC_Appearance_state2.Control.ControlObjects.ToArray()[e.SlotIndex].GetComponentInChildren<Slider>().maxValue = 3;
                 ACC_Appearance_state2.SetValue(e.SlotIndex, 3);
             }
-            else if (e.NewValue < 9)
+            else if (e.NewValue < Defined_Bindings + 1)
             {
                 ACC_Appearance_state2.Control.ControlObjects.ToArray()[e.SlotIndex].GetComponentInChildren<Slider>().maxValue = 1;
                 ACC_Appearance_state2.SetValue(e.SlotIndex, 1);
@@ -451,9 +454,9 @@ namespace Accessory_States
             //    Parented_Options.RemoveRange(1, Parented_Options.Count - 1);
             //}
 
-            if (Appearance_Options.Count > 9)
+            if (Appearance_Options.Count > Defined_Bindings + 1)
             {
-                Appearance_Options.RemoveRange(9, Appearance_Options.Count - 9);
+                Appearance_Options.RemoveRange(Defined_Bindings + 1, Appearance_Options.Count - (Defined_Bindings + 1));
             }
 
             foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
@@ -476,13 +479,13 @@ namespace Accessory_States
 
             foreach (var item in ThisCharactersData.Now_ACC_Binding_Dictionary)
             {
-                if (item.Value < 9)
+                if (item.Value < Defined_Bindings + 1)
                 {
                     ACC_Appearance_dropdown.SetValue(item.Key, item.Value, false);
                 }
                 else
                 {
-                    ACC_Appearance_dropdown.SetValue(item.Key, item.Value - 6, false);
+                    ACC_Appearance_dropdown.SetValue(item.Key, item.Value - Binding_offset, false);
                 }
             }
         }
@@ -527,7 +530,7 @@ namespace Accessory_States
                 ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(i, out var binding);
                 if (binding > 14)
                 {
-                    binding -= 6;
+                    binding -= Binding_offset;
                 }
                 ACC_Appearance_dropdown.SetValue(i, binding, false);
             }
@@ -703,15 +706,25 @@ namespace Accessory_States
                 if (ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(item.srcSlot, out var binding))
                 {
                     ThisCharactersData.Now_ACC_Binding_Dictionary[item.dstSlot] = binding;
+                    if (binding > Defined_Bindings)
+                    {
+                        binding -= Binding_offset;
+                    }
+                    ACC_Appearance_dropdown.SetValue(item.dstSlot, binding, false);
+                    ACC_Appearance_dropdown.SetValue(item.srcSlot, 0, false);
                     ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.srcSlot);
                 }
                 if (ThisCharactersData.Now_ACC_State_array.TryGetValue(item.srcSlot, out var states))
                 {
                     ThisCharactersData.Now_ACC_State_array[item.dstSlot] = states;
                     ThisCharactersData.Now_ACC_State_array.Remove(item.srcSlot);
+                    ACC_Appearance_state.SetValue(item.srcSlot, 0);
+                    ACC_Appearance_state.SetValue(item.srcSlot, 3);
                 }
                 if (ThisCharactersData.Now_Parented_Dictionary.TryGetValue(item.srcSlot, out var Isparented))
                 {
+                    ACC_Is_Parented.SetValue(item.dstSlot, Isparented, false);
+                    ACC_Is_Parented.SetValue(item.srcSlot, false, false);
                     ThisCharactersData.Now_Parented_Dictionary[item.dstSlot] = Isparented;
                     ThisCharactersData.Now_Parented_Dictionary.Remove(item.srcSlot);
                 }

@@ -1,13 +1,13 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 
 namespace Accessory_Parents
 {
     public static class Hooks
     {
         static ManualLogSource Logger;
-
         public static void Init()
         {
             Harmony.CreateAndPatchAll(typeof(Hooks));
@@ -18,7 +18,7 @@ namespace Accessory_Parents
         public static event EventHandler<Acc_modifier_Event_ARG> ACC_Rotation_Change;
         public static event EventHandler<Acc_modifier_Event_ARG> ACC_Scale_Change;
         public static event EventHandler<Slot_ACC_Change_ARG> Slot_ACC_Change;
-        //public static event EventHandler<Parent_Change_ARG> Parent_Change;
+        internal static event EventHandler<MovUrAcc_Event> MovIt;
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetAccessoryPos))]
@@ -77,7 +77,6 @@ namespace Accessory_Parents
             }
         }
 
-
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
@@ -94,6 +93,36 @@ namespace Accessory_Parents
             {
                 Logger.LogError($"Subscriber crash in {nameof(Accessory_Parents.Hooks)}.{nameof(Slot_ACC_Change)} - {ex}");
             }
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MovUrAcc.MovUrAcc), "ProcessQueue")]
+        private static void MovPatch(List<QueueItem> Queue)
+        {
+            var args = new MovUrAcc_Event(Queue);
+            if (MovIt == null || MovIt.GetInvocationList().Length == 0)
+            {
+                return;
+            }
+            try
+            {
+                MovIt?.Invoke(null, args);
+            }
+            catch (Exception ex)
+            {
+                Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(MovIt)} - {ex}");
+            }
+        }
+    }
+    internal class QueueItem
+    {
+        public int srcSlot { get; set; }
+
+        public int dstSlot { get; set; }
+
+        public QueueItem(int src, int dst)
+        {
+            srcSlot = src;
+            dstSlot = dst;
         }
     }
 }

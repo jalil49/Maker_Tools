@@ -127,6 +127,7 @@ namespace Accessory_States
                 Logger.LogError($"Subscriber crash in {nameof(Accessory_States.Hooks)}.{nameof(Slot_ACC_Change)} - {ex}");
             }
         }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MovUrAcc.MovUrAcc), "ProcessQueue")]
         private static void MovPatch(List<QueueItem> Queue)

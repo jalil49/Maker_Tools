@@ -65,6 +65,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\IllusionModdingAPI\bin\KKAPI.dll</HintPath>
     </Reference>
+    <Reference Include="KK_MovUrAcc">
+      <HintPath>..\..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\KK_MovUrAcc.dll</HintPath>
+    </Reference>
     <Reference Include="MoreAccessories">
       <HintPath>..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\MoreAccessories.dll</HintPath>
     </Reference>

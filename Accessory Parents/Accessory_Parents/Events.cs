@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Accessory_Parents
 {
@@ -44,4 +45,12 @@ namespace Accessory_Parents
     //    public int SlotNo { get; }
     //    public string Parent { get; }
     //}
+    internal sealed class MovUrAcc_Event : EventArgs
+    {
+        internal MovUrAcc_Event(List<QueueItem> Queue)
+        {
+            this.Queue = Queue;
+        }
+        public List<QueueItem> Queue { get; }
+    }
 }

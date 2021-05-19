@@ -74,6 +74,7 @@ namespace Accessory_Themes
 
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
             Hooks.Slot_ACC_Change -= (s, e2) => VisibiltyToggle();
+            Hooks.MovIt += Hooks_MovIt;
         }
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -616,6 +617,22 @@ namespace Accessory_Themes
                 }
             }
             Update_ACC_Dropbox();
+        }
+
+        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var ACC_Theme_Dictionary = Controller.ACC_Theme_Dictionary[Controller.CoordinateNum];
+            foreach (var item in e.Queue)
+            {
+                if (ACC_Theme_Dictionary.TryGetValue(item.srcSlot, out int themenum))
+                {
+                    ACC_Theme_Dictionary[item.dstSlot] = themenum;
+                    ACC_Theme_Dictionary.Remove(item.dstSlot);
+                    Themes.SetValue(item.dstSlot, themenum, false);
+                    Themes.SetValue(item.srcSlot, 0, false);
+                }
+            }
         }
     }
 }

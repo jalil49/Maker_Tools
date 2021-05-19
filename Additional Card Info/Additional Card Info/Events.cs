@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Additional_Card_Info
 {
@@ -13,5 +14,14 @@ namespace Additional_Card_Info
         public ChaControl Character { get; }
         public int SlotNo { get; }
         public int Type { get; }
+    }
+
+    internal sealed class MovUrAcc_Event : EventArgs
+    {
+        internal MovUrAcc_Event(List<QueueItem> Queue)
+        {
+            this.Queue = Queue;
+        }
+        public List<QueueItem> Queue { get; }
     }
 }

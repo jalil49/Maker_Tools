@@ -51,6 +51,7 @@ namespace Additional_Card_Info
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
             Hooks.Slot_ACC_Change += (s, e2) => VisibiltyToggle();
+            Hooks.MovIt += Hooks_MovIt;
         }
 
         private static void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -65,6 +66,7 @@ namespace Additional_Card_Info
             MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
             MakerAPI.ReloadCustomInterface -= (s, e2) => { var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>(); Controller.StartCoroutine(Controller.UpdateSlots()); };
             Hooks.Slot_ACC_Change -= (s, e2) => VisibiltyToggle();
+            Hooks.MovIt -= Hooks_MovIt;
         }
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -547,6 +549,30 @@ namespace Additional_Card_Info
                 data = new MoreAccessories.CharAdditionalData();
             }
             return data.nowAccessories.Count() + 20;
+        }
+
+        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var Acckeep = Controller.AccKeep[Controller.CoordinateNum];
+            var HairAcc = Controller.HairAcc[Controller.CoordinateNum];
+            foreach (var item in e.Queue)
+            {
+                if (Acckeep.Contains(item.srcSlot))
+                {
+                    Acckeep.Add(item.dstSlot);
+                    Acckeep.Remove(item.srcSlot);
+                    AccKeepToggles.SetValue(item.dstSlot, true, false);
+                    AccKeepToggles.SetValue(item.srcSlot, false, false);
+                }
+                if (HairAcc.Contains(item.srcSlot))
+                {
+                    HairAcc.Add(item.dstSlot);
+                    HairAcc.Remove(item.srcSlot);
+                    HairKeepToggles.SetValue(item.dstSlot, true, false);
+                    HairKeepToggles.SetValue(item.srcSlot, false, false);
+                }
+            }
         }
     }
 }

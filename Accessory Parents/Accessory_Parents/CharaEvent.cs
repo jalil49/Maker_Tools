@@ -14,14 +14,16 @@ namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        private Dictionary<int, List<int>>[] Bindings = new Dictionary<int, List<int>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private readonly Dictionary<int, int>[] Child = new Dictionary<int, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Dictionary<string, int>[] Custom_Names = new Dictionary<string, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        public Dictionary<int, List<int>>[] Bindings = new Dictionary<int, List<int>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        public Dictionary<string, int>[] Custom_Names = new Dictionary<string, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        public Dictionary<int, Vector3[,]>[] Relative_Data = new Dictionary<int, Vector3[,]>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+
         private readonly Dictionary<int, string>[] Old_Parent = new Dictionary<int, string>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Dictionary<int, Vector3[,]>[] Relative_Data = new Dictionary<int, Vector3[,]>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        private readonly Dictionary<int, int>[] Child = new Dictionary<int, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+
+        internal List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
+
         private int CoordinateNum = 0;
-        public List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
-        //readonly ManualLogSource Logger;
 
         public CharaEvent()
         {

@@ -45,6 +45,7 @@ namespace Accessory_Parents
             Hooks.ACC_Position_Change -= Hooks_ACC_Position_Change;
             Hooks.ACC_Rotation_Change -= Hooks_ACC_Rotation_Change;
             Hooks.ACC_Scale_Change -= Hooks_ACC_Scale_Change;
+            Hooks.MovIt -= Hooks_MovIt;
         }
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
@@ -62,6 +63,7 @@ namespace Accessory_Parents
             Hooks.ACC_Position_Change += Hooks_ACC_Position_Change;
             Hooks.ACC_Rotation_Change += Hooks_ACC_Rotation_Change;
             Hooks.ACC_Scale_Change += Hooks_ACC_Scale_Change;
+            Hooks.MovIt += Hooks_MovIt;
         }
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -1031,6 +1033,41 @@ namespace Accessory_Parents
                     toggles[i].isOn = toggle == i;
                 }
             }
+        }
+
+        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var Bindings = Controller.Bindings[Controller.CoordinateNum];
+            var Names = Controller.Custom_Names[Controller.CoordinateNum];
+            var RelativeData = Controller.Relative_Data[Controller.CoordinateNum];
+            foreach (var item in e.Queue)
+            {
+                if (Bindings.TryGetValue(item.srcSlot, out var BindingList))
+                {
+                    foreach (var sub in e.Queue)
+                    {
+                        if (BindingList.Contains(sub.srcSlot))
+                        {
+                            BindingList.Remove(sub.srcSlot);
+                            BindingList.Add(sub.dstSlot);
+                        }
+                    }
+                    Bindings.Remove(item.srcSlot);
+                    Bindings[item.dstSlot] = BindingList;
+                }
+                var Handover = Names.Where(x => x.Value == item.srcSlot).ToArray();
+                for (int i = 0; i < Handover.Length; i++)
+                {
+                    Names[Handover[i].Key] = item.dstSlot;
+                }
+                if (RelativeData.TryGetValue(item.srcSlot, out var RelativeVector))
+                {
+                    RelativeData[item.dstSlot] = RelativeVector;
+                    RelativeData.Remove(item.srcSlot);
+                }
+            }
+            Controller.Update_Parenting();
         }
     }
 }
