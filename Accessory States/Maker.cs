@@ -718,8 +718,10 @@ namespace Accessory_States
                 {
                     ThisCharactersData.Now_ACC_State_array[item.dstSlot] = states;
                     ThisCharactersData.Now_ACC_State_array.Remove(item.srcSlot);
-                    ACC_Appearance_state.SetValue(item.srcSlot, 0);
-                    ACC_Appearance_state.SetValue(item.srcSlot, 3);
+                    ACC_Appearance_state.SetValue(item.srcSlot, 0, false);
+                    ACC_Appearance_state2.SetValue(item.srcSlot, 3, false);
+                    ACC_Appearance_state.SetValue(item.dstSlot, states[0], false);
+                    ACC_Appearance_state2.SetValue(item.dstSlot, states[1], false);
                 }
                 if (ThisCharactersData.Now_Parented_Dictionary.TryGetValue(item.srcSlot, out var Isparented))
                 {
