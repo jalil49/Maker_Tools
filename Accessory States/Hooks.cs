@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 
 namespace Accessory_States
 {
@@ -12,6 +13,7 @@ namespace Accessory_States
         public static event EventHandler<ChangeCoordinateTypeARG> ChangedCoord;
         public static event EventHandler<OnClickCoordinateChange> HcoordChange;
         public static event EventHandler<Slot_ACC_Change_ARG> Slot_ACC_Change;
+        internal static event EventHandler<MovUrAcc_Event> MovIt;
 
         public static void Init()
         {
@@ -124,6 +126,36 @@ namespace Accessory_States
             {
                 Logger.LogError($"Subscriber crash in {nameof(Accessory_States.Hooks)}.{nameof(Slot_ACC_Change)} - {ex}");
             }
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MovUrAcc.MovUrAcc), "ProcessQueue")]
+        private static void MovPatch(List<QueueItem> Queue)
+        {
+            var args = new MovUrAcc_Event(Queue);
+            if (MovIt == null || MovIt.GetInvocationList().Length == 0)
+            {
+                return;
+            }
+            try
+            {
+                MovIt?.Invoke(null, args);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(MovIt)} - {ex}");
+            }
+        }
+    }
+    internal class QueueItem
+    {
+        public int srcSlot { get; set; }
+
+        public int dstSlot { get; set; }
+
+        public QueueItem(int src, int dst)
+        {
+            srcSlot = src;
+            dstSlot = dst;
         }
     }
 }

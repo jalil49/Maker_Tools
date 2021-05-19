@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Accessory_States
 {
@@ -13,6 +11,7 @@ namespace Accessory_States
         }
         public ChaControl Character { get; }
     }
+
     public sealed class CoordinateLoadedEventARG : EventArgs
     {
         public CoordinateLoadedEventARG(ChaControl _Character, ChaFileCoordinate _Coordinate)
@@ -49,6 +48,7 @@ namespace Accessory_States
         public int Coordinate { get; }
         public int Female { get; }
     }
+
     public sealed class Slot_ACC_Change_ARG : EventArgs
     {
         public Slot_ACC_Change_ARG(ChaControl _Character, int _slotNo, int _Type)
@@ -62,4 +62,12 @@ namespace Accessory_States
         public int Type { get; }
     }
 
+    internal sealed class MovUrAcc_Event : EventArgs
+    {
+        internal MovUrAcc_Event(List<QueueItem> Queue)
+        {
+            this.Queue = Queue;
+        }
+        public List<QueueItem> Queue { get; }
+    }
 }

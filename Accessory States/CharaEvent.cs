@@ -11,18 +11,16 @@ using System.Collections.Generic;
 using System.Linq;
 using ToolBox;
 using UniRx;
-using UnityEngine;
 
 namespace Accessory_States
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        private Data ThisCharactersData;
+        public Data ThisCharactersData;
         ChaFile chafile;
         public static event EventHandler<CoordinateLoadedEventARG> Coordloaded;
-        private List<bool> Accessory_Show_Bools = new List<bool>();
-        public List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
-
+        public List<bool> Accessory_Show_Bools = new List<bool>();
+        internal List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
 
         protected override void OnDestroy()
         {

@@ -32,6 +32,7 @@ namespace Accessory_States
         static private Vector2 _accessorySlotsScrollPos = Vector2.zero;
 
         static private readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
+
         static private readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
 
         static private bool ShowInterface = false;
@@ -180,11 +181,6 @@ namespace Accessory_States
             RadioToggle.GroupingID = GroupingID;
         }
 
-        //private static void CharaEvent_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
-        //{
-        //    { Settings.Logger.LogWarning($"unique {testtoggle2.ControlObjects.Count()}"); }
-        //}
-
         public static void Maker_started()
         {
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
@@ -197,7 +193,24 @@ namespace Accessory_States
 
             MakerAPI.MakerFinishedLoading += (s, e) => VisibiltyToggle();
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e) => VisibiltyToggle();
-            Hooks.Slot_ACC_Change += (s, e) => VisibiltyToggle();
+            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
+            Hooks.MovIt += Hooks_MovIt;
+        }
+
+        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        {
+            if (e.Type == 120)
+            {
+                var ThisCharactersData = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().ThisCharactersData;
+                ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(e.SlotNo);
+                ThisCharactersData.Now_ACC_State_array.Remove(e.SlotNo);
+                ThisCharactersData.Now_Parented_Dictionary.Remove(e.SlotNo);
+                ACC_Appearance_dropdown.SetValue(e.SlotNo, 0, false);
+                ACC_Appearance_state.SetValue(e.SlotNo, 0, false);
+                ACC_Appearance_state2.SetValue(e.SlotNo, 3, false);
+                ACC_Is_Parented.SetValue(e.SlotNo, false, false);
+            }
+            VisibiltyToggle();
         }
 
         public static void Maker_Ended()
@@ -214,6 +227,7 @@ namespace Accessory_States
             MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
             Hooks.Slot_ACC_Change -= (s, e) => VisibiltyToggle();
             ShowInterface = false;
+            Hooks.MovIt -= Hooks_MovIt;
         }
 
         private static void Maker_SetClothes(object sender, ClothChangeEventArgs e)
@@ -675,6 +689,31 @@ namespace Accessory_States
                 for (int i = 0; i < 3; i++)
                 {
                     toggles[i].isOn = toggle == i;
+                }
+            }
+        }
+
+        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        {
+            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var ThisCharactersData = Controller.ThisCharactersData;
+            foreach (var item in e.Queue)
+            {
+                Settings.Logger.LogWarning($"Moving Acc from slot {item.srcSlot} to {item.dstSlot}");
+                if (ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(item.srcSlot, out var binding))
+                {
+                    ThisCharactersData.Now_ACC_Binding_Dictionary[item.dstSlot] = binding;
+                    ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.srcSlot);
+                }
+                if (ThisCharactersData.Now_ACC_State_array.TryGetValue(item.srcSlot, out var states))
+                {
+                    ThisCharactersData.Now_ACC_State_array[item.dstSlot] = states;
+                    ThisCharactersData.Now_ACC_State_array.Remove(item.srcSlot);
+                }
+                if (ThisCharactersData.Now_Parented_Dictionary.TryGetValue(item.srcSlot, out var Isparented))
+                {
+                    ThisCharactersData.Now_Parented_Dictionary[item.dstSlot] = Isparented;
+                    ThisCharactersData.Now_Parented_Dictionary.Remove(item.srcSlot);
                 }
             }
         }
