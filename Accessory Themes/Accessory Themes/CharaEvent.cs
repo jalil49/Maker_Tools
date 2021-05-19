@@ -20,7 +20,7 @@ namespace Accessory_Themes
         private List<bool>[] RelativeThemeBool = new List<bool>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private List<Color[]>[] colors = new List<Color[]>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private Dictionary<int, int>[] ACC_Theme_Dictionary = new Dictionary<int, int>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
-        private Dictionary<int, bool>[] ColorRelativity = new Dictionary<int, bool>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
+        //private Dictionary<int, bool>[] ColorRelativity = new Dictionary<int, bool>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
         private Dictionary<int, List<int[]>>[] Relative_ACC_Dictionary = new Dictionary<int, List<int[]>>[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
 
         private int CoordinateNum = 0;
@@ -42,7 +42,7 @@ namespace Accessory_Themes
         {
             for (int i = 0; i < ThemeNames.Length; i++)
             {
-                ColorRelativity[i] = new Dictionary<int, bool>();
+                //ColorRelativity[i] = new Dictionary<int, bool>();
                 ACC_Theme_Dictionary[i] = new Dictionary<int, int>();
                 ThemeNames[i] = new List<string> { "None" };
                 UndoACCSkew[i] = new Stack<Queue<Color>>();
@@ -66,7 +66,7 @@ namespace Accessory_Themes
 
             for (int i = 0; i < ThemeNames.Length; i++)
             {
-                ColorRelativity[i].Clear();
+                //ColorRelativity[i].Clear();
                 ThemeNames[i].Clear();
                 ThemeNames[i].Add("None");
                 ACC_Theme_Dictionary[i].Clear();
@@ -104,10 +104,10 @@ namespace Accessory_Themes
                 {
                     colors = MessagePackSerializer.Deserialize<List<Color[]>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Color_Relativity", out ByteData) && ByteData != null)
-                {
-                    ColorRelativity = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
-                }
+                //if (MyData.data.TryGetValue("Color_Relativity", out ByteData) && ByteData != null)
+                //{
+                //    ColorRelativity = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
+                //}
                 if (MyData.data.TryGetValue("Color_Skews", out ByteData) && ByteData != null)
                 {
                     PersonalColorSkew = MessagePackSerializer.Deserialize<Color[]>((byte[])ByteData);
@@ -132,7 +132,7 @@ namespace Accessory_Themes
             MyData.data.Add("Theme_Names", MessagePackSerializer.Serialize(ThemeNames));
             MyData.data.Add("Theme_dic", MessagePackSerializer.Serialize(ACC_Theme_Dictionary));
             MyData.data.Add("Color_Theme_dic", MessagePackSerializer.Serialize(colors));
-            MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity));
+            //MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity));
             MyData.data.Add("Relative_Theme_Bools", MessagePackSerializer.Serialize(RelativeThemeBool));
             MyData.data.Add("Color_Skews", MessagePackSerializer.Serialize(PersonalColorSkew));
             MyData.data.Add("Relative_ACC_Dictionary", MessagePackSerializer.Serialize(Relative_ACC_Dictionary));
@@ -149,7 +149,7 @@ namespace Accessory_Themes
             MyData.data.Add("Theme_Names", MessagePackSerializer.Serialize(ThemeNames[CoordinateNum]));
             MyData.data.Add("Theme_dic", MessagePackSerializer.Serialize(ACC_Theme_Dictionary[CoordinateNum]));
             MyData.data.Add("Color_Theme_dic", MessagePackSerializer.Serialize(colors[CoordinateNum]));
-            MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity[CoordinateNum]));
+            //MyData.data.Add("Color_Relativity", MessagePackSerializer.Serialize(ColorRelativity[CoordinateNum]));
             MyData.data.Add("Relative_Theme_Bools", MessagePackSerializer.Serialize(RelativeThemeBool[CoordinateNum]));
             MyData.data.Add("Relative_ACC_Dictionary", MessagePackSerializer.Serialize(Relative_ACC_Dictionary[CoordinateNum]));
             //Items to not color
@@ -167,7 +167,7 @@ namespace Accessory_Themes
             ACC_Theme_Dictionary[CoordinateNum].Clear();
             colors[CoordinateNum].Clear();
             colors[CoordinateNum].Add(new Color[] { new Color(), new Color(), new Color(), new Color() });
-            ColorRelativity[CoordinateNum].Clear();
+            //ColorRelativity[CoordinateNum].Clear();
             Relative_ACC_Dictionary[CoordinateNum].Clear();
             RelativeThemeBool[CoordinateNum].Clear();
             var MyData = GetCoordinateExtendedData(coordinate);
@@ -185,10 +185,10 @@ namespace Accessory_Themes
                 {
                     colors[CoordinateNum] = MessagePackSerializer.Deserialize<List<Color[]>>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Color_Relativity", out ByteData) && ByteData != null)
-                {
-                    ColorRelativity[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, bool>>((byte[])ByteData);
-                }
+                //if (MyData.data.TryGetValue("Color_Relativity", out ByteData) && ByteData != null)
+                //{
+                //    ColorRelativity[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, bool>>((byte[])ByteData);
+                //}
                 if (MyData.data.TryGetValue("Relative_Theme_Bools", out ByteData) && ByteData != null)
                 {
                     RelativeThemeBool[CoordinateNum] = MessagePackSerializer.Deserialize<List<bool>>((byte[])ByteData);
@@ -380,7 +380,6 @@ namespace Accessory_Themes
                 }
                 for (int C1_color = 0; C1_color < 4; C1_color++)
                 {
-                    //Color.RGBToHSV(Check[C1_Theme][C1_color], out _, out var Saturation, out var Value);
                     excludetemp.Clear();
                     excludetemp.Add(Check[C1_Theme][C1_color]);
                     if (exclude.Contains(Check[C1_Theme][C1_color]))
