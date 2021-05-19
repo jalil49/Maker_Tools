@@ -203,12 +203,13 @@ namespace Accessory_Parents
                 Child_Button.Visible.OnNext(true);
                 Save_Relative_Button.Visible.OnNext(true);
                 ChildText.Visible.OnNext(true);
-                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Update_Text(AccessoriesApi.SelectedMakerAccSlot);
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().Update_Text();
             }
         }
 
-        private void Update_Text(int slot)
+        private void Update_Text()
         {
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
             if (ParentText.ControlObjects.Count() <= slot)
             {
                 return;
@@ -238,7 +239,10 @@ namespace Accessory_Parents
             {
                 output += " is not Parent";
             }
-            ParentText.ControlObjects.ElementAt(slot).GetComponentInChildren<TextMeshProUGUI>().text = output;
+            foreach (var item in ParentText.ControlObjects)
+            {
+                item.GetComponentInChildren<TextMeshProUGUI>().text = output;
+            }
             string output2;
             if (Child[CoordinateNum].TryGetValue(slot, out int value))
             {
@@ -248,7 +252,10 @@ namespace Accessory_Parents
             {
                 output2 = "Is not a Child";
             }
-            ChildText.ControlObjects.ElementAt(slot).GetComponentInChildren<TextMeshProUGUI>().text = output2;
+            foreach (var item in ChildText.ControlObjects)
+            {
+                item.GetComponentInChildren<TextMeshProUGUI>().text = output2;
+            }
         }
 
         private static void Hooks_ACC_Scale_Change(object sender, Acc_modifier_Event_ARG e)
@@ -906,7 +913,7 @@ namespace Accessory_Parents
             {
                 Child[CoordinateNum].Remove(Slot);
                 Update_Parenting();
-                Update_Text(Slot);
+                Update_Text();
                 return;
             }
             var options = Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
@@ -916,7 +923,7 @@ namespace Accessory_Parents
                 {
                     Child[CoordinateNum].Remove(Slot);
                     Update_Parenting();
-                    Update_Text(Slot);
+                    Update_Text();
                     return;
                 }
                 Child[CoordinateNum][Slot] = parentKey;
@@ -927,7 +934,7 @@ namespace Accessory_Parents
                 }
                 Save_Relative_data(Slot);
                 Update_Parenting();
-                Update_Text(Slot);
+                Update_Text();
             }
         }
 
@@ -975,6 +982,12 @@ namespace Accessory_Parents
                             return;
                         }
                     }
+                    var childlist = Child[CoordinateNum].Where(x => x.Value == Custom_Names[CoordinateNum][textbox.Value]);
+                    for (int i = 0, n = childlist.Count(); i < n; i++)
+                    {
+                        Child[CoordinateNum].Remove(childlist.ElementAt(i).Key);
+                    }
+
                     Bindings[CoordinateNum].Remove(Custom_Names[CoordinateNum][textbox.Value]);
                     Custom_Names[CoordinateNum].Remove(textbox.Value);
                     options.RemoveAt(index);
@@ -1000,7 +1013,6 @@ namespace Accessory_Parents
             {
                 item.GetComponentInChildren<TMP_Dropdown>().options = options;
             }
-            Update_Old_Parents();
             Update_Parenting();
             VisibiltyToggle();
         }
@@ -1041,6 +1053,7 @@ namespace Accessory_Parents
             var Bindings = Controller.Bindings[Controller.CoordinateNum];
             var Names = Controller.Custom_Names[Controller.CoordinateNum];
             var RelativeData = Controller.Relative_Data[Controller.CoordinateNum];
+            var Child = Controller.Child[Controller.CoordinateNum];
             foreach (var item in e.Queue)
             {
                 if (Bindings.TryGetValue(item.srcSlot, out var BindingList))
@@ -1065,6 +1078,11 @@ namespace Accessory_Parents
                 {
                     RelativeData[item.dstSlot] = RelativeVector;
                     RelativeData.Remove(item.srcSlot);
+                }
+                if (Child.TryGetValue(item.srcSlot, out var parent))
+                {
+                    Child[item.dstSlot] = parent;
+                    Child.Remove(item.srcSlot);
                 }
             }
             Controller.Update_Parenting();
