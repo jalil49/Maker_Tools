@@ -219,11 +219,19 @@ namespace Accessory_Themes
         {
             if (!HairAcc.Contains(slot) && theme != 0/* && !RelativeThemeBool[theme]*/)
             {
-                Color[] New_Color = new Color[] { colors[CoordinateNum][theme][0], colors[CoordinateNum][theme][1], colors[CoordinateNum][theme][2], colors[CoordinateNum][theme][3] };
-                ACCData[slot].color = New_Color;
+                ChaFileAccessory.PartsInfo Partinfo;
                 if (slot < 20)
                 {
-                    ChaControl.nowCoordinate.accessory.parts[slot].color = New_Color;
+                    Partinfo = ChaControl.nowCoordinate.accessory.parts[slot];
+                }
+                else
+                {
+                    Partinfo = ACCData[slot - 20];
+                }
+                Color[] New_Color = new Color[] { colors[CoordinateNum][theme][0], colors[CoordinateNum][theme][1], colors[CoordinateNum][theme][2], colors[CoordinateNum][theme][3] };
+                Partinfo.color = New_Color;
+                if (slot < 20)
+                {
                     ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[slot].color = New_Color;
                 }
                 ChaControl.ChangeAccessoryColor(slot);
@@ -235,38 +243,44 @@ namespace Accessory_Themes
         private void GetALLACC()
         {
             WeakKeyDictionary<ChaFile, MoreAccessories.CharAdditionalData> _accessoriesByChar = (WeakKeyDictionary<ChaFile, MoreAccessories.CharAdditionalData>)Traverse.Create(MoreAccessories._self).Field("_accessoriesByChar").GetValue();
-            if (_accessoriesByChar.TryGetValue(ChaFileControl, out MoreAccessories.CharAdditionalData data) == false)
+            if (!_accessoriesByChar.TryGetValue(ChaFileControl, out MoreAccessories.CharAdditionalData data))
             {
                 data = new MoreAccessories.CharAdditionalData();
-                _accessoriesByChar.Add(ChaFileControl, data);
             }
-            ACCData = new List<ChaFileAccessory.PartsInfo>();
-            ACCData.AddRange(ChaFileControl.coordinate[CoordinateNum].accessory.parts);
-            ACCData.AddRange(data.nowAccessories);
+            ACCData = data.nowAccessories;
         }
 
         private void Copy_ACC_Color(bool IsPersonal = false)
         {
-            if (Int32.TryParse(CopyTextbox.Value, out int numvalue))
+            if (Int32.TryParse(CopyTextbox.Value, out int Slot))
             {
-                numvalue--;
-                if (numvalue >= ACCData.Count || numvalue < 0)
+                Slot--;
+                if (Slot >= ACCData.Count + 20 || Slot < 0)
                 {
                     return;
                 }
-                if (IsPersonal)
+                ChaFileAccessory.PartsInfo info;
+                if (Slot < 20)
                 {
-                    //Personal_GUIslider1.Value = ACCData[numvalue].color[0];
-                    //Personal_GUIslider2.Value = ACCData[numvalue].color[1];
-                    //Personal_GUIslider3.Value = ACCData[numvalue].color[2];
-                    //Personal_GUIslider4.Value = ACCData[numvalue].color[3];
+                    info = ChaControl.nowCoordinate.accessory.parts[Slot];
                 }
                 else
                 {
-                    ACC_GUIslider1.SetValue(ACCData[numvalue].color[0]);
-                    ACC_GUIslider2.SetValue(ACCData[numvalue].color[1]);
-                    ACC_GUIslider3.SetValue(ACCData[numvalue].color[2]);
-                    ACC_GUIslider4.SetValue(ACCData[numvalue].color[3]);
+                    info = ACCData[Slot - 20];
+                }
+                if (IsPersonal)
+                {
+                    //Personal_GUIslider1.Value = info.color[0];
+                    //Personal_GUIslider2.Value = info.color[1];
+                    //Personal_GUIslider3.Value = info.color[2];
+                    //Personal_GUIslider4.Value = info.color[3];
+                }
+                else
+                {
+                    ACC_GUIslider1.SetValue(info.color[0]);
+                    ACC_GUIslider2.SetValue(info.color[1]);
+                    ACC_GUIslider3.SetValue(info.color[2]);
+                    ACC_GUIslider4.SetValue(info.color[3]);
                 }
             }
         }
@@ -283,13 +297,22 @@ namespace Accessory_Themes
                 comparison = new string[] { Parentlist[ParentDropdown.Value] };
             }
             HairAcc = ACI_Ref.HairAcc[CoordinateNum];
-            for (int slot = 0; slot < ACCData.Count; slot++)
+            for (int Slot = 0; Slot < ACCData.Count + 20; Slot++)
             {
-                if (comparison.Contains(ACCData[slot].parentKey))
+                string ParentKey;
+                if (Slot < 20)
                 {
-                    if (ChangeACCColor(slot, ThemeNamesDropdown.Value))
+                    ParentKey = ChaControl.nowCoordinate.accessory.parts[Slot].parentKey;
+                }
+                else
+                {
+                    ParentKey = ACCData[Slot - 20].parentKey;
+                }
+                if (comparison.Contains(ParentKey))
+                {
+                    if (ChangeACCColor(Slot, ThemeNamesDropdown.Value))
                     {
-                        ACC_Theme_Dictionary[CoordinateNum][slot] = ThemeNamesDropdown.Value;
+                        ACC_Theme_Dictionary[CoordinateNum][Slot] = ThemeNamesDropdown.Value;
                     }
                 }
             }
@@ -297,6 +320,10 @@ namespace Accessory_Themes
 
         private void UpdateSliderColor(int ColorNum, Color value/*, bool IsPersonal = false*/)
         {
+            if (ThemeNamesDropdown.Value == 0)
+            {
+                return;
+            }
             colors[CoordinateNum][ThemeNamesDropdown.Value][ColorNum] = value;
             HairAcc = ACI_Ref.HairAcc[CoordinateNum];
             GetALLACC();
@@ -316,92 +343,6 @@ namespace Accessory_Themes
                 }
             }
             base.Update();
-        }
-
-        private void AddThemeValueToList(int slot = 0, bool generated = false)
-        {
-            string Value = ThemeText.Value;
-            if (!generated)
-            {
-                slot = AccessoriesApi.SelectedMakerAccSlot;
-            }
-            GetALLACC();
-            if (Value.Length == 0 || radio.Value == 1 && ThemeNames[CoordinateNum].Contains(Value) || Value == "None" || slot == -1 || ACCData[slot].id == 120)
-            {
-                return;
-            }
-            if (radio.Value == 0)
-            {
-                ThemeNames[CoordinateNum].Add(Value);
-                RelativeThemeBool[CoordinateNum].Add(false);
-                Color[] current;
-                if (slot < 20)
-                {
-                    current = ChaControl.nowCoordinate.accessory.parts[slot].color;
-                }
-                else { current = ACCData[slot].color; }
-
-                colors[CoordinateNum].Add(current);
-                ACC_Theme_Dictionary[CoordinateNum][slot] = ThemeNames[CoordinateNum].Count - 1;
-                Update_ACC_Dropbox();
-                Themes.SetValue(slot, ThemeNames[CoordinateNum].Count - 1);
-                for (slot = 0; slot < ACCData.Count; slot++)
-                {
-                    if (ACC_Theme_Dictionary[CoordinateNum].ContainsKey(slot) || ACCData[slot].id == 120)
-                    {
-                        continue;
-                    }
-
-                    if (slot < 20)
-                    {
-                        if (ColorComparison(current, ChaControl.nowCoordinate.accessory.parts[slot].color))
-                        {
-                            ACC_Theme_Dictionary[CoordinateNum][slot] = ThemeNames[CoordinateNum].Count - 1;
-                            Themes.SetValue(slot, ThemeNames[CoordinateNum].Count - 1);
-                        }
-                    }
-                    else if (ColorComparison(current, ACCData[slot].color))
-                    {
-                        ACC_Theme_Dictionary[CoordinateNum][slot] = ThemeNames[CoordinateNum].Count - 1;
-                        Themes.SetValue(slot, ThemeNames[CoordinateNum].Count - 1);
-                    }
-                }
-                Update_ACC_Dropbox();
-                return;
-            }
-            else if (radio.Value == 1)
-            {
-                int index = ThemeNames[CoordinateNum].IndexOf(Value);
-                if (index < 1)
-                    return;
-                ThemeNames[CoordinateNum].RemoveAt(index);
-                colors[CoordinateNum].RemoveAt(index);
-                RelativeThemeBool[CoordinateNum].RemoveAt(index);
-                var removeindex = ACC_Theme_Dictionary[CoordinateNum].Where(x => x.Value == index).ToArray();
-                foreach (var item in removeindex)
-                {
-                    ACC_Theme_Dictionary[CoordinateNum].Remove(item.Key);
-                    Themes.SetValue(item.Key, 0);
-                }
-                removeindex = ACC_Theme_Dictionary[CoordinateNum].Where(x => x.Value > index).ToArray();
-                foreach (var item in removeindex)
-                {
-                    Themes.SetValue(item.Key, ThemeNames[CoordinateNum].Count - 1);
-                    ACC_Theme_Dictionary[CoordinateNum][item.Key] = item.Value - 1;
-                }
-            }
-            else
-            {
-                if (ACC_Theme_Dictionary[CoordinateNum].TryGetValue(slot, out int index))
-                {
-                    if (index < 1)
-                    {
-                        return;
-                    }
-                    ThemeNames[CoordinateNum][index] = Value;
-                }
-            }
-            Update_ACC_Dropbox();
         }
 
         private bool ColorComparison(Color C1, Color C2)
@@ -668,31 +609,6 @@ namespace Accessory_Themes
             {
                 UndoACCSkew[CoordinateNum].Push(UndoACCQueue);
                 ClothsUndoSkew[CoordinateNum].Push(ClothesUndoQueue);
-            }
-        }
-
-        private void AutoTheme()
-        {
-            GetALLACC();
-            var data = ACCData;
-            var themed = ACC_Theme_Dictionary[CoordinateNum];
-            if (Clearthemes.Value)
-            {
-                ACC_Theme_Dictionary[CoordinateNum].Clear();
-                ThemeNames[CoordinateNum].Clear();
-                ThemeNames[CoordinateNum].Add("None");
-                colors[CoordinateNum].Clear();
-                colors[CoordinateNum].Add(new Color[] { new Color(), new Color(), new Color(), new Color() });
-            }
-            radio.SetValue(0);
-            for (int Slot = 0; Slot < data.Count; Slot++)
-            {
-                if (themed.ContainsKey(Slot) || ACCData[Slot].id == 120 || ACCData[Slot].id == 0)
-                {
-                    continue;
-                }
-                ThemeText.SetValue($"Gen_Slot{(Slot + 1):000}", false);
-                AddThemeValueToList(Slot, true);
             }
         }
     }

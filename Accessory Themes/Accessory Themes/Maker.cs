@@ -159,7 +159,7 @@ namespace Accessory_Themes
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveThemeButton);
             ApplyTheme.OnClick.AddListener(delegate ()
             {
-                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().AddThemeValueToList();
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().AddThemeValueToList(AccessoriesApi.SelectedMakerAccSlot);
             });
             #endregion
 
@@ -417,21 +417,15 @@ namespace Accessory_Themes
 
         private void Update_ACC_Dropbox()
         {
-            List<TMP_Dropdown.OptionData> lists = ThemeNames[CoordinateNum].Select(x => new TMP_Dropdown.OptionData(x)).ToList();
+            List<TMP_Dropdown.OptionData> list = ThemeNames[CoordinateNum].Select(x => new TMP_Dropdown.OptionData(x)).ToList();
 
-            var old = ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
+            var acc_slots = ThemesDropDown_ACC.ControlObjects;
 
-            if (old.Count == ThemeNames[CoordinateNum].Count)
+            for (int slot = 0, n = acc_slots.Count(); slot < n; slot++)
             {
-                return;
+                acc_slots.ElementAt(slot).GetComponentInChildren<TMP_Dropdown>().options = list;
             }
-            var acc_slots = ThemesDropDown_ACC.ControlObjects.ToList();
-
-            for (int slot = 0; slot < acc_slots.Count; slot++)
-            {
-                acc_slots[slot].GetComponentInChildren<TMP_Dropdown>().options = lists;
-            }
-            ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options = lists;
+            ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options = list;
         }
 
         private void Update_RelativeColor_Dropbox()
@@ -497,6 +491,131 @@ namespace Accessory_Themes
                     toggles[i].isOn = toggle == i;
                 }
             }
+        }
+
+        private void AutoTheme()
+        {
+            GetALLACC();
+            var themed = ACC_Theme_Dictionary[CoordinateNum];
+            if (Clearthemes.Value)
+            {
+                ACC_Theme_Dictionary[CoordinateNum].Clear();
+                ThemeNames[CoordinateNum].Clear();
+                ThemeNames[CoordinateNum].Add("None");
+                colors[CoordinateNum].Clear();
+                colors[CoordinateNum].Add(new Color[] { new Color(), new Color(), new Color(), new Color() });
+            }
+            radio.SetValue(0);
+            for (int Slot = 0; Slot < ACCData.Count + 20; Slot++)
+            {
+                ChaFileAccessory.PartsInfo SlotInfo;
+                if (Slot < 20)
+                {
+                    SlotInfo = ChaControl.nowCoordinate.accessory.parts[Slot];
+                }
+                else
+                {
+                    SlotInfo = ACCData[Slot - 20];
+                }
+                if (themed.ContainsKey(Slot) || SlotInfo.type < 121)
+                {
+                    continue;
+                }
+                ThemeText.SetValue($"Gen_Slot{(Slot + 1):000}", false);
+                AddThemeValueToList(Slot, true);
+            }
+        }
+
+        private void AddThemeValueToList(int slot, bool Generated = false)
+        {
+            string Text = ThemeText.Value;
+            ChaFileAccessory.PartsInfo SlotInfo;
+            if (slot < 20)
+            {
+                SlotInfo = ChaControl.nowCoordinate.accessory.parts[slot];
+            }
+            else
+            {
+                SlotInfo = ACCData[slot - 20];
+            }
+            if (Text.Length == 0 || radio.Value == 0 && ThemeNames[CoordinateNum].Contains(Text) || Text == "None" || SlotInfo.type == 120)
+            {
+                return;
+            }
+            if (radio.Value == 0)
+            {
+                ThemeNames[CoordinateNum].Add(Text);
+                RelativeThemeBool[CoordinateNum].Add(false);
+                Color[] current = SlotInfo.color;
+                Update_ACC_Dropbox();
+
+                colors[CoordinateNum].Add(current);
+                ACC_Theme_Dictionary[CoordinateNum][slot] = ThemeNames[CoordinateNum].Count - 1;
+                Themes.SetValue(slot, ThemeNames[CoordinateNum].Count - 1, false);
+                var Themed = ACC_Theme_Dictionary[CoordinateNum];
+                if (!Generated)
+                {
+                    slot = 0;
+                }
+                ChaFileAccessory.PartsInfo SlotInfo2;
+                for (; slot < ACCData.Count + 20; slot++)
+                {
+                    if (slot < 20)
+                    {
+                        SlotInfo2 = ChaControl.nowCoordinate.accessory.parts[slot];
+                    }
+                    else
+                    {
+                        SlotInfo2 = ACCData[slot - 20];
+                    }
+
+                    if (Themed.ContainsKey(slot) || SlotInfo2.type == 120)
+                    {
+                        continue;
+                    }
+                    if (ColorComparison(current, SlotInfo2.color))
+                    {
+                        Settings.Logger.LogWarning("Setting " + slot);
+                        Themed[slot] = ThemeNames[CoordinateNum].Count - 1;
+                        Themes.SetValue(slot, ThemeNames[CoordinateNum].Count - 1, false);
+                    }
+                }
+                Update_ACC_Dropbox();
+                return;
+            }
+            else if (radio.Value == 1)
+            {
+                int index = ThemeNames[CoordinateNum].IndexOf(Text);
+                if (index < 1)
+                    return;
+                ThemeNames[CoordinateNum].RemoveAt(index);
+                colors[CoordinateNum].RemoveAt(index);
+                RelativeThemeBool[CoordinateNum].RemoveAt(index);
+                var removeindex = ACC_Theme_Dictionary[CoordinateNum].Where(x => x.Value == index).ToArray();
+                for (int i = 0; i < removeindex.Length; i++)
+                {
+                    ACC_Theme_Dictionary[CoordinateNum].Remove(removeindex[i].Key);
+                    Themes.SetValue(removeindex[i].Key, 0, false);
+                }
+                removeindex = ACC_Theme_Dictionary[CoordinateNum].Where(x => x.Value > index).ToArray();
+                for (int i = 0; i < removeindex.Length; i++)
+                {
+                    var next = ACC_Theme_Dictionary[CoordinateNum][removeindex[i].Key] -= 1;
+                    Themes.SetValue(removeindex[i].Key, next, false);
+                }
+            }
+            else
+            {
+                if (ACC_Theme_Dictionary[CoordinateNum].TryGetValue(slot, out int index))
+                {
+                    if (index < 1)
+                    {
+                        return;
+                    }
+                    ThemeNames[CoordinateNum][index] = Text;
+                }
+            }
+            Update_ACC_Dropbox();
         }
     }
 }
