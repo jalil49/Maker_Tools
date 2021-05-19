@@ -1050,25 +1050,12 @@ namespace Accessory_Parents
         private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
         {
             var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var Bindings = Controller.Bindings[Controller.CoordinateNum];
+            //var Bindings = Controller.Bindings[Controller.CoordinateNum];
             var Names = Controller.Custom_Names[Controller.CoordinateNum];
             var RelativeData = Controller.Relative_Data[Controller.CoordinateNum];
             var Child = Controller.Child[Controller.CoordinateNum];
             foreach (var item in e.Queue)
             {
-                if (Bindings.TryGetValue(item.srcSlot, out var BindingList))
-                {
-                    foreach (var sub in e.Queue)
-                    {
-                        if (BindingList.Contains(sub.srcSlot))
-                        {
-                            BindingList.Remove(sub.srcSlot);
-                            BindingList.Add(sub.dstSlot);
-                        }
-                    }
-                    Bindings.Remove(item.srcSlot);
-                    Bindings[item.dstSlot] = BindingList;
-                }
                 var Handover = Names.Where(x => x.Value == item.srcSlot).ToArray();
                 for (int i = 0; i < Handover.Length; i++)
                 {
@@ -1081,6 +1068,14 @@ namespace Accessory_Parents
                 }
                 if (Child.TryGetValue(item.srcSlot, out var parent))
                 {
+                    foreach (var sub in e.Queue)
+                    {
+                        if (sub.srcSlot == parent)
+                        {
+                            parent = sub.dstSlot;
+                            break;
+                        }
+                    }
                     Child[item.dstSlot] = parent;
                     Child.Remove(item.srcSlot);
                 }
