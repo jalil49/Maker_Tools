@@ -5,6 +5,7 @@ using KKAPI.Chara;
 using KKAPI.MainGame;
 using KKAPI.Maker;
 using System;
+using System.Collections;
 
 namespace Accessory_States
 {
@@ -25,9 +26,15 @@ namespace Accessory_States
             Logger = base.Logger;
             Hooks.Init();
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
-            if (!TryfindPluginInstance("madevil.kk.ass"))
+
+            StartCoroutine(Wait());
+            IEnumerator Wait()
             {
-                CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
+                yield return null;
+                if (!TryfindPluginInstance("madevil.kk.ass"))
+                {
+                    CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
+                }
             }
             GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
