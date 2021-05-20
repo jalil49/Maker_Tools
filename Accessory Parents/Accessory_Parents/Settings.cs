@@ -33,7 +33,6 @@ namespace Accessory_Parents
 
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
             MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
-            MakerAPI.ReloadCustomInterface += CharaEvent.MakerAPI_ReloadCustomInterface;
         }
     }
 }
