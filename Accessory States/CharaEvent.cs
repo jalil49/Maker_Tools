@@ -75,7 +75,7 @@ namespace Accessory_States
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (currentGameMode == GameMode.Maker && !Settings.Enable.Value)
+            if (currentGameMode == GameMode.Maker && !MakerEnabled)
             {
                 return;
             }
