@@ -51,11 +51,14 @@ namespace Accessory_Themes
 
         //MakerCoordinateLoadToggle PersonalSkew_Toggle;
 
+        static bool MakerEnabled = false;
+
         static AccessoryControlWrapper<MakerDropdown, int> Themes;
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
-            if (!Settings.Enable.Value)
+            MakerEnabled = Settings.Enable.Value;
+            if (!MakerEnabled)
             {
                 return;
             }
@@ -86,7 +89,8 @@ namespace Accessory_Themes
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
-            if (!Settings.Enable.Value)
+            MakerEnabled = Settings.Enable.Value;
+            if (!MakerEnabled)
             {
                 return;
             }

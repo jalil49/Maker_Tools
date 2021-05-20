@@ -59,7 +59,7 @@ namespace Accessory_Themes
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (!Settings.Enable.Value)
+            if (!MakerEnabled)
             {
                 return;
             }
@@ -133,7 +133,7 @@ namespace Accessory_Themes
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            if (!Settings.Enable.Value)
+            if (!MakerEnabled)
             {
                 return;
             }
@@ -152,7 +152,7 @@ namespace Accessory_Themes
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            if (!Settings.Enable.Value)
+            if (!MakerEnabled)
             {
                 return;
             }
@@ -173,7 +173,7 @@ namespace Accessory_Themes
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !Settings.Enable.Value)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !MakerEnabled)
             {
                 return;
             }

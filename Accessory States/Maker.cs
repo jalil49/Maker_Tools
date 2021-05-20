@@ -41,10 +41,12 @@ namespace Accessory_States
 
         const int Defined_Bindings = 8;
         const int Binding_offset = 6;
+        static bool MakerEnabled = false;
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
-            if (!Settings.Enable.Value)
+            MakerEnabled = Settings.Enable.Value;
+            if (!MakerEnabled)
             {
                 return;
             }
@@ -191,7 +193,8 @@ namespace Accessory_States
 
         public static void Maker_started()
         {
-            if (!Settings.Enable.Value)
+            MakerEnabled = Settings.Enable.Value;
+            if (!MakerEnabled)
             {
                 return;
             }

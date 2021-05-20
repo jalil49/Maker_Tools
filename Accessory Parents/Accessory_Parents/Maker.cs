@@ -30,6 +30,8 @@ namespace Accessory_Parents
         static MakerButton Save_Relative_Button;
         static MakerButton Child_Button;
 
+        static bool MakerEnabled = false;
+
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
             AccessoriesApi.AccessoriesCopied -= (s, es) => VisibiltyToggle();
@@ -51,7 +53,8 @@ namespace Accessory_Parents
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
-            if (!Settings.Enable.Value)
+            MakerEnabled = Settings.Enable.Value;
+            if (!MakerEnabled)
             {
                 return;
             }
@@ -74,7 +77,8 @@ namespace Accessory_Parents
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
-            if (!Settings.Enable.Value)
+            MakerEnabled = Settings.Enable.Value;
+            if (!MakerEnabled)
             {
                 return;
             }
