@@ -485,7 +485,7 @@ namespace Accessory_Themes
             GetALLACC();
             while (!MakerAPI.InsideAndLoaded || Themes.Control.ControlObjects.Count() < ACCData.Count)
             {
-                yield return 0;
+                yield return null;
             }
 
             var set = ACC_Theme_Dictionary[CoordinateNum];
@@ -502,8 +502,8 @@ namespace Accessory_Themes
                     Themes.SetValue(SlotIndex, 0, false);
                 }
             }
-            IsThemeRelativeBool.SetValue(RelativeThemeBool[CoordinateNum][ThemeNamesDropdown.Value], false);
-
+            ThemeNamesDropdown.SetValue(0, false);
+            IsThemeRelativeBool.SetValue(false, false);
             VisibiltyToggle();
         }
 
