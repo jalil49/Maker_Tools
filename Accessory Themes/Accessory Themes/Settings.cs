@@ -14,7 +14,7 @@ namespace Accessory_Themes
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_Themes";
-        public const string Version = "1.1";
+        public const string Version = "1.2";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }
