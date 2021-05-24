@@ -35,7 +35,16 @@ namespace Accessory_Shortcuts
             {
                 return;
             }
-            CurrentCoordinate.Subscribe(x => { Update_More_Accessories(); Constants.Default_Dict(); });
+            CurrentCoordinate.Subscribe(x =>
+            {
+                Update_More_Accessories();
+                Constants.Default_Dict();
+                if (Slots_Location != null)
+                {
+                    Slot_Toggles.Clear();
+                    UpdateSlots();
+                }
+            });
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
