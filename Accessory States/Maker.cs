@@ -637,7 +637,7 @@ namespace Accessory_States
             }
         }
 
-        private static void OnGUI()
+        private void OnGUI()
         {
             if (!ShowInterface || !MakerAPI.IsInterfaceVisible())
                 return;
