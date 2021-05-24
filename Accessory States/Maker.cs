@@ -133,6 +133,7 @@ namespace Accessory_States
                         }
                         foreach (var item in options)
                         {
+                            if (item.text == Text)
                             {
                                 return;
                             }
