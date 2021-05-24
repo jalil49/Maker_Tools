@@ -12,13 +12,11 @@ namespace Accessory_Shortcuts
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        readonly ManualLogSource Logger;
         List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
         public CharaEvent()
         {
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
-            Logger = Settings.Logger;
         }
 
         protected override void OnDestroy()
