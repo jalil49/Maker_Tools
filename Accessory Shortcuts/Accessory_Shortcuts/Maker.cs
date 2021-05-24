@@ -29,6 +29,7 @@ namespace Accessory_Shortcuts
 
             More_Acc = Traverse.Create(MoreAccessoriesKOI.MoreAccessories._self);
             Slots_Location = GameObject.Find("CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/Slots/Viewport/Content").transform;
+            Slot_Toggles.Clear();
             UpdateSlots();
         }
 
@@ -80,8 +81,7 @@ namespace Accessory_Shortcuts
 
         private void UpdateSlots()
         {
-            Slot_Toggles.Clear();
-            for (int i = 0, n = Slots_Location.childCount - 1; i < n; i++)
+            for (int i = Slot_Toggles.Count, n = Slots_Location.childCount - 1; i < n; i++)
             {
                 Slot_Toggles.Add(Slots_Location.GetChild(i).GetComponent<Toggle>());
             }
@@ -92,8 +92,30 @@ namespace Accessory_Shortcuts
             if (Input.anyKeyDown && AccessoriesApi.AccessoryCanvasVisible)
             {
                 var Slot = AccessoriesApi.SelectedMakerAccSlot;
-                var accessory = MakerAPI.GetCharacterControl().GetAccessoryObject(Slot);
-                if (accessory == null)
+                if (Slot + 1 >= Slot_Toggles.Count)
+                {
+                    UpdateSlots();
+                }
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    Slot_Toggles[Math.Max(Slot - 1, 0)].isOn = true;
+                    return;
+                }
+                else if (Input.GetKeyDown(KeyCode.E))
+                {
+                    Slot_Toggles[Math.Min(Slot + 1, Slot_Toggles.Count - 1)].isOn = true;
+                    return;
+                }
+                bool Unassigned;
+                if (Slot < 20)
+                {
+                    Unassigned = ChaControl.nowCoordinate.accessory.parts[Slot].type < 121;
+                }
+                else
+                {
+                    Unassigned = Accessorys_Parts[Slot - 20].type < 121;
+                }
+                if (Unassigned)
                 {
                     Skip = true;
                     CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { Slot }).GetValue<CvsAccessory>();
@@ -109,20 +131,6 @@ namespace Accessory_Shortcuts
                         CVS_Slot.tglAcsKind.isOn = true;
                     }
                     Skip = false;
-                }
-
-
-                if (Slot + 1 >= Slot_Toggles.Count)
-                {
-                    UpdateSlots();
-                }
-                if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    Slot_Toggles[Math.Max(Slot - 1, 0)].isOn = true;
-                }
-                else if (Input.GetKeyDown(KeyCode.E))
-                {
-                    Slot_Toggles[Math.Min(Slot + 1, Slot_Toggles.Count - 1)].isOn = true;
                 }
             }
             base.Update();
