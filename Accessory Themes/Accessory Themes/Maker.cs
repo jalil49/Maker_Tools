@@ -97,9 +97,9 @@ namespace Accessory_Themes
 
             var owner = Settings.Instance;
             #region Personal Settings
-            MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
+            //MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
 
-            e.AddSubCategory(category);
+            //e.AddSubCategory(category);
 
             #region PersonalTheme
             //string[] outfits = new string[] { "School Uniform", "AfterSchool", "Gym", "Swimsuit", "Club", "Casual", "Nightwear" };
@@ -158,7 +158,7 @@ namespace Accessory_Themes
             #endregion
 
             #region Accessory Window Settings
-            category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 2, "Accessory Settings");
+            var category = new MakerCategory(null, null);
             //e.AddSubCategory(category);
 
             ThemesDropDown_ACC = new MakerDropdown("Theme: ", MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().ThemeNames[MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().CoordinateNum].ToArray(), category, 0, owner);
@@ -554,7 +554,7 @@ namespace Accessory_Themes
 
         private void AddThemeValueToList(int slot, bool Generated = false)
         {
-            string Text = ThemeText.Value;
+            string Text = ThemeText.Value.Trim();
             ChaFileAccessory.PartsInfo SlotInfo;
             if (slot < 20)
             {

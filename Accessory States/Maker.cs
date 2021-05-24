@@ -71,9 +71,12 @@ namespace Accessory_States
             ApplyTheme = MakerAPI.AddAccessoryWindowControl<MakerButton>(AddRemoveModifyButton);
             ApplyTheme.OnClick.AddListener(delegate ()
             {
+                var Text = ThemeText.Value.Trim();
+                if (Text.Length == 0)
+                {
+                    return;
+                }
                 var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-
-                //List<TMP_Dropdown.OptionData> options = Custom_Dropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
                 var controlobjects = ACC_Appearance_dropdown.Control.ControlObjects.ToArray();
                 List<TMP_Dropdown.OptionData> options = controlobjects[ACC_Appearance_dropdown.CurrentlySelectedIndex].GetComponentInChildren<TMP_Dropdown>().options;
                 int kind = 0;
@@ -81,19 +84,19 @@ namespace Accessory_States
                 switch (radio.Value)
                 {
                     case 0:
-                        if (options.Any(x => x.text == ThemeText.Value))
+                        if (options.Any(x => x.text == Text))
                         {
                             return;
                         }
-                        //options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
-                        options.Add(new TMP_Dropdown.OptionData(ThemeText.Value));
+                        //options.Add(new TMP_Dropdown.OptionData(Text));
+                        options.Add(new TMP_Dropdown.OptionData(Text));
                         kind = Defined_Bindings + 1 + Controller.ThisCharactersData.Now_ACC_Name_Dictionary.Count();
-                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary[kind] = ThemeText.Value;
+                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary[kind] = Text;
                         break;
                     case 1:
                         for (int i = Defined_Bindings + 1; i < options.Count; i++)
                         {
-                            if (options[i].text == ThemeText.Value)
+                            if (options[i].text == Text)
                             {
                                 index = i;
                                 break;
@@ -130,14 +133,13 @@ namespace Accessory_States
                         }
                         foreach (var item in options)
                         {
-                            if (item.text == ThemeText.Value)
                             {
                                 return;
                             }
                         }
                         var text = Controller.ThisCharactersData.Now_ACC_Name_Dictionary.First(x => x.Value == options[ACC_Appearance_dropdown.GetSelectedValue()].text);
-                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary[text.Key] = ThemeText.Value;
-                        options[ACC_Appearance_dropdown.GetSelectedValue()].text = ThemeText.Value;
+                        Controller.ThisCharactersData.Now_ACC_Name_Dictionary[text.Key] = Text;
+                        options[ACC_Appearance_dropdown.GetSelectedValue()].text = Text;
                         break;
                     default:
                         break;
@@ -634,7 +636,7 @@ namespace Accessory_States
             }
         }
 
-        private void OnGUI()
+        private static void OnGUI()
         {
             if (!ShowInterface || !MakerAPI.IsInterfaceVisible())
                 return;

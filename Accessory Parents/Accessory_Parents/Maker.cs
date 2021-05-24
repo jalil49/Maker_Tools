@@ -954,6 +954,11 @@ namespace Accessory_Parents
 
         private void Modify_Dropdown(bool Generic = false)
         {
+            var Text = textbox.Value.Trim();
+            if (Text.Length == 0)
+            {
+                Generic = true;
+            }
             if (MakerAPI.GetCharacterControl().GetAccessoryObject(AccessoriesApi.SelectedMakerAccSlot) == null)
             {
                 return;
@@ -967,8 +972,7 @@ namespace Accessory_Parents
             switch (radio.Value)
             {
                 case 0:
-                    var Text = textbox.Value;
-                    if (textbox.Value == "" || Generic)
+                    if (Generic)
                     {
                         Text = $"Slot{(AccessoriesApi.SelectedMakerAccSlot + 1):000}";
                     }
@@ -980,13 +984,13 @@ namespace Accessory_Parents
                     Custom_Names[CoordinateNum][Text] = AccessoriesApi.SelectedMakerAccSlot;
                     break;
                 case 1:
-                    if (textbox.Value == "None")
+                    if (Text == "None")
                     {
                         return;
                     }
                     for (int i = 0; i < options.Count; i++)
                     {
-                        if (options[i].text == textbox.Value)
+                        if (options[i].text == Text)
                         {
                             index = i;
                             break;
@@ -996,14 +1000,14 @@ namespace Accessory_Parents
                             return;
                         }
                     }
-                    var childlist = Child[CoordinateNum].Where(x => x.Value == Custom_Names[CoordinateNum][textbox.Value]);
+                    var childlist = Child[CoordinateNum].Where(x => x.Value == Custom_Names[CoordinateNum][Text]);
                     for (int i = 0, n = childlist.Count(); i < n; i++)
                     {
                         Child[CoordinateNum].Remove(childlist.ElementAt(i).Key);
                     }
 
-                    Bindings[CoordinateNum].Remove(Custom_Names[CoordinateNum][textbox.Value]);
-                    Custom_Names[CoordinateNum].Remove(textbox.Value);
+                    Bindings[CoordinateNum].Remove(Custom_Names[CoordinateNum][Text]);
+                    Custom_Names[CoordinateNum].Remove(Text);
                     options.RemoveAt(index);
                     break;
                 case 2:
@@ -1011,13 +1015,13 @@ namespace Accessory_Parents
                     {
                         return;
                     }
-                    if (options.Any(x => x.text == textbox.Value))
+                    if (options.Any(x => x.text == Text))
                     {
                         return;
                     }
-                    Custom_Names[CoordinateNum][textbox.Value] = Custom_Names[CoordinateNum][options[Parent_DropDown.Value].text];
+                    Custom_Names[CoordinateNum][Text] = Custom_Names[CoordinateNum][options[Parent_DropDown.Value].text];
                     Custom_Names[CoordinateNum].Remove(options[Parent_DropDown.Value].text);
-                    options[Parent_DropDown.Value].text = textbox.Value;
+                    options[Parent_DropDown.Value].text = Text;
                     break;
                 default:
                     break;
