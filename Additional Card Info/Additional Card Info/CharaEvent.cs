@@ -99,85 +99,85 @@ namespace Additional_Card_Info
                 PersonalClothingBools[j] = false;
             }
 
-            var MyData = GetExtendedData();
+            var ACI_Data = GetExtendedData();
 
-            if (MyData != null)
+            if (ACI_Data != null)
             {
-                if (MyData.data.TryGetValue("HairAcc", out var ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("HairAcc", out var ByteData) && ByteData != null)
                 {
                     HairAcc = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
                 {
                     AccKeep = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Personal_Clothing_Save", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Personal_Clothing_Save", out ByteData) && ByteData != null)
                 {
                     PersonalClothingBools = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Cosplay_Academy_Ready", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Cosplay_Academy_Ready", out ByteData) && ByteData != null)
                 {
                     Character_Cosplay_Ready.SetValue(MessagePackSerializer.Deserialize<bool>((byte[])ByteData));
                 }
 
 
-                if (MyData.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
                 {
                     CoordinateSaveBools = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
                 {
                     AccKeep = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {
                     PersonalityType_Restriction = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
                 {
                     TraitType_Restriction = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("HstateType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("HstateType_Restriction", out ByteData) && ByteData != null)
                 {
                     HstateType_Restriction = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("ClubType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("ClubType_Restriction", out ByteData) && ByteData != null)
                 {
                     ClubType_Restriction = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Height_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Height_Restriction", out ByteData) && ByteData != null)
                 {
                     Height_Restriction = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Breastsize_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Breastsize_Restriction", out ByteData) && ByteData != null)
                 {
                     Breastsize_Restriction = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("CoordinateType", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("CoordinateType", out ByteData) && ByteData != null)
                 {
                     CoordinateType = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("CoordinateSubType", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("CoordinateSubType", out ByteData) && ByteData != null)
                 {
                     CoordinateSubType = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Creator", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Creator", out ByteData) && ByteData != null)
                 {
                     CreatorNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Set_Name", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Set_Name", out ByteData) && ByteData != null)
                 {
                     SetNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("SubSetNames", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("SubSetNames", out ByteData) && ByteData != null)
                 {
                     SubSetNames = MessagePackSerializer.Deserialize<string[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("ClothNot", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("ClothNot", out ByteData) && ByteData != null)
                 {
                     ClothNotData = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("GenderType", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("GenderType", out ByteData) && ByteData != null)
                 {
                     GenderType = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 }
@@ -186,36 +186,36 @@ namespace Additional_Card_Info
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            PluginData MyData = new PluginData();
-            MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc));
-            MyData.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
-            MyData.data.Add("Personal_Clothing_Save", MessagePackSerializer.Serialize(PersonalClothingBools));
-            MyData.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready.Value));
-            SetExtendedData(MyData);
+            PluginData ACI_Data = new PluginData();
+            ACI_Data.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc));
+            ACI_Data.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
+            ACI_Data.data.Add("Personal_Clothing_Save", MessagePackSerializer.Serialize(PersonalClothingBools));
+            ACI_Data.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready.Value));
+            SetExtendedData(ACI_Data);
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            PluginData MyData = new PluginData();
+            PluginData ACI_Data = new PluginData();
 
-            MyData.data.Add("CoordinateSaveBools", MessagePackSerializer.Serialize(CoordinateSaveBools[CoordinateNum]));
-            MyData.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc[CoordinateNum]));
-            MyData.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep[CoordinateNum]));
-            MyData.data.Add("PersonalityType_Restriction", MessagePackSerializer.Serialize(PersonalityType_Restriction[CoordinateNum]));
-            MyData.data.Add("TraitType_Restriction", MessagePackSerializer.Serialize(TraitType_Restriction[CoordinateNum]));
-            MyData.data.Add("HstateType_Restriction", MessagePackSerializer.Serialize(HstateType_Restriction[CoordinateNum]));
-            MyData.data.Add("ClubType_Restriction", MessagePackSerializer.Serialize(ClubType_Restriction[CoordinateNum]));
-            MyData.data.Add("Height_Restriction", MessagePackSerializer.Serialize(Height_Restriction[CoordinateNum]));
-            MyData.data.Add("Breastsize_Restriction", MessagePackSerializer.Serialize(Breastsize_Restriction[CoordinateNum]));
-            MyData.data.Add("CoordinateType", MessagePackSerializer.Serialize(CoordinateType[CoordinateNum]));
-            MyData.data.Add("CoordinateSubType", MessagePackSerializer.Serialize(CoordinateSubType[CoordinateNum]));
-            MyData.data.Add("Creator", MessagePackSerializer.Serialize(CreatorNames[CoordinateNum]));
-            MyData.data.Add("Set_Name", MessagePackSerializer.Serialize(SetNames[CoordinateNum]));
-            MyData.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames[CoordinateNum]));
-            MyData.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData[CoordinateNum]));
-            MyData.data.Add("GenderType", MessagePackSerializer.Serialize(GenderType[CoordinateNum]));
+            ACI_Data.data.Add("CoordinateSaveBools", MessagePackSerializer.Serialize(CoordinateSaveBools[CoordinateNum]));
+            ACI_Data.data.Add("HairAcc", MessagePackSerializer.Serialize(HairAcc[CoordinateNum]));
+            ACI_Data.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep[CoordinateNum]));
+            ACI_Data.data.Add("PersonalityType_Restriction", MessagePackSerializer.Serialize(PersonalityType_Restriction[CoordinateNum]));
+            ACI_Data.data.Add("TraitType_Restriction", MessagePackSerializer.Serialize(TraitType_Restriction[CoordinateNum]));
+            ACI_Data.data.Add("HstateType_Restriction", MessagePackSerializer.Serialize(HstateType_Restriction[CoordinateNum]));
+            ACI_Data.data.Add("ClubType_Restriction", MessagePackSerializer.Serialize(ClubType_Restriction[CoordinateNum]));
+            ACI_Data.data.Add("Height_Restriction", MessagePackSerializer.Serialize(Height_Restriction[CoordinateNum]));
+            ACI_Data.data.Add("Breastsize_Restriction", MessagePackSerializer.Serialize(Breastsize_Restriction[CoordinateNum]));
+            ACI_Data.data.Add("CoordinateType", MessagePackSerializer.Serialize(CoordinateType[CoordinateNum]));
+            ACI_Data.data.Add("CoordinateSubType", MessagePackSerializer.Serialize(CoordinateSubType[CoordinateNum]));
+            ACI_Data.data.Add("Creator", MessagePackSerializer.Serialize(CreatorNames[CoordinateNum]));
+            ACI_Data.data.Add("Set_Name", MessagePackSerializer.Serialize(SetNames[CoordinateNum]));
+            ACI_Data.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames[CoordinateNum]));
+            ACI_Data.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData[CoordinateNum]));
+            ACI_Data.data.Add("GenderType", MessagePackSerializer.Serialize(GenderType[CoordinateNum]));
 
-            SetCoordinateExtendedData(coordinate, MyData);
+            SetCoordinateExtendedData(coordinate, ACI_Data);
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
@@ -224,70 +224,70 @@ namespace Additional_Card_Info
             {
                 return;
             }
-            var MyData = GetCoordinateExtendedData(coordinate);
-            if (MyData != null)
+            var ACI_Data = GetCoordinateExtendedData(coordinate);
+            if (ACI_Data != null)
             {
-                if (MyData.data.TryGetValue("HairAcc", out var ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("HairAcc", out var ByteData) && ByteData != null)
                 {
                     HairAcc[CoordinateNum] = MessagePackSerializer.Deserialize<List<int>>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
                 {
                     CoordinateSaveBools[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
                 {
                     AccKeep[CoordinateNum] = MessagePackSerializer.Deserialize<List<int>>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {
                     PersonalityType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, int>>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
                 {
                     TraitType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, int>>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("HstateType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("HstateType_Restriction", out ByteData) && ByteData != null)
                 {
                     HstateType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("ClubType_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("ClubType_Restriction", out ByteData) && ByteData != null)
                 {
                     ClubType_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Height_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Height_Restriction", out ByteData) && ByteData != null)
                 {
                     Height_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Breastsize_Restriction", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Breastsize_Restriction", out ByteData) && ByteData != null)
                 {
                     Breastsize_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("CoordinateType", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("CoordinateType", out ByteData) && ByteData != null)
                 {
                     CoordinateType[CoordinateNum] = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("CoordinateSubType", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("CoordinateSubType", out ByteData) && ByteData != null)
                 {
                     CoordinateSubType[CoordinateNum] = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Creator", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Creator", out ByteData) && ByteData != null)
                 {
                     CreatorNames[CoordinateNum] = MessagePackSerializer.Deserialize<string>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("Set_Name", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("Set_Name", out ByteData) && ByteData != null)
                 {
                     SetNames[CoordinateNum] = MessagePackSerializer.Deserialize<string>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("SubSetNames", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("SubSetNames", out ByteData) && ByteData != null)
                 {
                     SubSetNames[CoordinateNum] = MessagePackSerializer.Deserialize<string>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("ClothNot", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("ClothNot", out ByteData) && ByteData != null)
                 {
                     ClothNotData[CoordinateNum] = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
                 }
-                if (MyData.data.TryGetValue("GenderType", out ByteData) && ByteData != null)
+                if (ACI_Data.data.TryGetValue("GenderType", out ByteData) && ByteData != null)
                 {
                     GenderType[CoordinateNum] = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
                 }
