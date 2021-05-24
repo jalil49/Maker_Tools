@@ -37,7 +37,7 @@ namespace Accessory_Shortcuts
             }
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void PreAccessory(ChaControl __instance, int slotNo, int type, int id, string parentKey)
         {
             var args = new Slot_ACC_Change_ARG(__instance, slotNo, type, id, parentKey);
