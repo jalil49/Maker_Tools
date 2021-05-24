@@ -156,7 +156,6 @@ namespace Accessory_Themes
             #endregion
 
             #endregion
-
             #region Accessory Window Settings
             var category = new MakerCategory(null, null);
             //e.AddSubCategory(category);
@@ -179,7 +178,6 @@ namespace Accessory_Themes
                 MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().AddThemeValueToList(AccessoriesApi.SelectedMakerAccSlot);
             });
             #endregion
-
             #region Accessory Setting Tab
             category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 2, "Accessory Settings");
             e.AddSubCategory(category);
@@ -211,7 +209,6 @@ namespace Accessory_Themes
             var slider2 = new MakerColor("Color 2", true, category, Color.white, owner);
             var slider3 = new MakerColor("Color 3", true, category, Color.white, owner);
             var slider4 = new MakerColor("Color 4", true, category, Color.white, owner);
-
             ACC_GUIslider1 = MakerAPI.AddControl(slider1);
             ACC_GUIslider1.ValueChanged.Subscribe(x =>
             {
@@ -248,7 +245,6 @@ namespace Accessory_Themes
             });
             e.AddControl(Copybutton);
             #endregion
-
             #region Parent color stuff
             SimpleParentDropdown = new MakerDropdown("Parent List", Constants.InclusionList.ToArray(), category, 0, owner);
             e.AddControl(SimpleParentDropdown);
@@ -483,7 +479,7 @@ namespace Accessory_Themes
         {
             yield return null;
             GetALLACC();
-            while (!MakerAPI.InsideAndLoaded || Themes.Control.ControlObjects.Count() < ACCData.Count)
+            while (!MakerAPI.InsideAndLoaded || Themes.Control.ControlObjects.Count() < 20 + ACCData.Count)
             {
                 yield return null;
             }
@@ -491,7 +487,7 @@ namespace Accessory_Themes
             var set = ACC_Theme_Dictionary[CoordinateNum];
             Update_ACC_Dropbox();
             Update_RelativeColor_Dropbox();
-            for (int SlotIndex = 0, ACC_Count = ACCData.Count; SlotIndex < ACC_Count; SlotIndex++)
+            for (int SlotIndex = 0, ACC_Count = 20 + ACCData.Count; SlotIndex < ACC_Count; SlotIndex++)
             {
                 if (set.ContainsKey(SlotIndex))
                 {
