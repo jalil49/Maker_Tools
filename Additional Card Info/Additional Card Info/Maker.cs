@@ -22,6 +22,7 @@ namespace Additional_Card_Info
         static readonly MakerToggle[] ClothNotToggles = new MakerToggle[3];
 
         static MakerToggle Character_Cosplay_Ready;
+        static MakerToggle MakeUpToggle;
 
         static AccessoryControlWrapper<MakerToggle, bool> AccKeepToggles;
         static AccessoryControlWrapper<MakerToggle, bool> HairKeepToggles;
@@ -143,7 +144,15 @@ namespace Additional_Card_Info
 
             TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[8] = x);
 
+            MakeUpToggle = e.AddControl(new MakerToggle(category, "Keep Makeup", owner));
+
+            MakeUpToggle.ValueChanged.Subscribe(x =>
+            {
+                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+                Controller.MakeUpKeep[Controller.CoordinateNum] = x;
+            });
             #endregion
+
 
             #endregion
 
@@ -456,6 +465,7 @@ namespace Additional_Card_Info
             {
                 yield return null;
             }
+
             for (int i = 0, n = AccKeepToggles.Control.ControlObjects.Count(); i < n; i++)
             {
                 bool keep = false;
@@ -502,14 +512,18 @@ namespace Additional_Card_Info
             {
                 HeightToggles[i].SetValue(Height_Restriction[CoordinateNum][i], false);
             }
+
             for (int i = 0; i < BreastsizeToggles.Length; i++)
             {
                 BreastsizeToggles[i].SetValue(Breastsize_Restriction[CoordinateNum][i], false);
             }
+
             for (int i = 0; i < 3; i++)
             {
                 ClothNotToggles[i].SetValue(false, false);
             }
+
+            MakeUpToggle.SetValue(MakeUpKeep[CoordinateNum], false);
             CoordinateTypeRadio.SetValue(CoordinateType[CoordinateNum], false);
             CoordinateSubTypeRadio.SetValue(CoordinateSubType[CoordinateNum], false);
             ClubTypeRadio.SetValue(ClubType_Restriction[CoordinateNum], false);

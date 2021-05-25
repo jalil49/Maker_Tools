@@ -12,6 +12,8 @@ namespace Additional_Card_Info
     {
         private bool[] PersonalClothingBools = new bool[9];
 
+        private bool[] MakeUpKeep = new bool[9];
+
         public List<int>[] AccKeep = new List<int>[Constants.CoordinateLength];
         public List<int>[] HairAcc = new List<int>[Constants.CoordinateLength];
 
@@ -119,6 +121,10 @@ namespace Additional_Card_Info
                 {
                     Character_Cosplay_Ready.SetValue(MessagePackSerializer.Deserialize<bool>((byte[])ByteData));
                 }
+                if (ACI_Data.data.TryGetValue("MakeUpKeep", out ByteData) && ByteData != null)
+                {
+                    MakeUpKeep = MessagePackSerializer.Deserialize<bool[]>((byte[])ByteData);
+                }
 
 
                 if (ACI_Data.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
@@ -191,6 +197,7 @@ namespace Additional_Card_Info
             ACI_Data.data.Add("AccKeep", MessagePackSerializer.Serialize(AccKeep));
             ACI_Data.data.Add("Personal_Clothing_Save", MessagePackSerializer.Serialize(PersonalClothingBools));
             ACI_Data.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready.Value));
+            ACI_Data.data.Add("MakeUpKeep", MessagePackSerializer.Serialize(MakeUpKeep));
             SetExtendedData(ACI_Data);
         }
 
