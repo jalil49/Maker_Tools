@@ -460,16 +460,6 @@ namespace Accessory_States
             var ACC_Appearance_dropdown_Controls = ACC_Appearance_dropdown.Control.ControlObjects.ToList();
             List<TMP_Dropdown.OptionData> Appearance_Options = new List<TMP_Dropdown.OptionData>(ACC_Appearance_dropdown_Controls[0].GetComponentInChildren<TMP_Dropdown>().options);
 
-            //if (Custom_Options.Count > 1)
-            //{
-            //    Custom_Options.RemoveRange(1, Custom_Options.Count - 1);
-            //}
-
-            //if (Parented_Options.Count > 1)
-            //{
-            //    Parented_Options.RemoveRange(1, Parented_Options.Count - 1);
-            //}
-
             if (Appearance_Options.Count > Defined_Bindings + 1)
             {
                 Appearance_Options.RemoveRange(Defined_Bindings + 1, Appearance_Options.Count - (Defined_Bindings + 1));
@@ -517,7 +507,7 @@ namespace Accessory_States
             Update_More_Accessories();
             int ACCData = Accessorys_Parts.Count();
 
-            while (ACC_Is_Parented.Control.ControlObjects.Count() < ACCData)
+            while (!MakerAPI.InsideAndLoaded && ACC_Is_Parented.Control.ControlObjects.Count() < ACCData)
             {
                 yield return null;
             }
