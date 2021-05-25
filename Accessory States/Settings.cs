@@ -11,6 +11,7 @@ namespace Accessory_States
 {
     [BepInPlugin(GUID, "Accessory States", Version)]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
+    [BepInIncompatibility("madevil.kk.ass")]
     public class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_States";
