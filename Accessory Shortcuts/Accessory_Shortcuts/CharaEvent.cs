@@ -1,9 +1,9 @@
-﻿using BepInEx.Logging;
-using HarmonyLib;
+﻿using HarmonyLib;
 using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using MoreAccessoriesKOI;
+using System.Collections;
 using System.Collections.Generic;
 using ToolBox;
 using UniRx;
@@ -13,6 +13,7 @@ namespace Accessory_Shortcuts
     public partial class CharaEvent : CharaCustomFunctionController
     {
         List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
+
         public CharaEvent()
         {
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
@@ -37,19 +38,17 @@ namespace Accessory_Shortcuts
             }
             CurrentCoordinate.Subscribe(x =>
             {
-                Update_More_Accessories();
-                Constants.Default_Dict();
-                if (Slots_Location != null)
-                {
-                    Slot_Toggles.Clear();
-                    UpdateSlots();
-                }
+                StartCoroutine(Wait());
             });
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            Update_More_Accessories(); Constants.Default_Dict();
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            {
+                return;
+            }
+            StartCoroutine(Wait());
         }
 
         private void Update_More_Accessories()
@@ -60,6 +59,18 @@ namespace Accessory_Shortcuts
                 data = new MoreAccessories.CharAdditionalData();
             }
             Accessorys_Parts = data.nowAccessories;
+        }
+
+        private IEnumerator Wait()
+        {
+            yield return null;
+            Update_More_Accessories();
+            Constants.Default_Dict();
+            if (Slots_Location != null)
+            {
+                Slot_Toggles.Clear();
+                UpdateSlots();
+            }
         }
     }
 }
