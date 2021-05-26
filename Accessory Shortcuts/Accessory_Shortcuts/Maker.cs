@@ -83,7 +83,14 @@ namespace Accessory_Shortcuts
         {
             for (int i = Slot_Toggles.Count, n = Slots_Location.childCount - 1; i < n; i++)
             {
-                Slot_Toggles.Add(Slots_Location.GetChild(i).GetComponent<Toggle>());
+                if (Slots_Location.GetChild(i).gameObject.activeSelf)
+                {
+                    Slot_Toggles.Add(Slots_Location.GetChild(i).GetComponent<Toggle>());
+                }
+                else
+                {
+                    return;
+                }
             }
         }
 
@@ -115,7 +122,7 @@ namespace Accessory_Shortcuts
                 {
                     Unassigned = Accessorys_Parts[Slot - 20].type < 121;
                 }
-                if (Unassigned)
+                if (Unassigned && Slot < Slot_Toggles.Count)
                 {
                     Skip = true;
                     CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { Slot }).GetValue<CvsAccessory>();
