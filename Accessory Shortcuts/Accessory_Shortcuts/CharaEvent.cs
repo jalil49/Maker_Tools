@@ -17,13 +17,11 @@ namespace Accessory_Shortcuts
         public CharaEvent()
         {
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
-            MakerAPI.MakerExiting += MakerAPI_MakerExiting;
         }
 
         protected override void OnDestroy()
         {
             MakerAPI.MakerFinishedLoading -= MakerAPI_MakerFinishedLoading;
-            MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
             base.OnDestroy();
         }
 

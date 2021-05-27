@@ -70,7 +70,6 @@ namespace Accessory_Themes
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change; ;
         }
 
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -83,8 +82,6 @@ namespace Accessory_Themes
             MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
 
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
-            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
-            Hooks.MovIt += Hooks_MovIt;
         }
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -331,12 +328,12 @@ namespace Accessory_Themes
             radio.GroupingID = GroupingID;
         }
 
-        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        internal void Slot_ACC_Change(int slotNo, int type)
         {
-            if (e.SlotNo == 120)
+            if (type == 120)
             {
                 var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-                Controller.ACC_Theme_Dictionary[Controller.CoordinateNum].Remove(e.SlotNo);
+                Controller.ACC_Theme_Dictionary[Controller.CoordinateNum].Remove(slotNo);
             }
             VisibiltyToggle();
         }
@@ -640,18 +637,17 @@ namespace Accessory_Themes
             Update_ACC_Dropbox();
         }
 
-        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        internal void MovIt(List<QueueItem> queue)
         {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var ACC_Theme_Dictionary = Controller.ACC_Theme_Dictionary[Controller.CoordinateNum];
-            foreach (var item in e.Queue)
+            var ACC_Theme_Dictionary = this.ACC_Theme_Dictionary[CoordinateNum];
+            foreach (var item in queue)
             {
-                if (ACC_Theme_Dictionary.TryGetValue(item.srcSlot, out int themenum))
+                if (ACC_Theme_Dictionary.TryGetValue(item.SrcSlot, out int themenum))
                 {
-                    ACC_Theme_Dictionary[item.dstSlot] = themenum;
-                    ACC_Theme_Dictionary.Remove(item.dstSlot);
-                    Themes.SetValue(item.dstSlot, themenum, false);
-                    Themes.SetValue(item.srcSlot, 0, false);
+                    ACC_Theme_Dictionary[item.DstSlot] = themenum;
+                    ACC_Theme_Dictionary.Remove(item.DstSlot);
+                    Themes.SetValue(item.DstSlot, themenum, false);
+                    Themes.SetValue(item.SrcSlot, 0, false);
                 }
             }
         }

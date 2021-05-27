@@ -27,7 +27,6 @@ namespace Accessory_States
                 if (ThisCharactersData != null)
                 {
                     ThisCharactersData.Controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
-                    ThisCharactersData.Controller.Register();
                     ThisCharactersData.Update_Now_Coordinate();
                     ThisCharactersData.Controller.Refresh();
                 }
@@ -43,6 +42,7 @@ namespace Accessory_States
                 if (heroines[i].chaCtrl.name == e.Character.name)
                 {
                     Buttonlogic(i, true);
+                    return;
                 }
             }
         }
@@ -50,15 +50,6 @@ namespace Accessory_States
         protected override void OnEndH(HSceneProc hSceneProc, bool freeH)
         {
             Hooks.HcoordChange -= Hooks_HcoordChange;
-            var heroines = hScene.dataH.lstFemale;
-            for (int i = 0; i < heroines.Count; i++)
-            {
-                var ThisCharactersData = Constants.CharacterInfo.Find(x => heroines[i].chaCtrl.fileParam.personality == x.Personality && x.FullName == heroines[i].chaCtrl.fileParam.fullname && x.BirthDay == heroines[i].chaCtrl.fileParam.strBirthDay);
-                if (ThisCharactersData != null)
-                {
-                    ThisCharactersData.Controller.DeRegister();
-                }
-            }
             ButtonList.Clear();
             hScene = null;
         }

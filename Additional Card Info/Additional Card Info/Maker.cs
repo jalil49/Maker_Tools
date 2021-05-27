@@ -52,8 +52,6 @@ namespace Additional_Card_Info
             };
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
-            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
-            Hooks.MovIt += Hooks_MovIt;
         }
 
         private static void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -67,8 +65,6 @@ namespace Additional_Card_Info
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
             MakerAPI.ReloadCustomInterface -= (s, e2) => { var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>(); Controller.StartCoroutine(Controller.UpdateSlots()); };
-            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
-            Hooks.MovIt -= Hooks_MovIt;
         }
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -404,15 +400,14 @@ namespace Additional_Card_Info
             }
         }
 
-        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        internal void Hooks_Slot_ACC_Change(int slotNo, int type)
         {
-            if (e.Type == 120)
+            if (type == 120)
             {
-                AccKeepToggles.SetValue(e.SlotNo, false, false);
-                HairKeepToggles.SetValue(e.SlotNo, false, false);
-                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-                Controller.HairAcc[Controller.CoordinateNum].Remove(e.SlotNo);
-                Controller.AccKeep[Controller.CoordinateNum].Remove(e.SlotNo);
+                AccKeepToggles.SetValue(slotNo, false, false);
+                HairKeepToggles.SetValue(slotNo, false, false);
+                HairAcc[CoordinateNum].Remove(slotNo);
+                AccKeep[CoordinateNum].Remove(slotNo);
             }
             VisibiltyToggle();
         }
@@ -564,26 +559,25 @@ namespace Additional_Card_Info
             return data.nowAccessories.Count() + 20;
         }
 
-        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        internal void MovIt(List<QueueItem> queue)
         {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var Acckeep = Controller.AccKeep[Controller.CoordinateNum];
-            var HairAcc = Controller.HairAcc[Controller.CoordinateNum];
-            foreach (var item in e.Queue)
+            var Acckeep = this.AccKeep[CoordinateNum];
+            var HairAcc = this.HairAcc[CoordinateNum];
+            foreach (var item in queue)
             {
-                if (Acckeep.Contains(item.srcSlot))
+                if (Acckeep.Contains(item.SrcSlot))
                 {
-                    Acckeep.Add(item.dstSlot);
-                    Acckeep.Remove(item.srcSlot);
-                    AccKeepToggles.SetValue(item.dstSlot, true, false);
-                    AccKeepToggles.SetValue(item.srcSlot, false, false);
+                    Acckeep.Add(item.DstSlot);
+                    Acckeep.Remove(item.SrcSlot);
+                    AccKeepToggles.SetValue(item.DstSlot, true, false);
+                    AccKeepToggles.SetValue(item.SrcSlot, false, false);
                 }
-                if (HairAcc.Contains(item.srcSlot))
+                if (HairAcc.Contains(item.SrcSlot))
                 {
-                    HairAcc.Add(item.dstSlot);
-                    HairAcc.Remove(item.srcSlot);
-                    HairKeepToggles.SetValue(item.dstSlot, true, false);
-                    HairKeepToggles.SetValue(item.srcSlot, false, false);
+                    HairAcc.Add(item.DstSlot);
+                    HairAcc.Remove(item.SrcSlot);
+                    HairKeepToggles.SetValue(item.DstSlot, true, false);
+                    HairKeepToggles.SetValue(item.SrcSlot, false, false);
                 }
             }
         }

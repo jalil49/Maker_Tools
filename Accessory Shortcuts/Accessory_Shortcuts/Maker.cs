@@ -16,65 +16,55 @@ namespace Accessory_Shortcuts
         Traverse More_Acc;
         bool Skip = false;
 
-        private void MakerAPI_MakerExiting(object sender, EventArgs e)
-        {
-            Hooks.Pre_Slot_ACC_Change -= Hooks_Pre_Slot_ACC_Change;
-            Hooks.Post_Slot_ACC_Change -= Hooks_Slot_ACC_Change;
-        }
-
         private void MakerAPI_MakerFinishedLoading(object sender, EventArgs e)
         {
-            Hooks.Post_Slot_ACC_Change += Hooks_Slot_ACC_Change;
-            Hooks.Pre_Slot_ACC_Change += Hooks_Pre_Slot_ACC_Change;
-
             More_Acc = Traverse.Create(MoreAccessoriesKOI.MoreAccessories._self);
             Slots_Location = GameObject.Find("CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/Slots/Viewport/Content").transform;
             Slot_Toggles.Clear();
             UpdateSlots();
         }
 
-        private void Hooks_Pre_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        internal void Update_Stored_Accessory(int slotNo, int type, int id, string parentKey)
         {
-            if (e.Type == 120 || Skip)
+            if (type == 120 || Skip)
             {
                 return;
             }
             ChaFileAccessory.PartsInfo partsInfo;
-            var Slot = e.SlotNo;
-            if (Slot < 20)
+            if (slotNo < 20)
             {
-                partsInfo = ChaControl.nowCoordinate.accessory.parts[Slot];
+                partsInfo = ChaControl.nowCoordinate.accessory.parts[slotNo];
             }
             else
             {
-                if (Slot - 20 >= Accessorys_Parts.Count)
+                if (slotNo - 20 >= Accessorys_Parts.Count)
                 {
                     Update_More_Accessories();
                 }
-                partsInfo = Accessorys_Parts[Slot - 20];
+                partsInfo = Accessorys_Parts[slotNo - 20];
             }
 
-            if (e.Type == partsInfo.type)
+            if (type == partsInfo.type)
             {
-                Constants.Parent[partsInfo.type - 120].Id = e.Id;
-                Constants.Parent[partsInfo.type - 120].ParentKey = e.ParentKey;
+                Constants.Parent[partsInfo.type - 120].Id = id;
+                Constants.Parent[partsInfo.type - 120].ParentKey = parentKey;
             }
         }
 
-        private void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        internal void Change_To_Stored_Accessory(int slotNo, int type, int id, string parentKey)
         {
-            if (e.Type == 120)
+            if (type == 120)
             {
                 return;
             }
-            else if (Constants.Parent.TryGetValue(e.Type - 120, out var data) && (e.Id != data.Id || e.ParentKey != data.ParentKey))
+            else if (Constants.Parent.TryGetValue(type - 120, out var data) && (id != data.Id || parentKey != data.ParentKey))
             {
-                ChaControl.ChangeAccessory(e.SlotNo, e.Type, data.Id, data.ParentKey);
-                CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { e.SlotNo }).GetValue<CvsAccessory>();
+                ChaControl.ChangeAccessory(slotNo, type, data.Id, data.ParentKey);
+                CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { slotNo }).GetValue<CvsAccessory>();
                 CVS_Slot.UpdateCustomUI();
-                if (e.SlotNo < 20)
+                if (slotNo < 20)
                 {
-                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[e.SlotNo] = ChaControl.nowCoordinate.accessory.parts[e.SlotNo];
+                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slotNo] = ChaControl.nowCoordinate.accessory.parts[slotNo];
                 }
             }
         }
@@ -132,7 +122,6 @@ namespace Accessory_Shortcuts
                         {
                             kind = 10;
                         }
-                        //Settings.Logger.LogWarning($"Slot num {(int)CVS_Slot.slotNo}");
                         CVS_Slot.UpdateSelectAccessoryType(kind);
                         CVS_Slot.UpdateCustomUI();
                         CVS_Slot.tglAcsKind.isOn = true;

@@ -28,28 +28,6 @@ namespace Accessory_States
             base.OnDestroy();
         }
 
-        private void Settings_ChangedCoord(object sender, ChangeCoordinateTypeARG e)
-        {
-            if (ChaControl.name != null && ChaControl.fileStatus != null && e.Character.name != null && e.Character.name == ChaControl.name)
-            {
-                Refresh();
-            }
-            if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
-            {
-                StartCoroutine(WaitForSlots());
-            }
-        }
-
-        private void Settings_SetClothesState(object sender, ClothChangeEventArgs e)
-        {
-            if (e.Character.name == ChaControl.name)
-            {
-                //Settings.Logger.LogWarning("coortype" + ChaControl.fileStatus.coordinateType);
-                ChangedOutfit(e.clothesKind, e.state);
-                SetClothesState_switch(e.clothesKind, e.state);
-            }
-        }
-
         private void ChangedOutfit(int clothesKind, byte state)
         {
             clothesKind = Math.Min(clothesKind, 7);
@@ -426,14 +404,12 @@ namespace Accessory_States
                 //{
                 //    Settings.Logger.LogWarning($"{(ChaFileDefine.ClothesKind)CoordinateNum}, VGI Key: {VGI.Key}, VGI group: {VGI.Value.Group}, VGI Kind: {VGI.Value.Kind}, VGI Label: {VGI.Value.Label}, VGI Secondary: {VGI.Value.Secondary}");
                 //}
+            }
 
-
-                //call event
-                var args = new CoordinateLoadedEventARG(ChaControl, coordinate);
-                if (Coordloaded == null || Coordloaded.GetInvocationList().Length == 0)
-                {
-                    return;
-                }
+            //call event
+            var args = new CoordinateLoadedEventARG(ChaControl/*, coordinate*/);
+            if (!(Coordloaded == null || Coordloaded.GetInvocationList().Length == 0))
+            {
                 try
                 {
                     Coordloaded?.Invoke(null, args);
@@ -442,7 +418,6 @@ namespace Accessory_States
                 {
                     Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
                 }
-
             }
 
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
@@ -452,6 +427,7 @@ namespace Accessory_States
                 ThisCharactersData.ACC_State_array[outfitnum] = ThisCharactersData.Now_ACC_State_array;
                 ThisCharactersData.ACC_Name_Dictionary[outfitnum] = ThisCharactersData.Now_ACC_Name_Dictionary;
             }
+
             Refresh();
         }
 
@@ -626,16 +602,15 @@ namespace Accessory_States
         //    base.Update();
         //}
 
-        public void Register()
+        internal void ChangedCoord()
         {
-            Hooks.SetClothesState += Settings_SetClothesState;
-            Hooks.ChangedCoord += Settings_ChangedCoord;
+            Refresh();
         }
 
-        public void DeRegister()
+        internal void Settings_SetClothesState(int clothesKind, byte state)
         {
-            Hooks.SetClothesState -= Settings_SetClothesState;
-            Hooks.ChangedCoord -= Settings_ChangedCoord;
+            ChangedOutfit(clothesKind, state);
+            SetClothesState_switch(clothesKind, state);
         }
     }
 }

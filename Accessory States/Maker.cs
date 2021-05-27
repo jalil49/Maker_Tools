@@ -204,7 +204,6 @@ namespace Accessory_States
             MakerAPI.MakerExiting += (s, e) => Maker_Ended();
 
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            Hooks.SetClothesState += Maker_SetClothes;
 
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
@@ -213,24 +212,6 @@ namespace Accessory_States
 
             MakerAPI.MakerFinishedLoading += (s, e) => VisibiltyToggle();
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e) => VisibiltyToggle();
-            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
-            Hooks.MovIt += Hooks_MovIt;
-        }
-
-        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
-        {
-            if (e.Type == 120)
-            {
-                var ThisCharactersData = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().ThisCharactersData;
-                ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(e.SlotNo);
-                ThisCharactersData.Now_ACC_State_array.Remove(e.SlotNo);
-                ThisCharactersData.Now_Parented_Dictionary.Remove(e.SlotNo);
-                ACC_Appearance_dropdown.SetValue(e.SlotNo, 0, false);
-                ACC_Appearance_state.SetValue(e.SlotNo, 0, false);
-                ACC_Appearance_state2.SetValue(e.SlotNo, 3, false);
-                ACC_Is_Parented.SetValue(e.SlotNo, false, false);
-            }
-            VisibiltyToggle();
         }
 
         public static void Maker_Ended()
@@ -238,7 +219,6 @@ namespace Accessory_States
             MakerAPI.MakerExiting -= (s, e) => Maker_Ended();
 
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
-            Hooks.SetClothesState -= Maker_SetClothes;
 
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
@@ -247,17 +227,8 @@ namespace Accessory_States
 
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
-            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
-            Hooks.MovIt -= Hooks_MovIt;
 
             ShowInterface = false;
-        }
-
-        private static void Maker_SetClothes(object sender, ClothChangeEventArgs e)
-        {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            Controller.ChangedOutfit(e.clothesKind, e.state);
-            Controller.SetClothesState_switch(e.clothesKind, e.state);
         }
 
         private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
@@ -702,41 +673,61 @@ namespace Accessory_States
             }
         }
 
-        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        internal void MovIt(List<QueueItem> queue)
         {
             var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
             var ThisCharactersData = Controller.ThisCharactersData;
-            foreach (var item in e.Queue)
+            foreach (var item in queue)
             {
-                Settings.Logger.LogWarning($"Moving Acc from slot {item.srcSlot} to {item.dstSlot}");
-                if (ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(item.srcSlot, out var binding))
+                Settings.Logger.LogWarning($"Moving Acc from slot {item.SrcSlot} to {item.DstSlot}");
+                if (ThisCharactersData.Now_ACC_Binding_Dictionary.TryGetValue(item.SrcSlot, out var binding))
                 {
-                    ThisCharactersData.Now_ACC_Binding_Dictionary[item.dstSlot] = binding;
+                    ThisCharactersData.Now_ACC_Binding_Dictionary[item.DstSlot] = binding;
                     if (binding > Defined_Bindings)
                     {
                         binding -= Binding_offset;
                     }
-                    ACC_Appearance_dropdown.SetValue(item.dstSlot, binding, false);
-                    ACC_Appearance_dropdown.SetValue(item.srcSlot, 0, false);
-                    ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.srcSlot);
+                    ACC_Appearance_dropdown.SetValue(item.DstSlot, binding, false);
+                    ACC_Appearance_dropdown.SetValue(item.SrcSlot, 0, false);
+                    ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(item.SrcSlot);
                 }
-                if (ThisCharactersData.Now_ACC_State_array.TryGetValue(item.srcSlot, out var states))
+                if (ThisCharactersData.Now_ACC_State_array.TryGetValue(item.SrcSlot, out var states))
                 {
-                    ThisCharactersData.Now_ACC_State_array[item.dstSlot] = states;
-                    ThisCharactersData.Now_ACC_State_array.Remove(item.srcSlot);
-                    ACC_Appearance_state.SetValue(item.srcSlot, 0, false);
-                    ACC_Appearance_state2.SetValue(item.srcSlot, 3, false);
-                    ACC_Appearance_state.SetValue(item.dstSlot, states[0], false);
-                    ACC_Appearance_state2.SetValue(item.dstSlot, states[1], false);
+                    ThisCharactersData.Now_ACC_State_array[item.DstSlot] = states;
+                    ThisCharactersData.Now_ACC_State_array.Remove(item.SrcSlot);
+                    ACC_Appearance_state.SetValue(item.SrcSlot, 0, false);
+                    ACC_Appearance_state2.SetValue(item.SrcSlot, 3, false);
+                    ACC_Appearance_state.SetValue(item.DstSlot, states[0], false);
+                    ACC_Appearance_state2.SetValue(item.DstSlot, states[1], false);
                 }
-                if (ThisCharactersData.Now_Parented_Dictionary.TryGetValue(item.srcSlot, out var Isparented))
+                if (ThisCharactersData.Now_Parented_Dictionary.TryGetValue(item.SrcSlot, out var Isparented))
                 {
-                    ACC_Is_Parented.SetValue(item.dstSlot, Isparented, false);
-                    ACC_Is_Parented.SetValue(item.srcSlot, false, false);
-                    ThisCharactersData.Now_Parented_Dictionary[item.dstSlot] = Isparented;
-                    ThisCharactersData.Now_Parented_Dictionary.Remove(item.srcSlot);
+                    ACC_Is_Parented.SetValue(item.DstSlot, Isparented, false);
+                    ACC_Is_Parented.SetValue(item.SrcSlot, false, false);
+                    ThisCharactersData.Now_Parented_Dictionary[item.DstSlot] = Isparented;
+                    ThisCharactersData.Now_Parented_Dictionary.Remove(item.SrcSlot);
                 }
             }
+        }
+
+        internal void Slot_ACC_Change(int slotNo, int type)
+        {
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            {
+                return;
+            }
+            if (type == 120)
+            {
+                var ThisCharactersData = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().ThisCharactersData;
+                ThisCharactersData.Now_ACC_Binding_Dictionary.Remove(slotNo);
+                ThisCharactersData.Now_ACC_State_array.Remove(slotNo);
+                ThisCharactersData.Now_Parented_Dictionary.Remove(slotNo);
+                ACC_Appearance_dropdown.SetValue(slotNo, 0, false);
+                ACC_Appearance_state.SetValue(slotNo, 0, false);
+                ACC_Appearance_state2.SetValue(slotNo, 3, false);
+                ACC_Is_Parented.SetValue(slotNo, false, false);
+            }
+            VisibiltyToggle();
         }
     }
 }

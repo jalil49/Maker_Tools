@@ -1,5 +1,6 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
+using KKAPI.Maker;
 using System;
 using System.Collections.Generic;
 
@@ -9,11 +10,7 @@ namespace Accessory_States
     {
         static ManualLogSource Logger;
 
-        public static event EventHandler<ClothChangeEventArgs> SetClothesState;
-        public static event EventHandler<ChangeCoordinateTypeARG> ChangedCoord;
         public static event EventHandler<OnClickCoordinateChange> HcoordChange;
-        public static event EventHandler<Slot_ACC_Change_ARG> Slot_ACC_Change;
-        internal static event EventHandler<MovUrAcc_Event> MovIt;
 
         public static void Init()
         {
@@ -23,40 +20,16 @@ namespace Accessory_States
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ChaControl), "SetClothesState")]
-        public static void Hook_SetClothesState(ChaControl __instance, int clothesKind, byte state, bool next = true)
+        public static void Hook_SetClothesState(ChaControl __instance, int clothesKind, byte state)
         {
-            var args = new ClothChangeEventArgs(__instance, clothesKind, state, next);
-            if (SetClothesState == null || SetClothesState.GetInvocationList().Length == 0)
-            {
-                return;
-            }
-            try
-            {
-                SetClothesState?.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(SetClothesState)} - {ex}");
-            }
+            __instance.GetComponent<CharaEvent>().Settings_SetClothesState(clothesKind, state);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ChaControl), "ChangeCoordinateType", new Type[] { typeof(ChaFileDefine.CoordinateType), typeof(bool) })]
         public static void Hook_ChangeCoordinateType(ChaControl __instance)
         {
-            var args = new ChangeCoordinateTypeARG(__instance);
-            if (ChangedCoord == null || ChangedCoord.GetInvocationList().Length == 0)
-            {
-                return;
-            }
-            try
-            {
-                ChangedCoord?.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(ChangedCoord)} - {ex}");
-            }
+            __instance.GetComponent<CharaEvent>().ChangedCoord();
         }
 
         [HarmonyPostfix]
@@ -113,50 +86,27 @@ namespace Accessory_States
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
-            var args = new Slot_ACC_Change_ARG(__instance, slotNo, type);
-            if (Slot_ACC_Change == null || Slot_ACC_Change.GetInvocationList().Length == 0)
-            {
-                return;
-            }
-            try
-            {
-                Slot_ACC_Change?.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Subscriber crash in {nameof(Accessory_States.Hooks)}.{nameof(Slot_ACC_Change)} - {ex}");
-            }
+            __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MovUrAcc.MovUrAcc), "ProcessQueue")]
         private static void MovPatch(List<QueueItem> Queue)
         {
-            var args = new MovUrAcc_Event(Queue);
-            if (MovIt == null || MovIt.GetInvocationList().Length == 0)
-            {
-                return;
-            }
-            try
-            {
-                MovIt?.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(MovIt)} - {ex}");
-            }
+            MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
         }
     }
+
     internal class QueueItem
     {
-        public int srcSlot { get; set; }
+        public int SrcSlot { get; set; }
 
-        public int dstSlot { get; set; }
+        public int DstSlot { get; set; }
 
         public QueueItem(int src, int dst)
         {
-            srcSlot = src;
-            dstSlot = dst;
+            SrcSlot = src;
+            DstSlot = dst;
         }
     }
 }

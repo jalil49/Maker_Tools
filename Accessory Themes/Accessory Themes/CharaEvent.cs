@@ -59,12 +59,7 @@ namespace Accessory_Themes
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (!MakerEnabled)
-            {
-                return;
-            }
-
-            if (currentGameMode != GameMode.Maker)
+            if (currentGameMode != GameMode.Maker || !MakerEnabled)
             {
                 return;
             }

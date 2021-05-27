@@ -43,12 +43,6 @@ namespace Accessory_Parents
             AccessoriesApi.AccessoryKindChanged -= AccessoriesApi_AccessoryKindChanged;
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
             MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
-
-            Hooks.Slot_ACC_Change -= Hooks_Slot_ACC_Change;
-            Hooks.ACC_Position_Change -= Hooks_ACC_Position_Change;
-            Hooks.ACC_Rotation_Change -= Hooks_ACC_Rotation_Change;
-            Hooks.ACC_Scale_Change -= Hooks_ACC_Scale_Change;
-            Hooks.MovIt -= Hooks_MovIt;
         }
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
@@ -67,12 +61,6 @@ namespace Accessory_Parents
 
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-
-            Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
-            Hooks.ACC_Position_Change += Hooks_ACC_Position_Change;
-            Hooks.ACC_Rotation_Change += Hooks_ACC_Rotation_Change;
-            Hooks.ACC_Scale_Change += Hooks_ACC_Scale_Change;
-            Hooks.MovIt += Hooks_MovIt;
         }
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -272,28 +260,26 @@ namespace Accessory_Parents
             }
         }
 
-        private static void Hooks_ACC_Scale_Change(object sender, Acc_modifier_Event_ARG e)
+        internal void Scale_Change(int slotNo, int correctNo, float value, bool add, int flags)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !MakerEnabled)
             {
                 return;
             }
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var CoordinateNum = Controller.CoordinateNum;
-            if (!e.Add && e.Value == 1f && Controller.Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
+            if (!add && value == 1f && Custom_Names[CoordinateNum].ContainsValue(slotNo))
             {
                 float Value;
-                if (Controller.Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
+                if (Relative_Data[CoordinateNum].TryGetValue(slotNo, out var vectors))
                 {
-                    if (e.Flags == 1)
+                    if (flags == 1)
                     {
                         Value = vectors[0, 2].x;
                     }
-                    else if (e.Flags == 2)
+                    else if (flags == 2)
                     {
                         Value = vectors[0, 2].y;
                     }
-                    else if (e.Flags == 4)
+                    else if (flags == 4)
                     {
                         Value = vectors[0, 2].z;
                     }
@@ -308,18 +294,18 @@ namespace Accessory_Parents
                 }
                 if (Value != 1f)
                 {
-                    Controller.ChaControl.SetAccessoryScl(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
+                    ChaControl.SetAccessoryScl(slotNo, correctNo, Value, add, flags);
                     return;
                 }
             }
 
-            if (Controller.Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+            if (Bindings[CoordinateNum].TryGetValue(slotNo, out var parentList))
             {
-                if (e.Add)
+                if (add)
                 {
                     foreach (var item in parentList)
                     {
-                        Controller.ChaControl.SetAccessoryScl(item, e.CorrectNo, e.Value, e.Add, e.Flags);
+                        ChaControl.SetAccessoryScl(item, correctNo, value, add, flags);
                     }
                 }
                 else
@@ -327,17 +313,17 @@ namespace Accessory_Parents
                     foreach (var item in parentList)
                     {
                         float Value;
-                        if (Controller.Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                        if (Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
                         {
-                            if (e.Flags == 1)
+                            if (flags == 1)
                             {
                                 Value = vectors[0, 2].x;
                             }
-                            else if (e.Flags == 2)
+                            else if (flags == 2)
                             {
                                 Value = vectors[0, 2].y;
                             }
-                            else if (e.Flags == 4)
+                            else if (flags == 4)
                             {
                                 Value = vectors[0, 2].z;
                             }
@@ -350,36 +336,33 @@ namespace Accessory_Parents
                         {
                             Value = 1;
                         }
-                        Controller.ChaControl.SetAccessoryScl(item, e.CorrectNo, Value, e.Add, e.Flags);
+                        ChaControl.SetAccessoryScl(item, correctNo, Value, add, flags);
                     }
                 }
-
             }
         }
 
-        private static void Hooks_ACC_Rotation_Change(object sender, Acc_modifier_Event_ARG e)
+        internal void Rotation_Change(int slotNo, int correctNo, float value, bool add, int flags)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !MakerEnabled)
             {
                 return;
             }
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var CoordinateNum = Controller.CoordinateNum;
 
-            if (!e.Add && e.Value == 0 && Controller.Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
+            if (!add && value == 0 && Custom_Names[CoordinateNum].ContainsValue(slotNo))
             {
                 float Value;
-                if (Controller.Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
+                if (Relative_Data[CoordinateNum].TryGetValue(slotNo, out var vectors))
                 {
-                    if (e.Flags == 1)
+                    if (flags == 1)
                     {
                         Value = vectors[0, 1].x;
                     }
-                    else if (e.Flags == 2)
+                    else if (flags == 2)
                     {
                         Value = vectors[0, 1].y;
                     }
-                    else if (e.Flags == 4)
+                    else if (flags == 4)
                     {
                         Value = vectors[0, 1].z;
                     }
@@ -394,54 +377,54 @@ namespace Accessory_Parents
                 }
                 if (Value != 0f)
                 {
-                    Controller.ChaControl.SetAccessoryRot(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
+                    ChaControl.SetAccessoryRot(slotNo, correctNo, Value, add, flags);
                     return;
                 }
             }
 
-            if (Controller.Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+            if (Bindings[CoordinateNum].TryGetValue(slotNo, out var parentList))
             {
                 Vector3 Rot = Vector3.zero;
 
-                if (e.Flags == 1)
+                if (flags == 1)
                 {
-                    Rot.x = e.Value;
+                    Rot.x = value;
                 }
-                else if (e.Flags == 2)
+                else if (flags == 2)
                 {
-                    Rot.y = e.Value;
+                    Rot.y = value;
                 }
-                else if (e.Flags == 4)
+                else if (flags == 4)
                 {
-                    Rot.z = e.Value;
+                    Rot.z = value;
                 }
 
                 Vector3[,] store;
-                if (e.SlotNo < 20)
+                if (slotNo < 20)
                 {
-                    store = Controller.ChaControl.nowCoordinate.accessory.parts[e.SlotNo].addMove;
+                    store = ChaControl.nowCoordinate.accessory.parts[slotNo].addMove;
                 }
                 else
                 {
-                    store = Controller.Accessorys_Parts[e.SlotNo - 20].addMove;
+                    store = Accessorys_Parts[slotNo - 20].addMove;
                 }
                 Vector3 original_pos;
                 original_pos = new Vector3(store[0, 0].x, store[0, 0].y, store[0, 0].z);
 
-                if (e.Add)
+                if (add)
                 {
                     Vector3 New_pos;
                     foreach (var item in parentList)
                     {
                         Vector3[,] store2;
-                        Controller.ChaControl.SetAccessoryRot(item, e.CorrectNo, e.Value, e.Add, e.Flags);
+                        ChaControl.SetAccessoryRot(item, correctNo, value, add, flags);
                         if (item < 20)
                         {
-                            store2 = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            store2 = ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                         else
                         {
-                            store2 = Controller.Accessorys_Parts[item - 20].addMove;
+                            store2 = Accessorys_Parts[item - 20].addMove;
                         }
                         New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
                         //Logger.LogWarning($"Old X: {New_pos.x}, Old Y: {New_pos.y}, Old Z: {New_pos.z}");
@@ -463,11 +446,11 @@ namespace Accessory_Parents
                                     flag = 4;
                                     break;
                             }
-                            Controller.ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
+                            ChaControl.SetAccessoryPos(item, correctNo, New_pos[i], true, flag);
                         }
                         if (item < 20)
                         {
-                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -481,30 +464,30 @@ namespace Accessory_Parents
                         Vector3[,] store2;
                         if (item < 20)
                         {
-                            store2 = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            store2 = ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                         else
                         {
-                            store2 = Controller.Accessorys_Parts[item - 20].addMove;
+                            store2 = Accessorys_Parts[item - 20].addMove;
                         }
 
-                        if (Controller.Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                        if (Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
                         {
-                            if (e.Flags == 1)
+                            if (flags == 1)
                             {
                                 Value = vectors[0, 1].x;
-                                //Rot2.x = vectors[0, 1].x - store2[e.CorrectNo, 1].x;
+                                //Rot2.x = vectors[0, 1].x - store2[CorrectNo, 1].x;
                             }
-                            else if (e.Flags == 2)
+                            else if (flags == 2)
                             {
                                 Value = vectors[0, 1].y;
 
-                                //Rot2.y = vectors[0, 1].y - store2[e.CorrectNo, 1].y;
+                                //Rot2.y = vectors[0, 1].y - store2[CorrectNo, 1].y;
                             }
-                            else if (e.Flags == 4)
+                            else if (flags == 4)
                             {
                                 Value = vectors[0, 1].z;
-                                //Rot2.z = vectors[0, 1].z - store2[e.CorrectNo, 1].z;
+                                //Rot2.z = vectors[0, 1].z - store2[CorrectNo, 1].z;
                             }
                             else
                             {
@@ -515,7 +498,7 @@ namespace Accessory_Parents
                         {
                             Value = 0;
                         }
-                        Controller.ChaControl.SetAccessoryRot(item, e.CorrectNo, Value, e.Add, e.Flags);
+                        ChaControl.SetAccessoryRot(item, correctNo, Value, add, flags);
 
                         //New_pos = new Vector3(store2[0, 0].x, store2[0, 0].y, store2[0, 0].z) - original_pos;
                         //New_pos = Quaternion.Euler(Rot2) * New_pos;
@@ -536,13 +519,13 @@ namespace Accessory_Parents
                         //            flag = 4;
                         //            break;
                         //    }
-                        //    ChaControl.SetAccessoryPos(item, e.CorrectNo, New_pos[i], true, flag);
+                        //    ChaControl.SetAccessoryPos(item, CorrectNo, New_pos[i], true, flag);
                         //}
 
 
                         if (item < 20)
                         {
-                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -550,29 +533,27 @@ namespace Accessory_Parents
             }
         }
 
-        private static void Hooks_ACC_Position_Change(object sender, Acc_modifier_Event_ARG e)
+        internal void Position_Change(int slotNo, int correctNo, float value, bool add, int flags)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !MakerEnabled)
             {
                 return;
             }
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var CoordinateNum = Controller.CoordinateNum;
 
-            if (!e.Add && e.Value == 0 && Controller.Custom_Names[CoordinateNum].ContainsValue(e.SlotNo))
+            if (!add && value == 0 && Custom_Names[CoordinateNum].ContainsValue(slotNo))
             {
                 float Value;
-                if (Controller.Relative_Data[CoordinateNum].TryGetValue(e.SlotNo, out var vectors))
+                if (Relative_Data[CoordinateNum].TryGetValue(slotNo, out var vectors))
                 {
-                    if (e.Flags == 1)
+                    if (flags == 1)
                     {
                         Value = vectors[0, 0].x;
                     }
-                    else if (e.Flags == 2)
+                    else if (flags == 2)
                     {
                         Value = vectors[0, 0].y;
                     }
-                    else if (e.Flags == 4)
+                    else if (flags == 4)
                     {
                         Value = vectors[0, 0].z;
                     }
@@ -587,21 +568,21 @@ namespace Accessory_Parents
                 }
                 if (Value != 0f)
                 {
-                    Controller.ChaControl.SetAccessoryPos(e.SlotNo, e.CorrectNo, Value, e.Add, e.Flags);
+                    ChaControl.SetAccessoryPos(slotNo, correctNo, Value, add, flags);
                     return;
                 }
             }
 
-            if (Controller.Bindings[CoordinateNum].TryGetValue(e.SlotNo, out var parentList))
+            if (Bindings[CoordinateNum].TryGetValue(slotNo, out var parentList))
             {
-                if (e.Add)
+                if (add)
                 {
                     foreach (var item in parentList)
                     {
-                        Controller.ChaControl.SetAccessoryPos(item, e.CorrectNo, e.Value, e.Add, e.Flags);
+                        ChaControl.SetAccessoryPos(item, correctNo, value, add, flags);
                         if (item < 20)
                         {
-                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -610,17 +591,17 @@ namespace Accessory_Parents
                     float Value;
                     foreach (var item in parentList)
                     {
-                        if (Controller.Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
+                        if (Relative_Data[CoordinateNum].TryGetValue(item, out var vectors))
                         {
-                            if (e.Flags == 1)
+                            if (flags == 1)
                             {
                                 Value = vectors[0, 0].x;
                             }
-                            else if (e.Flags == 2)
+                            else if (flags == 2)
                             {
                                 Value = vectors[0, 0].y;
                             }
-                            else if (e.Flags == 4)
+                            else if (flags == 4)
                             {
                                 Value = vectors[0, 0].z;
                             }
@@ -633,10 +614,10 @@ namespace Accessory_Parents
                         {
                             Value = 0;
                         }
-                        Controller.ChaControl.SetAccessoryPos(item, e.CorrectNo, Value, false, e.Flags);
+                        ChaControl.SetAccessoryPos(item, correctNo, Value, false, flags);
                         if (item < 20)
                         {
-                            Controller.ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = Controller.ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
 
@@ -644,33 +625,35 @@ namespace Accessory_Parents
             }
         }
 
-        private static void Hooks_Slot_ACC_Change(object sender, Slot_ACC_Change_ARG e)
+        internal void Slot_ACC_Change(int slotNo, int type)
         {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            var CoordinateNum = Controller.CoordinateNum;
-
-            if (e.Type == 120)
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !MakerEnabled)
             {
-                Controller.Child[CoordinateNum].Remove(e.SlotNo);
-                var test = Controller.Custom_Names[CoordinateNum].Where(x => x.Value == e.SlotNo).ToArray();
+                return;
+            }
+
+            if (type == 120)
+            {
+                Child[CoordinateNum].Remove(slotNo);
+                var test = Custom_Names[CoordinateNum].Where(x => x.Value == slotNo).ToArray();
                 for (int i = 0; i < test.Length; i++)
                 {
-                    Controller.Custom_Names[CoordinateNum].Remove(test[i].Key);
+                    Custom_Names[CoordinateNum].Remove(test[i].Key);
                 }
-                Controller.Relative_Data[CoordinateNum].Remove(e.SlotNo);
+                Relative_Data[CoordinateNum].Remove(slotNo);
                 Parent_DropDown.SetValue(0);
-                Controller.Update_Parenting();
-                Controller.Update_DropBox();
+                Update_Parenting();
+                Update_DropBox();
             }
             else
             {
-                if (Controller.Child[CoordinateNum].TryGetValue(e.SlotNo, out var ParentKey))
+                if (Child[CoordinateNum].TryGetValue(slotNo, out var ParentKey))
                 {
-                    Controller.Keep_Last_Data(e.SlotNo, ParentKey);
+                    Keep_Last_Data(slotNo, ParentKey);
                 }
-                else if (Controller.Old_Parent[CoordinateNum].ContainsKey(e.SlotNo) && Controller.Relative_Data[CoordinateNum].ContainsKey(e.SlotNo))
+                else if (Old_Parent[CoordinateNum].ContainsKey(slotNo) && Relative_Data[CoordinateNum].ContainsKey(slotNo))
                 {
-                    Controller.Keep_Last_Data(e.SlotNo);
+                    Keep_Last_Data(slotNo);
                 }
             }
             VisibiltyToggle();
@@ -1065,40 +1048,39 @@ namespace Accessory_Parents
             }
         }
 
-        private static void Hooks_MovIt(object sender, MovUrAcc_Event e)
+        internal void MovIt(List<QueueItem> queue)
         {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-            //var Bindings = Controller.Bindings[Controller.CoordinateNum];
-            var Names = Controller.Custom_Names[Controller.CoordinateNum];
-            var RelativeData = Controller.Relative_Data[Controller.CoordinateNum];
-            var Child = Controller.Child[Controller.CoordinateNum];
-            foreach (var item in e.Queue)
+            //var Bindings = Bindings[CoordinateNum];
+            var Names = Custom_Names[CoordinateNum];
+            var RelativeData = Relative_Data[CoordinateNum];
+            var Child = this.Child[CoordinateNum];
+            foreach (var item in queue)
             {
-                var Handover = Names.Where(x => x.Value == item.srcSlot).ToArray();
+                var Handover = Names.Where(x => x.Value == item.SrcSlot).ToArray();
                 for (int i = 0; i < Handover.Length; i++)
                 {
-                    Names[Handover[i].Key] = item.dstSlot;
+                    Names[Handover[i].Key] = item.DstSlot;
                 }
-                if (RelativeData.TryGetValue(item.srcSlot, out var RelativeVector))
+                if (RelativeData.TryGetValue(item.SrcSlot, out var RelativeVector))
                 {
-                    RelativeData[item.dstSlot] = RelativeVector;
-                    RelativeData.Remove(item.srcSlot);
+                    RelativeData[item.DstSlot] = RelativeVector;
+                    RelativeData.Remove(item.SrcSlot);
                 }
-                if (Child.TryGetValue(item.srcSlot, out var parent))
+                if (Child.TryGetValue(item.SrcSlot, out var parent))
                 {
-                    foreach (var sub in e.Queue)
+                    foreach (var sub in queue)
                     {
-                        if (sub.srcSlot == parent)
+                        if (sub.SrcSlot == parent)
                         {
-                            parent = sub.dstSlot;
+                            parent = sub.DstSlot;
                             break;
                         }
                     }
-                    Child[item.dstSlot] = parent;
-                    Child.Remove(item.srcSlot);
+                    Child[item.DstSlot] = parent;
+                    Child.Remove(item.SrcSlot);
                 }
             }
-            Controller.Update_Parenting();
+            Update_Parenting();
         }
     }
 }

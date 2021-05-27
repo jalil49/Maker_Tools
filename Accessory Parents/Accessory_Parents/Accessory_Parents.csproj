@@ -95,7 +95,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharaEvent.cs" />
-    <Compile Include="Events.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="Maker.cs" />
     <Compile Include="Settings.cs" />
