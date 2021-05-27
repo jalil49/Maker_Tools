@@ -172,7 +172,7 @@ namespace Additional_Card_Info
             category = new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings");
             e.AddSubCategory(category);
 
-            e.AddControl(new MakerText("Settings to be applied when saving coordinates\nThis isn't saved to Character Cards", category, owner));
+            e.AddControl(new MakerText("Settings to be applied to coordinates", category, owner));
 
             e.AddControl(new MakerSeparator(category, owner));
 

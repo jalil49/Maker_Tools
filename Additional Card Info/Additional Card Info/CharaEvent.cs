@@ -198,6 +198,22 @@ namespace Additional_Card_Info
             ACI_Data.data.Add("Personal_Clothing_Save", MessagePackSerializer.Serialize(PersonalClothingBools));
             ACI_Data.data.Add("Cosplay_Academy_Ready", MessagePackSerializer.Serialize(Character_Cosplay_Ready.Value));
             ACI_Data.data.Add("MakeUpKeep", MessagePackSerializer.Serialize(MakeUpKeep));
+
+            ACI_Data.data.Add("CoordinateSaveBools", MessagePackSerializer.Serialize(CoordinateSaveBools));
+            ACI_Data.data.Add("PersonalityType_Restriction", MessagePackSerializer.Serialize(PersonalityType_Restriction));
+            ACI_Data.data.Add("TraitType_Restriction", MessagePackSerializer.Serialize(TraitType_Restriction));
+            ACI_Data.data.Add("HstateType_Restriction", MessagePackSerializer.Serialize(HstateType_Restriction));
+            ACI_Data.data.Add("ClubType_Restriction", MessagePackSerializer.Serialize(ClubType_Restriction));
+            ACI_Data.data.Add("Height_Restriction", MessagePackSerializer.Serialize(Height_Restriction));
+            ACI_Data.data.Add("Breastsize_Restriction", MessagePackSerializer.Serialize(Breastsize_Restriction));
+            ACI_Data.data.Add("CoordinateType", MessagePackSerializer.Serialize(CoordinateType));
+            ACI_Data.data.Add("CoordinateSubType", MessagePackSerializer.Serialize(CoordinateSubType));
+            ACI_Data.data.Add("Creator", MessagePackSerializer.Serialize(CreatorNames));
+            ACI_Data.data.Add("Set_Name", MessagePackSerializer.Serialize(SetNames));
+            ACI_Data.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames));
+            ACI_Data.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData));
+            ACI_Data.data.Add("GenderType", MessagePackSerializer.Serialize(GenderType));
+
             SetExtendedData(ACI_Data);
         }
 
