@@ -15,6 +15,7 @@ namespace Additional_Card_Info
     public partial class CharaEvent : CharaCustomFunctionController
     {
         static readonly MakerToggle[] CoordinateKeepToggles = new MakerToggle[Constants.ClothingTypesLength];
+        static readonly MakerToggle[] PersonalKeepToggles = new MakerToggle[Constants.ClothingTypesLength];
         static readonly MakerRadioButtons[] PersonalityToggles = new MakerRadioButtons[Constants.PersonalityLength];
         static readonly MakerRadioButtons[] TraitToggles = new MakerRadioButtons[Constants.TraitsLength];
         static readonly MakerToggle[] HeightToggles = new MakerToggle[Constants.HeightLength];
@@ -54,7 +55,6 @@ namespace Additional_Card_Info
             Hooks.Slot_ACC_Change += Hooks_Slot_ACC_Change;
             Hooks.MovIt += Hooks_MovIt;
         }
-
 
         private static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
@@ -108,41 +108,10 @@ namespace Additional_Card_Info
             e.AddControl(new MakerText("Example Mecha Chika who doesn't work with socks/pantyhose and requires her shoes/glove", category, owner));
             #region Keep Toggles
 
-            var TopKeep = e.AddControl(new MakerToggle(category, "Keep Top", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[0] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Bottom", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[1] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Bra", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[2] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Underwear", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[3] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Gloves", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[4] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Pantyhose", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[5] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep socks", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[6] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Indoor Shoes", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[7] = x);
-
-            TopKeep = e.AddControl(new MakerToggle(category, "Keep Outdoor Shoes", owner));
-
-            TopKeep.ValueChanged.Subscribe(x => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().PersonalClothingBools[8] = x);
+            for (int i = 0; i < Constants.ClothingTypesLength; i++)
+            {
+                PersonalClothingKeepControls(i, e);
+            }
 
             MakeUpToggle = e.AddControl(new MakerToggle(category, "Keep Makeup", owner));
 
@@ -317,6 +286,16 @@ namespace Additional_Card_Info
             HairKeepToggles.Control.GroupingID = GroupingID;
         }
 
+        private static void PersonalClothingKeepControls(int ClothingInt, RegisterSubCategoriesEvent e)
+        {
+            PersonalKeepToggles[ClothingInt] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), $"Keep {((Constants.ClothingTypes)ClothingInt).ToString().Replace('_', ' ')}", false, Settings.Instance));
+            PersonalKeepToggles[ClothingInt].ValueChanged.Subscribe(x =>
+            {
+                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+                Controller.PersonalClothingBools[ClothingInt] = x; /*Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.ClothingTypes)ClothingInt}");*/
+            });
+        }
+
         private static void PersonalityRestrictionControls(int PersonalityNum, RegisterSubCategoriesEvent e)
         {
             PersonalityToggles[PersonalityNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
@@ -464,6 +443,11 @@ namespace Additional_Card_Info
             while (!MakerAPI.InsideAndLoaded || AccKeepToggles.Control.ControlObjects.Count() < count)
             {
                 yield return null;
+            }
+
+            for (int i = 0; i < PersonalClothingBools.Length; i++)
+            {
+                PersonalKeepToggles[i].SetValue(PersonalClothingBools[i], false);
             }
 
             for (int i = 0, n = AccKeepToggles.Control.ControlObjects.Count(); i < n; i++)
