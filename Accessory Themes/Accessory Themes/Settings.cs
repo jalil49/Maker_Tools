@@ -1,7 +1,8 @@
-﻿using BepInEx;
+﻿using Accessory_Themes.Core;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using HarmonyLib;
+using Hook_Space;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Studio;
@@ -28,21 +29,12 @@ namespace Accessory_Themes
             if (StudioAPI.InsideStudio) return;
 
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
-            Harmony.CreateAndPatchAll(typeof(Hooks));
+            Hooks.Init(Logger);
 
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "3", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
             MakerAPI.RegisterCustomSubCategories += CharaEvent.RegisterCustomSubCategories;
         }
-
-        //private static void ShowTypeInfo(Type t)
-        //{
-        //    Logger.LogWarning($"Name: {t.Name}");
-        //    Logger.LogWarning($"Full Name: {t.FullName}");
-        //    Logger.LogWarning($"ToString:  {t}");
-        //    Logger.LogWarning($"Assembly Qualified Name: {t.AssemblyQualifiedName}");
-        //    Logger.LogWarning("");
-        //}
     }
 }

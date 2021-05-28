@@ -12,7 +12,7 @@ using ToolBox;
 using UniRx;
 using UnityEngine;
 
-namespace Accessory_Themes
+namespace Accessory_Themes.Core
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
@@ -32,7 +32,7 @@ namespace Accessory_Themes
 
         private Color[] PersonalColorSkew = new Color[Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length];
 
-        private Additional_Card_Info.CharaEvent ACI_Ref;
+        private Additional_Card_Info.Core.CharaEvent ACI_Ref;
 
         private List<int> HairAcc = new List<int>();
 
@@ -123,7 +123,7 @@ namespace Accessory_Themes
                 StartCoroutine(WaitForSlots());
             }
             GetALLACC();
-            ACI_Ref = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
+            ACI_Ref = ChaControl.GetComponent<Additional_Card_Info.Core.CharaEvent>();
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)

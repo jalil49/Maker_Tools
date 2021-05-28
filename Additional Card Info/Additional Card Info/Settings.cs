@@ -1,7 +1,9 @@
-﻿using BepInEx;
+﻿using Additional_Card_Info.Core;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Hook_Space;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Studio;
@@ -27,7 +29,7 @@ namespace Additional_Card_Info
             if (StudioAPI.InsideStudio) return;
 
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
-            Harmony.CreateAndPatchAll(typeof(Hooks));
+            Hooks.Init(Logger);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "4", "Requires restarting maker");
             CreatorName = Config.Bind("User", "Creator", "", "Default Creator name for those who make a lot of coordinates");
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;

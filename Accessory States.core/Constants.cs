@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Accessory_States
+namespace Accessory_States.Core
 {
     public static class Constants
     {

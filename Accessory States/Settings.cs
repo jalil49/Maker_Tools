@@ -1,6 +1,9 @@
-﻿using BepInEx;
+﻿using Accessory_States.Core;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using Generic.Core;
+using Hook_Space;
 using KKAPI.Chara;
 using KKAPI.MainGame;
 using KKAPI.Maker;
@@ -25,7 +28,7 @@ namespace Accessory_States
         {
             Instance = this;
             Logger = base.Logger;
-            Hooks.Init();
+            Hooks.Init(Logger);
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
 
             StartCoroutine(Wait());

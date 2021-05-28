@@ -1,5 +1,6 @@
 ﻿using ExtensibleSaveFormat;
 using HarmonyLib;
+using Hook_Space;
 using KKAPI;
 using KKAPI.Chara;
 using KKAPI.MainGame;
@@ -12,7 +13,7 @@ using System.Linq;
 using ToolBox;
 using UniRx;
 
-namespace Accessory_States
+namespace Accessory_States.Core
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
@@ -416,7 +417,7 @@ namespace Accessory_States
                 }
                 catch (Exception ex)
                 {
-                    Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
+                    Settings.Logger.LogError($"Subscriber crash in {nameof(Hook_Space.Hooks)}.{nameof(Coordloaded)} - {ex}");
                 }
             }
 

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Hook_Space;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
@@ -10,7 +11,7 @@ using System.Linq;
 using ToolBox;
 using UniRx;
 
-namespace Additional_Card_Info
+namespace Additional_Card_Info.Core
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
@@ -400,7 +401,7 @@ namespace Additional_Card_Info
             }
         }
 
-        internal void Hooks_Slot_ACC_Change(int slotNo, int type)
+        internal void Slot_ACC_Change(int slotNo, int type)
         {
             if (type == 120)
             {

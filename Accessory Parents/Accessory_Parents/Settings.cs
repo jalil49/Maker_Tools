@@ -1,6 +1,8 @@
-﻿using BepInEx;
+﻿using Accessory_Parents.Core;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using Hook_Space;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Studio;
@@ -26,7 +28,7 @@ namespace Accessory_Parents
             }
             Instance = this;
             Logger = base.Logger;
-            Hooks.Init();
+            Hooks.Init(Logger);
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "1", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");

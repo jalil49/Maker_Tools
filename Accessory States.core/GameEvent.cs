@@ -1,4 +1,5 @@
-﻿using KKAPI.MainGame;
+﻿using Hook_Space;
+using KKAPI.MainGame;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Accessory_States
+namespace Accessory_States.Core
 {
     public class GameEvent : GameCustomFunctionController
     {

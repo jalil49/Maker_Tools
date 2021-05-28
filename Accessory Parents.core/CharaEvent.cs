@@ -10,7 +10,7 @@ using ToolBox;
 using UniRx;
 using UnityEngine;
 
-namespace Accessory_Parents
+namespace Accessory_Parents.Core
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
@@ -35,7 +35,6 @@ namespace Accessory_Parents
                 Child[i] = new Dictionary<int, int>();
                 Old_Parent[i] = new Dictionary<int, string>();
             }
-            //Logger = Settings.Logger;
         }
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)

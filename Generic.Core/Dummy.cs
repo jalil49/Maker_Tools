@@ -1,7 +1,7 @@
 ﻿using KKAPI;
 using KKAPI.Chara;
 
-namespace Accessory_States
+namespace Generic.Core
 {
     partial class Dummy : CharaCustomFunctionController
     {

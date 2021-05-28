@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Accessory_States
+namespace Hook_Space
 {
-
     public sealed class CoordinateLoadedEventARG : EventArgs
     {
         public CoordinateLoadedEventARG(ChaControl _Character/*, ChaFileCoordinate _Coordinate*/)

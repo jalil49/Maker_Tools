@@ -16,7 +16,46 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Accessory_Shortcuts", "Acce
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Additional_Card_Info", "Additional Card Info\Additional Card Info\Additional_Card_Info.csproj", "{C524AC66-CABC-4301-8B24-6910C0BE07F7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accessory Parents", "Accessory Parents", "{CDDC73AD-5751-4052-8653-F9326EB98CAB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accessory States", "Accessory States", "{88C5DE87-9135-46BE-A0B4-4627523740EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accessory Themes", "Accessory Themes", "{2C734F2C-A590-406C-81C4-6D9E983DAB4F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Additional Card Info", "Additional Card Info", "{2FE3728A-88D1-4A36-B2A5-F3C12DC12C7A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accessory Shortcuts", "Accessory Shortcuts", "{65E04BCA-9D10-4320-A4F0-8EBABF2BC042}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Additional_Card_Info.Core", "Additional_Card_Info.Core\Additional_Card_Info.Core.shproj", "{C714F336-B117-4E0F-A3EF-585D5C337D12}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Accessory_Themes.Core", "Accessory_Themes.Core\Accessory_Themes.Core.shproj", "{9FFB362A-E861-48C3-9516-09BCFFA262C9}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Accessory.Hooks", "Accessory.Hooks\Accessory.Hooks.shproj", "{7E1108F2-F0D8-4188-90CC-FD034B820C1E}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Accessory States.Core", "Accessory States.core\Accessory States.Core.shproj", "{DDE006D7-3AF0-423A-8071-1C0012D78F61}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Accessory Parents.Core", "Accessory Parents.core\Accessory Parents.Core.shproj", "{A336900A-BB3F-47E3-93F9-000C6A3184B8}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Generic.Core", "Generic.Core\Generic.Core.shproj", "{70D32956-C432-403A-87BC-A13BA321E24F}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Accessory States.core\Accessory States.core.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
+		Accessory.Hooks\Accessory.Hooks.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
+		Generic.Core\Generic.Core.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
+		Generic.Core\Generic.Core.projitems*{70d32956-c432-403a-87bc-a13ba321e24f}*SharedItemsImports = 13
+		Accessory.Hooks\Accessory.Hooks.projitems*{7e1108f2-f0d8-4188-90cc-fd034b820c1e}*SharedItemsImports = 13
+		Accessory.Hooks\Accessory.Hooks.projitems*{86ab6d65-3357-48de-bba2-ed3ea4912bcc}*SharedItemsImports = 4
+		Accessory_Themes.Core\Accessory_Themes.Core.projitems*{86ab6d65-3357-48de-bba2-ed3ea4912bcc}*SharedItemsImports = 4
+		Accessory_Themes.Core\Accessory_Themes.Core.projitems*{9ffb362a-e861-48c3-9516-09bcffa262c9}*SharedItemsImports = 13
+		Accessory Parents.core\Accessory Parents.core.projitems*{a336900a-bb3f-47e3-93f9-000c6a3184b8}*SharedItemsImports = 13
+		Accessory Parents.core\Accessory Parents.core.projitems*{a806537e-6d4c-4803-b426-42529cf78c3b}*SharedItemsImports = 4
+		Accessory.Hooks\Accessory.Hooks.projitems*{a806537e-6d4c-4803-b426-42529cf78c3b}*SharedItemsImports = 4
+		Accessory.Hooks\Accessory.Hooks.projitems*{c524ac66-cabc-4301-8b24-6910c0be07f7}*SharedItemsImports = 4
+		Additional_Card_Info.Core\Additional_Card_Info.Core.projitems*{c524ac66-cabc-4301-8b24-6910c0be07f7}*SharedItemsImports = 4
+		Additional_Card_Info.Core\Additional_Card_Info.Core.projitems*{c714f336-b117-4e0f-a3ef-585d5c337d12}*SharedItemsImports = 13
+		Accessory States.core\Accessory States.core.projitems*{dde006d7-3af0-423a-8071-1c0012d78f61}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -45,6 +84,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A806537E-6D4C-4803-B426-42529CF78C3B} = {CDDC73AD-5751-4052-8653-F9326EB98CAB}
+		{47F76284-35E0-43DE-872D-0B6829CB4A2D} = {88C5DE87-9135-46BE-A0B4-4627523740EE}
+		{86AB6D65-3357-48DE-BBA2-ED3EA4912BCC} = {2C734F2C-A590-406C-81C4-6D9E983DAB4F}
+		{18733318-DA12-4D7F-A8D4-0E320B22693A} = {65E04BCA-9D10-4320-A4F0-8EBABF2BC042}
+		{C524AC66-CABC-4301-8B24-6910C0BE07F7} = {2FE3728A-88D1-4A36-B2A5-F3C12DC12C7A}
+		{C714F336-B117-4E0F-A3EF-585D5C337D12} = {2FE3728A-88D1-4A36-B2A5-F3C12DC12C7A}
+		{9FFB362A-E861-48C3-9516-09BCFFA262C9} = {2C734F2C-A590-406C-81C4-6D9E983DAB4F}
+		{DDE006D7-3AF0-423A-8071-1C0012D78F61} = {88C5DE87-9135-46BE-A0B4-4627523740EE}
+		{A336900A-BB3F-47E3-93F9-000C6A3184B8} = {CDDC73AD-5751-4052-8653-F9326EB98CAB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E8C2C57B-E374-4DAF-BAD2-4148E436274E}
