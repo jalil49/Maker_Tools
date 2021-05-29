@@ -55,7 +55,7 @@ namespace Hook_Space
         [HarmonyPatch(typeof(ChaControl), "SetClothesState")]
         public static void Hook_SetClothesState(ChaControl __instance, int clothesKind, byte state)
         {
-            __instance.GetComponent<CharaEvent>().Settings_SetClothesState(clothesKind, state);
+            __instance.GetComponent<CharaEvent>().SetClothesState(clothesKind, state);
         }
 
         [HarmonyPostfix]

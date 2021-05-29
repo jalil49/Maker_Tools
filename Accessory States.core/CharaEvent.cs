@@ -608,7 +608,7 @@ namespace Accessory_States.Core
             Refresh();
         }
 
-        internal void Settings_SetClothesState(int clothesKind, byte state)
+        internal void SetClothesState(int clothesKind, byte state)
         {
             ChangedOutfit(clothesKind, state);
             SetClothesState_switch(clothesKind, state);

@@ -331,6 +331,10 @@ namespace Accessory_Themes.Core
 
         internal void Slot_ACC_Change(int slotNo, int type)
         {
+            if (!MakerEnabled || !MakerAPI.InsideAndLoaded)
+            {
+                return;
+            }
             if (type == 120)
             {
                 var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
