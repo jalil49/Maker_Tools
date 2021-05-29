@@ -14,6 +14,7 @@ namespace Additional_Card_Info.Core
         public static int SimplifiedCoordinateTypesLength = Enum.GetValues(typeof(SimplifiedCoordinateTypes)).Length;
         public static int HeightLength = Enum.GetValues(typeof(Height)).Length;
         public static int BreastsizeLength = Enum.GetValues(typeof(Breastsize)).Length;
+        public static int InterestLength = Enum.GetValues(typeof(Interests)).Length;
 
         public enum ClothingTypes
         {
@@ -32,7 +33,9 @@ namespace Additional_Card_Info.Core
         {
             Lingerie,
             Hair,
-            AfterSchool_Accessories
+            AfterSchool_Accessories,
+            Swimming_Accessories,
+            Bathroom_Accessories
         }
 
         public enum HStates
@@ -95,6 +98,7 @@ namespace Additional_Card_Info.Core
             Tough_Girl,
             Underclassman,
             Wild_Child,
+            Island_Daughter
         }
 
         public enum Traits
@@ -126,7 +130,8 @@ namespace Additional_Card_Info.Core
             Swimsuit,
             Club,
             Casual,
-            Nightwear
+            Nightwear,
+            Bathroom_Sun
         }
 
         public enum Height
@@ -148,6 +153,15 @@ namespace Additional_Card_Info.Core
             NotBot,
             NotBra,
             NotShorts
+        }
+
+        public enum Interests
+        {
+            Play,
+            Nature,
+            Fish,
+            Sightseeing,
+            H
         }
     }
 }

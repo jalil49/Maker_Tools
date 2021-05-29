@@ -19,6 +19,7 @@ namespace Additional_Card_Info.Core
         static readonly MakerToggle[] PersonalKeepToggles = new MakerToggle[Constants.ClothingTypesLength];
         static readonly MakerRadioButtons[] PersonalityToggles = new MakerRadioButtons[Constants.PersonalityLength];
         static readonly MakerRadioButtons[] TraitToggles = new MakerRadioButtons[Constants.TraitsLength];
+        static readonly MakerRadioButtons[] InterestToggles = new MakerRadioButtons[Constants.InterestLength];
         static readonly MakerToggle[] HeightToggles = new MakerToggle[Constants.HeightLength];
         static readonly MakerToggle[] BreastsizeToggles = new MakerToggle[Constants.BreastsizeLength];
         static readonly MakerToggle[] ClothNotToggles = new MakerToggle[3];
@@ -153,9 +154,14 @@ namespace Additional_Card_Info.Core
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Coordinate Type information", category, owner));
 
-            CoordinateTypeRadio = new MakerRadioButtons(category, owner, "Coordinate Type", 0, Enum.GetNames(typeof(Constants.SimplifiedCoordinateTypes)))
+            var SimpleCoord = Enum.GetNames(typeof(Constants.SimplifiedCoordinateTypes));
+            for (int i = 0; i < Constants.SimplifiedCoordinateTypesLength; i++)
             {
-                ColumnCount = 3
+                SimpleCoord[i] = SimpleCoord[i].Replace('_', ' ');
+            }
+            CoordinateTypeRadio = new MakerRadioButtons(category, owner, "Coordinate Type", 0, SimpleCoord)
+            {
+                ColumnCount = 2
             };
             e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x => { var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>(); Controller.CoordinateType[Controller.CoordinateNum] = x; });
 
@@ -221,10 +227,7 @@ namespace Additional_Card_Info.Core
 
                 Controller.ClubType_Restriction[Controller.CoordinateNum] = x - 1;
             });
-            //for (int i = 0; i < 2; i++)
-            //{
-            //    e.AddControl(new MakerText(null, category, owner));
-            //}
+
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Non-replaceable", category, owner));
             for (int ClothingInt = 0; ClothingInt < 9; ClothingInt++)
@@ -260,6 +263,14 @@ namespace Additional_Card_Info.Core
             for (int i = 0; i < Constants.HeightLength; i++)
             {
                 HeightRestrictionControls(i, e);
+            }
+
+            e.AddControl(new MakerSeparator(category, owner));
+            e.AddControl(new MakerText("Interest Restrictions: Koi_Sun", category, owner));
+
+            for (int i = 0; i < Constants.InterestLength; i++)
+            {
+                InterestsRestrictionControls(i, e);
             }
 
             #region Personality Restrictions
@@ -322,6 +333,22 @@ namespace Additional_Card_Info.Core
                     return;
                 }
                 Controller.PersonalityType_Restriction[Controller.CoordinateNum][TraitNum] = x;
+            });
+        }
+
+        private static void InterestsRestrictionControls(int IntrestNum, RegisterSubCategoriesEvent e)
+        {
+            InterestToggles[IntrestNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Interests)IntrestNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
+            InterestToggles[IntrestNum].ValueChanged.Subscribe(x =>
+            {
+                var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+                //Settings.Logger.LogWarning($"Changing Outfitnum restriction {(Constants.Traits)TraitNum}");
+                if (--x == 0)
+                {
+                    Controller.PersonalityType_Restriction[Controller.CoordinateNum].Remove(IntrestNum);
+                    return;
+                }
+                Controller.PersonalityType_Restriction[Controller.CoordinateNum][IntrestNum] = x;
             });
         }
 
@@ -501,6 +528,11 @@ namespace Additional_Card_Info.Core
             for (int i = 0; i < 3; i++)
             {
                 ClothNotToggles[i].SetValue(false, false);
+            }
+
+            for (int i = 0; i < Constants.InterestLength; i++)
+            {
+                InterestToggles[i].SetValue(Interest_Restriction[CoordinateNum][i]);
             }
 
             MakeUpToggle.SetValue(MakeUpKeep[CoordinateNum], false);

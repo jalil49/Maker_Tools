@@ -19,6 +19,7 @@ namespace Additional_Card_Info.Core
 
         private Dictionary<int, int>[] PersonalityType_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
         private Dictionary<int, int>[] TraitType_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
+        private Dictionary<int, int>[] Interest_Restriction = new Dictionary<int, int>[Constants.CoordinateLength];
 
         private bool[][] CoordinateSaveBools = new bool[Constants.CoordinateLength][];
         private bool[][] Height_Restriction = new bool[Constants.CoordinateLength][];
@@ -56,6 +57,7 @@ namespace Additional_Card_Info.Core
                 SubSetNames[i] = "";
                 ClothNotData[i] = new bool[3];
                 GenderType[i] = 0;
+                Interest_Restriction[i] = new Dictionary<int, int>();
             }
         }
 
@@ -82,6 +84,10 @@ namespace Additional_Card_Info.Core
                 Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
                 ClothNotData[i] = new bool[3];
                 GenderType[i] = 0;
+                for (int j = 0; j < Constants.InterestLength; j++)
+                {
+                    Interest_Restriction[i][j] = 1;
+                }
             }
             if (Character_Cosplay_Ready != null)
             {
@@ -138,6 +144,10 @@ namespace Additional_Card_Info.Core
                 if (ACI_Data.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {
                     PersonalityType_Restriction = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
+                }
+                if (ACI_Data.data.TryGetValue("Interest_Restriction", out ByteData) && ByteData != null)
+                {
+                    Interest_Restriction = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 }
                 if (ACI_Data.data.TryGetValue("TraitType_Restriction", out ByteData) && ByteData != null)
                 {
@@ -213,7 +223,7 @@ namespace Additional_Card_Info.Core
             ACI_Data.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames));
             ACI_Data.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData));
             ACI_Data.data.Add("GenderType", MessagePackSerializer.Serialize(GenderType));
-
+            ACI_Data.data.Add("Interest_Restriction", MessagePackSerializer.Serialize(Interest_Restriction));
             SetExtendedData(ACI_Data);
         }
 
@@ -237,6 +247,7 @@ namespace Additional_Card_Info.Core
             ACI_Data.data.Add("SubSetNames", MessagePackSerializer.Serialize(SubSetNames[CoordinateNum]));
             ACI_Data.data.Add("ClothNot", MessagePackSerializer.Serialize(ClothNotData[CoordinateNum]));
             ACI_Data.data.Add("GenderType", MessagePackSerializer.Serialize(GenderType[CoordinateNum]));
+            ACI_Data.data.Add("Interest_Restriction", MessagePackSerializer.Serialize(Interest_Restriction[CoordinateNum]));
 
             SetCoordinateExtendedData(coordinate, ACI_Data);
         }
@@ -261,6 +272,10 @@ namespace Additional_Card_Info.Core
                 if (ACI_Data.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
                 {
                     AccKeep[CoordinateNum] = MessagePackSerializer.Deserialize<List<int>>((byte[])ByteData);
+                }
+                if (ACI_Data.data.TryGetValue("Interest_Restriction", out ByteData) && ByteData != null)
+                {
+                    Interest_Restriction[CoordinateNum] = MessagePackSerializer.Deserialize<Dictionary<int, int>>((byte[])ByteData);
                 }
                 if (ACI_Data.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {

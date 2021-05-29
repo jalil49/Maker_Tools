@@ -15,7 +15,7 @@ namespace Additional_Card_Info
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Additional_Card_Info";
-        public const string Version = "1.1";
+        public const string Version = "1.2";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }
