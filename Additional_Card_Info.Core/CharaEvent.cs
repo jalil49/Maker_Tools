@@ -58,6 +58,7 @@ namespace Additional_Card_Info.Core
                 ClothNotData[i] = new bool[3];
                 GenderType[i] = 0;
                 Interest_Restriction[i] = new Dictionary<int, int>();
+                MakeUpKeep[i] = false;
             }
         }
 
@@ -84,6 +85,7 @@ namespace Additional_Card_Info.Core
                 Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
                 ClothNotData[i] = new bool[3];
                 GenderType[i] = 0;
+                MakeUpKeep[i] = false;
                 for (int j = 0; j < Constants.InterestLength; j++)
                 {
                     Interest_Restriction[i][j] = 1;
