@@ -36,6 +36,7 @@ namespace Accessory_Themes
         static MakerTextbox CopyTextbox;
         static MakerTextbox ThemeText;
         static MakerTextbox Tolerance;
+        static MakerTextbox BulkRange;
 
         static MakerButton ApplyTheme;
 
@@ -243,6 +244,45 @@ namespace Accessory_Themes
             });
             e.AddControl(Copybutton);
             #endregion
+
+            BulkRange = new MakerTextbox(category, "Slot Bulk", "1 ~ 2", owner);
+            e.AddControl(BulkRange);
+            var BulkRangerButton = new MakerButton("Apply Theme to Slots", category, owner);
+            e.AddControl(BulkRangerButton);
+
+            BulkRangerButton.OnClick.AddListener(delegate ()
+            {
+                var text = BulkRange.Value;
+                if (!text.Contains('~'))
+                {
+                    return;
+                }
+
+                var splittext = text.Split('~');
+                if (splittext.Length != 2)
+                {
+                    return;
+                }
+                for (int i = 0; i < 2; i++)
+                {
+                    splittext[i] = splittext[i].Trim();
+                }
+                if (int.TryParse(splittext[0], out var split1) && int.TryParse(splittext[1], out var split2))
+                {
+                    var small = Math.Min(split1, split2) - 1;
+                    var large = Math.Max(split1, split2) - 1;
+                    if (small < 0 || !(large < MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().ACCData.Count + 20))
+                    {
+                        return;
+                    }
+                    for (int i = small, n = large + 1; i < n; i++)
+                    {
+                        Themes.SetValue(i, ThemesDropDown_Setting.Value, false);
+                    }
+                }
+            });
+
+
             #region Parent color stuff
             SimpleParentDropdown = new MakerDropdown("Parent List", Constants.InclusionList.ToArray(), category, 0, owner);
             e.AddControl(SimpleParentDropdown);
@@ -597,9 +637,9 @@ namespace Accessory_Themes
                     {
                         continue;
                     }
+
                     if (ColorComparison(current, SlotInfo2.color))
                     {
-                        Settings.Logger.LogWarning("Setting " + slot);
                         Themed[slot] = ThemeNames[CoordinateNum].Count - 1;
                         Themes.SetValue(slot, ThemeNames[CoordinateNum].Count - 1, false);
                     }
