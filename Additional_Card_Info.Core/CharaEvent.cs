@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using UniRx;
 
-namespace Additional_Card_Info.Core
+namespace Additional_Card_Info
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {

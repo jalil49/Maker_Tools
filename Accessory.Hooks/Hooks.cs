@@ -4,13 +4,15 @@ using KKAPI.Maker;
 using System;
 using System.Collections.Generic;
 #if Parents
-using Accessory_Parents.Core;
+using Accessory_Parents;
 #elif States
-using Accessory_States.Core;
+using Accessory_States;
 #elif Themes
-using Accessory_Themes.Core;
+using Accessory_Themes;
 #elif ACI
-using Additional_Card_Info.Core;
+using Additional_Card_Info;
+#elif Shortcuts
+using Accessory_Shortcuts;
 #endif
 namespace Hook_Space
 {
@@ -107,12 +109,14 @@ namespace Hook_Space
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
         }
 
+#if !KKS
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MovUrAcc.MovUrAcc), "ProcessQueue")]
         private static void MovPatch(List<QueueItem> Queue)
         {
             MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
         }
+#endif
     }
 
     internal class QueueItem
@@ -127,5 +131,4 @@ namespace Hook_Space
             DstSlot = dst;
         }
     }
-
 }

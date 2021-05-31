@@ -1,4 +1,5 @@
-﻿using Hook_Space;
+﻿#if !KKS
+using Hook_Space;
 using KKAPI.MainGame;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Accessory_States.Core
+namespace Accessory_States
 {
     public class GameEvent : GameCustomFunctionController
     {
@@ -199,3 +200,4 @@ namespace Accessory_States.Core
         }
     }
 }
+#endif

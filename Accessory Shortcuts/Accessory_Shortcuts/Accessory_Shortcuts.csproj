@@ -93,16 +93,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharaEvent.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Hooks.cs" />
-    <Compile Include="Maker.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Import Project="..\..\Accessory_Shortcuts.Core\Accessory_Shortcuts.Core.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

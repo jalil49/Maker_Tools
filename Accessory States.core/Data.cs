@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Accessory_States.Core
+namespace Accessory_States
 {
     public class Data
     {

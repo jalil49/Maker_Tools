@@ -10,7 +10,7 @@ using ToolBox;
 using UniRx;
 using UnityEngine;
 
-namespace Accessory_Parents.Core
+namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Additional_Card_Info.Core
+namespace Additional_Card_Info
 {
     public static class Constants
     {

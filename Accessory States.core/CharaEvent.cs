@@ -1,4 +1,5 @@
-﻿using ExtensibleSaveFormat;
+﻿
+using ExtensibleSaveFormat;
 using HarmonyLib;
 using Hook_Space;
 using KKAPI;
@@ -13,7 +14,7 @@ using System.Linq;
 using ToolBox;
 using UniRx;
 
-namespace Accessory_States.Core
+namespace Accessory_States
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
@@ -64,7 +65,11 @@ namespace Accessory_States.Core
                 ThisCharactersData = new Data(ChaControl.fileParam.personality, ChaControl.fileParam.strBirthDay, ChaControl.fileParam.fullname, this);
                 Constants.CharacterInfo.Add(ThisCharactersData);
             }
-            if (!ThisCharactersData.processed || currentGameMode == GameMode.Maker || GameAPI.InsideHScene)
+            if (!ThisCharactersData.processed || currentGameMode == GameMode.Maker
+#if !KKS
+                || GameAPI.InsideHScene
+#endif
+                )
             {
                 ThisCharactersData.Controller = this;
                 chafile = ChaFileControl;

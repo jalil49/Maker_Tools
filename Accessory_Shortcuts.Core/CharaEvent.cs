@@ -14,17 +14,6 @@ namespace Accessory_Shortcuts
     {
         List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
 
-        public CharaEvent()
-        {
-            MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
-        }
-
-        protected override void OnDestroy()
-        {
-            MakerAPI.MakerFinishedLoading -= MakerAPI_MakerFinishedLoading;
-            base.OnDestroy();
-        }
-
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         { }
 

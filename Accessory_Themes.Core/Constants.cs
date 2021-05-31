@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Accessory_Themes.Core
+namespace Accessory_Themes
 {
     public static class Constants
     {

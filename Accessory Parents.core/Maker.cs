@@ -1,5 +1,4 @@
-﻿using Accessory_Parents;
-using Hook_Space;
+﻿using Hook_Space;
 using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
@@ -13,7 +12,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Accessory_Parents.Core
+namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {

@@ -11,15 +11,20 @@ namespace Accessory_Shortcuts
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        readonly List<Toggle> Slot_Toggles = new List<Toggle>();
-        Transform Slots_Location;
-        Traverse More_Acc;
-        bool Skip = false;
+        static readonly List<Toggle> Slot_Toggles = new List<Toggle>();
+        static Transform Slots_Location;
+        static Traverse More_Acc;
+        static bool Skip = false;
 
-        private void MakerAPI_MakerFinishedLoading(object sender, EventArgs e)
+        internal static void MakerAPI_MakerFinishedLoading(object sender, EventArgs e)
         {
             More_Acc = Traverse.Create(MoreAccessoriesKOI.MoreAccessories._self);
-            Slots_Location = GameObject.Find("CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/Slots/Viewport/Content").transform;
+#if !KKS
+            var Slots_Location_string = "CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/Slots/Viewport/Content";
+#else
+            var Slots_Location_string = "CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/";
+#endif
+            Slots_Location = GameObject.Find(Slots_Location_string).transform;
             Slot_Toggles.Clear();
             UpdateSlots();
         }
@@ -69,7 +74,7 @@ namespace Accessory_Shortcuts
             }
         }
 
-        private void UpdateSlots()
+        private static void UpdateSlots()
         {
             for (int i = Slot_Toggles.Count, n = Slots_Location.childCount - 1; i < n; i++)
             {

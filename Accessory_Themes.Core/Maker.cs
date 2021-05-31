@@ -11,7 +11,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Accessory_Themes.Core
+namespace Accessory_Themes
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {

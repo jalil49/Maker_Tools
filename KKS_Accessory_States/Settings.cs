@@ -39,7 +39,9 @@ namespace Accessory_States
                     CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
                 }
             }
+#if !KKS
             GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
+#endif
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             MakerAPI.MakerStartedLoading += (s, e) => CharaEvent.Maker_started();
