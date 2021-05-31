@@ -45,20 +45,43 @@ namespace Additional_Card_Info.Core
             {
                 AccKeep[i] = new List<int>();
                 HairAcc[i] = new List<int>();
-                CoordinateSaveBools[i] = new bool[Enum.GetNames(typeof(Constants.ClothingTypes)).Length];
                 CreatorNames[i] = Settings.CreatorName.Value;
                 SetNames[i] = "";
                 PersonalityType_Restriction[i] = new Dictionary<int, int>();
                 TraitType_Restriction[i] = new Dictionary<int, int>();
-                Height_Restriction[i] = new bool[Constants.HeightLength];
-                Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
                 HstateType_Restriction[i] = 0;
                 CoordinateType[i] = 0;
                 SubSetNames[i] = "";
-                ClothNotData[i] = new bool[3];
                 GenderType[i] = 0;
-                Interest_Restriction[i] = new Dictionary<int, int>();
                 MakeUpKeep[i] = false;
+
+
+                Height_Restriction[i] = new bool[Constants.HeightLength];
+                Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
+                CoordinateSaveBools[i] = new bool[Constants.ClothingTypesLength];
+                Interest_Restriction[i] = new Dictionary<int, int>();
+                ClothNotData[i] = new bool[Constants.ClothesNotLength];
+
+                for (int j = 0; j < Constants.BreastsizeLength; j++)
+                {
+                    Breastsize_Restriction[i][j] = false;
+                }
+                for (int j = 0; j < Constants.HeightLength; j++)
+                {
+                    Height_Restriction[i][j] = false;
+                }
+                for (int j = 0; j < Constants.InterestLength; j++)
+                {
+                    Interest_Restriction[i][j] = 1;
+                }
+                for (int j = 0; j < Constants.ClothesNotLength; j++)
+                {
+                    ClothNotData[i][j] = false;
+                }
+                for (int j = 0; j < Constants.ClothingTypesLength; j++)
+                {
+                    CoordinateSaveBools[i][j] = false;
+                }
             }
         }
 
@@ -73,7 +96,6 @@ namespace Additional_Card_Info.Core
             {
                 AccKeep[i].Clear();
                 HairAcc[i].Clear();
-                CoordinateSaveBools[i] = new bool[Enum.GetNames(typeof(Constants.ClothingTypes)).Length];
                 CreatorNames[i] = Settings.CreatorName.Value;
                 SetNames[i] = "";
                 SubSetNames[i] = "";
@@ -81,15 +103,30 @@ namespace Additional_Card_Info.Core
                 TraitType_Restriction[i].Clear();
                 HstateType_Restriction[i] = 0;
                 CoordinateType[i] = 0;
-                Height_Restriction[i] = new bool[Constants.HeightLength];
-                Breastsize_Restriction[i] = new bool[Constants.BreastsizeLength];
-                ClothNotData[i] = new bool[3];
-                GenderType[i] = 0;
-                MakeUpKeep[i] = false;
+
+                for (int j = 0; j < Constants.BreastsizeLength; j++)
+                {
+                    Breastsize_Restriction[i][j] = false;
+                }
+                for (int j = 0; j < Constants.HeightLength; j++)
+                {
+                    Height_Restriction[i][j] = false;
+                }
                 for (int j = 0; j < Constants.InterestLength; j++)
                 {
                     Interest_Restriction[i][j] = 1;
                 }
+                for (int j = 0; j < Constants.ClothesNotLength; j++)
+                {
+                    ClothNotData[i][j] = false;
+                }
+                for (int j = 0; j < Constants.ClothingTypesLength; j++)
+                {
+                    CoordinateSaveBools[i][j] = false;
+                }
+
+                GenderType[i] = 0;
+                MakeUpKeep[i] = false;
             }
             if (Character_Cosplay_Ready != null)
             {

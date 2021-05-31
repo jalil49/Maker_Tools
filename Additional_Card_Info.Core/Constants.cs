@@ -6,7 +6,7 @@ namespace Additional_Card_Info.Core
     {
         public static int CoordinateLength = Enum.GetValues(typeof(ChaFileDefine.CoordinateType)).Length;
         public static int ClothingTypesLength = Enum.GetValues(typeof(ClothingTypes)).Length;
-        public static int AdditonalClothingTypesLength = Enum.GetValues(typeof(ClothingTypes)).Length;
+        public static int AdditonalClothingTypesLength = Enum.GetValues(typeof(AdditonalClothingTypes)).Length;
         public static int HStatesLength = Enum.GetValues(typeof(HStates)).Length;
         public static int ClubLength = Enum.GetValues(typeof(Club)).Length;
         public static int PersonalityLength = Enum.GetValues(typeof(Personality)).Length;
@@ -15,6 +15,7 @@ namespace Additional_Card_Info.Core
         public static int HeightLength = Enum.GetValues(typeof(Height)).Length;
         public static int BreastsizeLength = Enum.GetValues(typeof(Breastsize)).Length;
         public static int InterestLength = Enum.GetValues(typeof(Interests)).Length;
+        public static int ClothesNotLength = Enum.GetValues(typeof(ClothesNot)).Length;
 
         public enum ClothingTypes
         {
