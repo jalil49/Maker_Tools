@@ -99,11 +99,13 @@ namespace Additional_Card_Info
             Tough_Girl,
             Underclassman,
             Wild_Child,
-            Island_Daughter
+            Island_Girl
         }
+
 
         public enum Traits
         {
+#if !KKS
             Pees_Often,
             Hungry,
             Insensitive,
@@ -121,7 +123,33 @@ namespace Additional_Card_Info
             Likes_Being_Aone,
             Likes_Excercising,
             Diligent,
-            Likes_Girls
+            Likes_Girls,
+            Information,
+            Love_Love,
+            Lonely
+#else
+            Hungry,
+            Simple,
+            Likes_Reading,
+            Likes_Music,
+            Insensitive,
+            Friendly,
+            Likes_Cleanliness,
+            Suddenly_Appears,
+            Likes_Being_Aone,
+            Likes_Excercising,
+            Diligent,
+            Information,
+            Love_Love,
+            Lively,
+            Passive,
+            Lazy,
+            Pees_Often,
+            Likes_Girls,
+            Slutty,
+            Gloomy,
+            Lonely
+#endif
         }
 
         public enum SimplifiedCoordinateTypes
