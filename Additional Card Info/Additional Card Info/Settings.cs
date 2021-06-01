@@ -10,6 +10,10 @@ using KKAPI.Studio;
 namespace Additional_Card_Info
 {
     [BepInPlugin(GUID, "Additional Card Info", Version)]
+    [BepInProcess("Koikatu")]
+    [BepInProcess("Koikatsu Party")]
+    [BepInProcess("KoikatuVR")]
+    [BepInProcess("Koikatsu Party VR")]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
     public partial class Settings : BaseUnityPlugin
     {

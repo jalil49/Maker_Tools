@@ -9,6 +9,10 @@ using KKAPI.Studio;
 namespace Accessory_Themes
 {
     [BepInPlugin(GUID, "Accessory Themes", Version)]
+    [BepInProcess("Koikatu")]
+    [BepInProcess("Koikatsu Party")]
+    [BepInProcess("KoikatuVR")]
+    [BepInProcess("Koikatsu Party VR")]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
     [BepInDependency("Additional_Card_Info", BepInDependency.DependencyFlags.HardDependency)]
     public partial class Settings : BaseUnityPlugin

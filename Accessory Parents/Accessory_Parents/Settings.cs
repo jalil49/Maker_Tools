@@ -9,6 +9,10 @@ using KKAPI.Studio;
 namespace Accessory_Parents
 {
     [BepInPlugin(GUID, "Accessory Parents", Version)]
+    [BepInProcess("Koikatu")]
+    [BepInProcess("Koikatsu Party")]
+    [BepInProcess("KoikatuVR")]
+    [BepInProcess("Koikatsu Party VR")]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
     public class Settings : BaseUnityPlugin
     {

@@ -8,6 +8,10 @@ using KKAPI.Studio;
 namespace Accessory_Shortcuts
 {
     [BepInPlugin(GUID, "Accessory Shortcuts", Version)]
+    [BepInProcess("Koikatu")]
+    [BepInProcess("Koikatsu Party")]
+    [BepInProcess("KoikatuVR")]
+    [BepInProcess("Koikatsu Party VR")]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
     public class Settings : BaseUnityPlugin
     {
