@@ -13,7 +13,7 @@ namespace Accessory_Parents
     public class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_Parents";
-        public const string Version = "1.2";
+        public const string Version = "1.3";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }

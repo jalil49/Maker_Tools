@@ -181,11 +181,6 @@ namespace Accessory_States
             var interfacebutton = e.AddSidebarControl(new SidebarToggle("ACC States", true, owner));
             interfacebutton.ValueChanged.Subscribe(x => ShowInterface = x);
 
-            //var testtoggle1 = new MakerToggle(category, "Unify", owner);
-            //MakerAPI.AddAccessoryWindowControl(testtoggle1).ValueChanged.Subscribe(x => { Settings.Logger.LogWarning($"Normal {testtoggle1.ControlObjects.Count()}"); });
-            //testtoggle2 = new MakerToggle(category, "unique", owner);
-            //MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(testtoggle2).ValueChanged += CharaEvent_ValueChanged;
-
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             ACC_Appearance_dropdown.Control.GroupingID = GroupingID;
             ACC_Appearance_state.Control.GroupingID = GroupingID;
