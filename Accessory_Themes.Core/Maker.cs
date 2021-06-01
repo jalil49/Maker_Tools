@@ -275,8 +275,11 @@ namespace Accessory_Themes
                     {
                         return;
                     }
+                    var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
                     for (int i = small, n = large + 1; i < n; i++)
                     {
+                        Controller.ChangeACCColor(i, ThemesDropDown_Setting.Value);
                         Themes.SetValue(i, ThemesDropDown_Setting.Value, false);
                     }
                 }
@@ -400,7 +403,7 @@ namespace Accessory_Themes
 
         private static void VisibiltyToggle()
         {
-            if (!MakerAPI.InsideMaker)
+            if (!MakerAPI.InsideAndLoaded)
                 return;
 
             var accessory = MakerAPI.GetCharacterControl().GetAccessoryObject(AccessoriesApi.SelectedMakerAccSlot);

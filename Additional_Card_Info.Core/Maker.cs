@@ -442,7 +442,7 @@ namespace Additional_Card_Info
 
         private static void VisibiltyToggle()
         {
-            if (!MakerAPI.InsideMaker)
+            if (!MakerAPI.InsideAndLoaded)
                 return;
 
             var accessory = MakerAPI.GetCharacterControl().GetAccessoryObject(AccessoriesApi.SelectedMakerAccSlot);

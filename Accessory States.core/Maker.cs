@@ -56,6 +56,7 @@ namespace Accessory_States
             var category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 3, "Accessory Settings");
             e.AddSubCategory(category);
 
+
             string[] ACC_app_Dropdown = new string[] { "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
 
             ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing\nBind", ACC_app_Dropdown, category, 0, owner));
@@ -518,7 +519,7 @@ namespace Accessory_States
 
         private static void VisibiltyToggle()
         {
-            if (!MakerAPI.InsideMaker)
+            if (!MakerAPI.InsideAndLoaded)
                 return;
             var Slot = AccessoriesApi.SelectedMakerAccSlot;
             var accessory = MakerAPI.GetCharacterControl().GetAccessoryObject(Slot);

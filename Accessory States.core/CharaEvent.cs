@@ -615,6 +615,10 @@ namespace Accessory_States
 
         internal void SetClothesState(int clothesKind, byte state)
         {
+            if (MakerAPI.InsideMaker && !MakerAPI.InsideAndLoaded)
+            {
+                return;
+            }
             ChangedOutfit(clothesKind, state);
             SetClothesState_switch(clothesKind, state);
         }
