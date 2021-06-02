@@ -12,7 +12,7 @@ namespace Additional_Card_Info
     {
         private bool[] PersonalClothingBools = new bool[9];
 
-        private bool[] MakeUpKeep = new bool[9];
+        private bool[] MakeUpKeep = new bool[Constants.CoordinateLength];
 
         public List<int>[] AccKeep = new List<int>[Constants.CoordinateLength];
         public List<int>[] HairAcc = new List<int>[Constants.CoordinateLength];
@@ -175,10 +175,6 @@ namespace Additional_Card_Info
                 if (ACI_Data.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
                 {
                     CoordinateSaveBools = MessagePackSerializer.Deserialize<bool[][]>((byte[])ByteData);
-                }
-                if (ACI_Data.data.TryGetValue("AccKeep", out ByteData) && ByteData != null)
-                {
-                    AccKeep = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);
                 }
                 if (ACI_Data.data.TryGetValue("PersonalityType_Restriction", out ByteData) && ByteData != null)
                 {
