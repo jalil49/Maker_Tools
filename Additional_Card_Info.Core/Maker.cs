@@ -584,12 +584,16 @@ namespace Additional_Card_Info
 
         private int AccessoryCount()
         {
+#if !KKS
             WeakKeyDictionary<ChaFile, MoreAccessories.CharAdditionalData> _accessoriesByChar = (WeakKeyDictionary<ChaFile, MoreAccessories.CharAdditionalData>)Traverse.Create(MoreAccessories._self).Field("_accessoriesByChar").GetValue();
             if (_accessoriesByChar.TryGetValue(ChaFileControl, out MoreAccessories.CharAdditionalData data) == false)
             {
                 data = new MoreAccessories.CharAdditionalData();
             }
             return data.nowAccessories.Count() + 20;
+#else
+            return 20;
+#endif
         }
 
         internal void MovIt(List<QueueItem> queue)
