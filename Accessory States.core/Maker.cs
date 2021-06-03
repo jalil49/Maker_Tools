@@ -537,8 +537,6 @@ namespace Accessory_States
                 ApplyTheme.Visible.OnNext(true);
                 ThemeText.Visible.OnNext(true);
                 RadioToggle.Visible.OnNext(true);
-                var slider = ACC_Appearance_state.Control.ControlObjects.ToArray()[Slot].GetComponentInChildren<Slider>();
-                var slider2 = ACC_Appearance_state2.Control.ControlObjects.ToArray()[Slot].GetComponentInChildren<Slider>();
                 if (ACC_Appearance_dropdown.GetValue(Slot) > 8)
                 {
                     var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
@@ -552,6 +550,8 @@ namespace Accessory_States
                             Max = Math.Max(Max, states[1]);
                         }
                     }
+                    var slider = ACC_Appearance_state.Control.ControlObjects.ToArray()[Slot].GetComponentInChildren<Slider>();
+                    var slider2 = ACC_Appearance_state2.Control.ControlObjects.ToArray()[Slot].GetComponentInChildren<Slider>();
                     slider.maxValue = ++Max;
                     slider2.maxValue = Max;
                 }
