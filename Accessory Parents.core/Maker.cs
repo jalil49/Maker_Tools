@@ -29,6 +29,7 @@ namespace Accessory_Parents
         static MakerButton Replace_Button;
         static MakerButton Save_Relative_Button;
         static MakerButton Child_Button;
+        static MakerToggle Retrospect;
 
         static bool MakerEnabled = false;
 
@@ -75,7 +76,7 @@ namespace Accessory_Parents
 
             ParentText = MakerAPI.AddAccessoryWindowControl<MakerText>(new MakerText("Not Parent", category, owner));
             ChildText = MakerAPI.AddAccessoryWindowControl<MakerText>(new MakerText("Not Child", category, owner));
-
+            Retrospect = MakerAPI.AddAccessoryWindowControl<MakerToggle>(new MakerToggle(null, "Add and Keep current position", owner));
             var Dropdown = new MakerDropdown("Parent", new string[] { "None" }, category, 0, owner);
             Parent_DropDown = MakerAPI.AddAccessoryWindowControl<MakerDropdown>(Dropdown);
 
@@ -924,10 +925,13 @@ namespace Accessory_Parents
                     return;
                 }
                 Child[CoordinateNum][Slot] = parentKey;
-                Move_To_Parent_Postion(Slot, parentKey);
-                if (Slot < 20)
+                if (!Retrospect.Value)
                 {
-                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[Slot] = ChaControl.nowCoordinate.accessory.parts[Slot];
+                    Move_To_Parent_Postion(Slot, parentKey);
+                    if (Slot < 20)
+                    {
+                        ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[Slot] = ChaControl.nowCoordinate.accessory.parts[Slot];
+                    }
                 }
                 Save_Relative_data(Slot);
                 Update_Parenting();
