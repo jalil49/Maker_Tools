@@ -89,38 +89,46 @@ namespace Accessory_Shortcuts
             }
         }
 
+        public static void NextSlot(int slot)
+        {
+            if (slot + 1 >= Slot_Toggles.Count)
+            {
+                UpdateSlots();
+            }
+            Slot_Toggles[Math.Max(slot - 1, 0)].isOn = true;
+        }
+
+        public static void PrevSlot(int slot)
+        {
+            if (slot + 1 >= Slot_Toggles.Count)
+            {
+                UpdateSlots();
+            }
+            Slot_Toggles[Math.Min(slot + 1, Slot_Toggles.Count - 1)].isOn = true;
+        }
+
         protected override void Update()
         {
             if (Input.anyKeyDown && AccessoriesApi.AccessoryCanvasVisible)
             {
-                var Slot = AccessoriesApi.SelectedMakerAccSlot;
-                if (Slot + 1 >= Slot_Toggles.Count)
-                {
-                    UpdateSlots();
-                }
+                var slot = AccessoriesApi.SelectedMakerAccSlot;
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
-                    Slot_Toggles[Math.Max(Slot - 1, 0)].isOn = true;
+                    NextSlot(slot);
                     return;
                 }
                 else if (Input.GetKeyDown(KeyCode.E))
                 {
-                    Slot_Toggles[Math.Min(Slot + 1, Slot_Toggles.Count - 1)].isOn = true;
+                    PrevSlot(slot);
                     return;
                 }
-                bool Unassigned;
-                if (Slot < 20)
-                {
-                    Unassigned = ChaControl.nowCoordinate.accessory.parts[Slot].type < 121;
-                }
-                else
-                {
-                    Unassigned = Accessorys_Parts[Slot - 20].type < 121;
-                }
-                if (Unassigned && Slot < Slot_Toggles.Count)
+#pragma warning disable CS0612 // Type or member is obsolete
+                var accessory = AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type == 120;
+#pragma warning restore CS0612 // Type or member is obsolete
+                if (accessory && slot < Slot_Toggles.Count)
                 {
                     Skip = true;
-                    CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { Slot }).GetValue<CvsAccessory>();
+                    CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { slot }).GetValue<CvsAccessory>();
                     if (int.TryParse(Input.inputString, out var kind) && kind < 10 && kind > -1)
                     {
                         if (kind == 0)

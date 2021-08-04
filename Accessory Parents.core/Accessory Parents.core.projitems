@@ -6,10 +6,20 @@
     <SharedGUID>a336900a-bb3f-47e3-93f9-000c6a3184b8</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Accessory_Parents.core</Import_RootNamespace>
+    <Import_RootNamespace>Accessory_Parents</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)CharaEvent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\GUI Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
   </ItemGroup>
 </Project>

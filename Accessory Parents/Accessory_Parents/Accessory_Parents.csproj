@@ -70,9 +70,6 @@
       <HintPath>..\..\packages\IllusionModdingAPI.KKAPI.1.19.0\lib\net35\KKAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KK_MovUrAcc">
-      <HintPath>..\..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\KK_MovUrAcc.dll</HintPath>
-    </Reference>
     <Reference Include="MoreAccessories">
       <HintPath>..\..\..\[ScrewThisNoise] Koikatsu BetterRepack R9.2\BepInEx\plugins\MoreAccessories.dll</HintPath>
     </Reference>
@@ -100,6 +97,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\..\Accessory.Hooks\Accessory.Hooks.projitems" Label="Shared" />

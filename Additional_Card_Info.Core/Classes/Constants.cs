@@ -5,7 +5,6 @@ namespace Additional_Card_Info
 {
     public static class Constants
     {
-        public static int CoordinateLength = Enum.GetValues(typeof(ChaFileDefine.CoordinateType)).Length;
         public static int ClothingTypesLength = Enum.GetValues(typeof(ClothingTypes)).Length;
         public static int AdditonalClothingTypesLength = Enum.GetValues(typeof(AdditonalClothingTypes)).Length;
         public static int HStatesLength = Enum.GetValues(typeof(HStates)).Length;
@@ -16,7 +15,6 @@ namespace Additional_Card_Info
         public static int HeightLength = Enum.GetValues(typeof(Height)).Length;
         public static int BreastsizeLength = Enum.GetValues(typeof(Breastsize)).Length;
         public static int InterestLength = Enum.GetValues(typeof(Interests)).Length;
-        public static int ClothesNotLength = Enum.GetValues(typeof(ClothesNot)).Length;
 
         public enum ClothingTypes
         {
@@ -50,7 +48,6 @@ namespace Additional_Card_Info
 
         public enum Club
         {
-            Not_Club,//-1
             Going_Home_Club, //0
             Swim_Club, //1
             Manga_Club, //2
@@ -153,11 +150,11 @@ namespace Additional_Card_Info
         }
 
         public readonly static SortedDictionary<int, int> Koi_to_Sun_Traits = new SortedDictionary<int, int>() {
-            {0,16},
-            {1,0 },
-            {2,5 },
-            {3,1 },
-            {4,18 },
+            {0, 16},
+            {1, 0 },
+            {2, 5 },
+            {3, 1 },
+            {4, 18 },
             {5, 19},
             {6, 2},
             {7, 3},
@@ -184,7 +181,7 @@ namespace Additional_Card_Info
             Club,
             Casual,
             Nightwear,
-            Bathroom_Sun
+            Bathroom
         }
 
         public enum Height
@@ -199,13 +196,6 @@ namespace Additional_Card_Info
             Small,
             Average,
             Large
-        }
-
-        public enum ClothesNot
-        {
-            NotBot,
-            NotBra,
-            NotShorts
         }
 
         public enum Interests

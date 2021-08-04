@@ -1,7 +1,6 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
 using KKAPI;
-using System;
 
 namespace Accessory_Shortcuts
 {

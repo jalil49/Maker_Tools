@@ -9,7 +9,6 @@
     <Import_RootNamespace>Accessory.Hooks</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Hooks.cs" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hook_Space
+namespace Accessory_States
 {
     public sealed class CoordinateLoadedEventARG : EventArgs
     {

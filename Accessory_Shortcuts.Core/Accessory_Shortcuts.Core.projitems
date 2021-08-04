@@ -9,9 +9,14 @@
     <Import_RootNamespace>Accessory_Shortcuts.Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)CharaEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\CharaEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Hooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)CharaCustomController\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
   </ItemGroup>
 </Project>

@@ -9,8 +9,16 @@
     <Import_RootNamespace>Additional_Card_Info.Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)CharaEvent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Standard Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)CharaCustomController\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
   </ItemGroup>
 </Project>

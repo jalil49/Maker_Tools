@@ -23,6 +23,7 @@ namespace Accessory_Shortcuts
             {
                 return;
             }
+            StartCoroutine(Wait());
             CurrentCoordinate.Subscribe(x =>
             {
                 StartCoroutine(Wait());
