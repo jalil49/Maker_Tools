@@ -1,17 +1,7 @@
-﻿using ExtensibleSaveFormat;
-using HarmonyLib;
-using KKAPI;
-using KKAPI.Chara;
-using KKAPI.MainGame;
-using KKAPI.Maker;
-using MessagePack;
-using MoreAccessoriesKOI;
+﻿using KKAPI.Chara;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ToolBox;
-using UniRx;
-using UnityEngine;
+
 
 namespace Accessory_States
 {
@@ -20,11 +10,14 @@ namespace Accessory_States
         internal static bool ASS_Exists;
 
         public Data ThisCharactersData;
+
         private ChaFile chafile;
 
         public static event EventHandler<CoordinateLoadedEventARG> Coordloaded;
 
-        internal List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
+        private byte lastknownshoetype = 0;
+
+        private bool ShowSub = true;
 
         #region Properties
 
@@ -52,11 +45,19 @@ namespace Accessory_States
             set { NowCoordinate.Names = value; }
         }
 
-        private Dictionary<int, bool> Parented
+        private bool[] ClothNotData
         {
-            get { return NowCoordinate.Parented; }
-            set { NowCoordinate.Parented = value; }
+            get { return NowCoordinate.ClothNotData; }
+            set { NowCoordinate.ClothNotData = value; }
         }
+
+        private bool ForceClothDataUpdate
+        {
+            get { return NowCoordinate.ForceClothNotUpdate; }
+            set { NowCoordinate.ForceClothNotUpdate = value; }
+        }
+
+        public static bool StopMakerLoop { get; internal set; }
 
         #endregion
     }

@@ -1,6 +1,7 @@
 ﻿using ExtensibleSaveFormat;
 using KKAPI;
 using KKAPI.Chara;
+using KKAPI.Maker;
 using MessagePack;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,11 @@ namespace Additional_Card_Info
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                return;
+            }
+
             CosplayReady = false;
             var maxkey = MaxKey;
             var coordlength = ChaFileControl.coordinate.Length;
@@ -70,12 +76,23 @@ namespace Additional_Card_Info
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                var Data = GetExtendedData();
+                if (Data != null)
+                {
+                    SetExtendedData(Data);
+                }
+                return;
+            }
+
             PluginData ACI_Data = new PluginData
             {
                 version = 1
             };
             data.CleanUp();
-            if (Creatorname != "")
+
+            if (!Creatorname.IsNullOrEmpty() && MakerAPI.InsideMaker)
             {
                 for (int i = 0, n = ChaFileControl.coordinate.Length; i < n; i++)
                 {
@@ -86,6 +103,7 @@ namespace Additional_Card_Info
                     }
                 }
             }
+
             ACI_Data.data.Add("CardInfo", MessagePackSerializer.Serialize(CardInfo));
             ACI_Data.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(CoordinateInfo));
             SetExtendedData(ACI_Data);

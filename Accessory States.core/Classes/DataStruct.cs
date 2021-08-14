@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Extensions;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,58 +11,70 @@ namespace Accessory_States
     public class CoordinateData
     {
         [Key("_slotinfo")]
-        public Dictionary<int, Slotdata> Slotinfo { get; set; } = new Dictionary<int, Slotdata>();
+        public Dictionary<int, Slotdata> Slotinfo { get; set; }
 
         [Key("_names")]
-        public Dictionary<int, NameData> Names { get; set; } = new Dictionary<int, NameData>();
+        public Dictionary<int, NameData> Names { get; set; }
 
-        [Key("_parented")]
-        public Dictionary<int, bool> Parented { get; set; } = new Dictionary<int, bool>();
+        [Key("_clothnotdata")]
+        public bool[] ClothNotData { get; set; }
 
-        public CoordinateData() { }
+        [Key("_forceclothnotupdate")]
+        public bool ForceClothNotUpdate = true;
+
+        public CoordinateData() { NullCheck(); }
 
         public CoordinateData(CoordinateData _copy) => CopyData(_copy);
 
         public void CleanUp()
         {
-            NullCheck();
-            var removeslots = Slotinfo.Where(x => x.Value.Binding == -1).ToList();
-            foreach (var item in removeslots)
+            var removelist = Slotinfo.Where(x => x.Value.Binding == -1 && !x.Value.Parented).Select(x => x.Key).ToList();
+            foreach (var item in removelist)
             {
-                Slotinfo.Remove(item.Key);
+                Slotinfo.Remove(item);
             }
-            var removenames = Names.Where(x => !Slotinfo.Any(y => y.Value.Binding == x.Key)).ToList();
-            foreach (var item in removenames)
+            removelist = Names.Where(x => !Slotinfo.Any(y => y.Value.Binding == x.Key)).Select(x => x.Key).ToList();
+            foreach (var item in removelist)
             {
-                Names.Remove(item.Key);
+                Names.Remove(item);
             }
-            var removeparents = Parented.Where(x => !x.Value).ToList();
-            foreach (var item in removeparents)
+
+            foreach (var item in Names)
             {
-                Parented.Remove(item.Key);
+                var max = MaxState(item.Key);
+                var statenames = item.Value.Statenames;
+                removelist = statenames.Keys.Where(x => x > max).ToList();
+                foreach (var key in removelist)
+                {
+                    statenames.Remove(key);
+                }
             }
         }
 
         public void Clear()
         {
-            NullCheck();
             Slotinfo.Clear();
             Names.Clear();
-            Parented.Clear();
+            ClothNotData = new bool[3];
+            ForceClothNotUpdate = true;
         }
 
         private void NullCheck()
         {
             if (Slotinfo == null) Slotinfo = new Dictionary<int, Slotdata>();
             if (Names == null) Names = new Dictionary<int, NameData>();
-            if (Parented == null) Parented = new Dictionary<int, bool>();
+            if (ClothNotData == null) ClothNotData = new bool[3];
         }
 
-        public void CopyData(CoordinateData _copy)
+        public void CopyData(CoordinateData _copy) => CopyData(_copy.Slotinfo, _copy.Names, _copy.ClothNotData, _copy.ForceClothNotUpdate);
+
+        public void CopyData(Dictionary<int, Slotdata> _slotinfo, Dictionary<int, NameData> _names, bool[] _clothnotdata, bool _forceclothnotupdate)
         {
-            Slotinfo = new Dictionary<int, Slotdata>(_copy.Slotinfo);
-            Names = new Dictionary<int, NameData>(_copy.Names);
-            Parented = new Dictionary<int, bool>(_copy.Parented);
+            Slotinfo = _slotinfo.ToNewDictionary();
+            Names = _names.ToNewDictionary();
+            ClothNotData = _clothnotdata.ToNewArray(3);
+            ForceClothNotUpdate = _forceclothnotupdate;
+            NullCheck();
         }
 
         public void Accstatesyncconvert(int outfitnum, out List<AccStateSync.TriggerProperty> TriggerProperty, out List<AccStateSync.TriggerGroup> TriggerGroup)
@@ -73,40 +86,99 @@ namespace Accessory_States
             {
                 var statelist = slotinfo.Value.States;
                 var binding = slotinfo.Value.Binding;
-                bool singlestate = 3 < binding && binding < 9;
                 int shoetype = slotinfo.Value.Shoetype;
 
-                for (int j = 0, nn = MaxState(binding) + 1; j < nn; j++)
+                if (binding < 0)
                 {
-                    TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, binding, j, ShowState(j, statelist, singlestate), 0));
+                    continue;
+                }
+
+                var maxstate = MaxState(binding) + 1;
+
+                bool prioritycheck;
+                int priority;
+                bool visible;
+
+                for (int state = 0; state < maxstate; state++) //default conversion
+                {
+                    visible = ShowState(state, statelist);
+
+                    prioritycheck = binding < 4 && state % 3 == 0;
+                    priority = 1;
+
+                    if (prioritycheck) priority = 2;
+
+                    TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, binding, state, visible, priority));
                 }
 
                 bool shoebinding = binding == 7 || binding == 8;
 
-                if (shoetype != 2 && !shoebinding)
+                if (shoetype != 2 && !shoebinding) //binded to indoor or outdoor state only make false priorty to not show
                 {
-                    var shoe = shoetype + 7;
-                    for (int j = 0, nn = MaxState(binding) + 1; j < nn; j++)
+                    var othershoe = (shoetype == 0) ? 8 : 7;
+                    for (int state = 0; state < maxstate; state++)
                     {
-                        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, shoe, j, ShowState(j, statelist, singlestate), 1));
+                        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, false, 3));
                     }
+                }
+
+                if (shoebinding && shoetype == 2) //binded to a shoe, but other shoe needs same work
+                {
+                    int othershoe = (binding == 7) ? 8 : 7;
+                    for (int state = 0; state < maxstate; state++)
+                    {
+                        visible = ShowState(state, statelist);
+
+                        prioritycheck = binding < 4 && state % 3 == 0;
+
+                        priority = 1;
+
+                        if (prioritycheck) priority = 2;
+
+                        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, visible, priority));
+                    }
+                }
+
+                if (binding > 3)
+                {
                     continue;
                 }
 
-                if (shoebinding && shoetype == 2)
+                switch (binding)//using clothing nots to fill in space
                 {
-                    int othershoe = (binding == 7) ? 8 : 7;
-                    for (int j = 0, nn = MaxState(binding) + 1; j < nn; j++)
-                    {
-                        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, j, ShowState(j, statelist, singlestate), 0));
-                    }
+                    case 0:
+                        if (ClothNotData[0])
+                        {
+                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 1));
+                        }
+                        if (ClothNotData[1])
+                        {
+                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 2));
+                        }
+                        break;
+                    case 1:
+                        if (ClothNotData[0])
+                        {
+                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 0));
+                        }
+                        break;
+                    case 2:
+                        if (ClothNotData[2])
+                        {
+                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 3));
+                        }
+                        if (ClothNotData[1])
+                        {
+                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 0));
+                        }
+                        break;
+                    case 3:
+                        if (ClothNotData[2])
+                        {
+                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 2));
+                        }
+                        break;
                 }
-            }
-
-
-            for (int i = 0, n = AccStateSync._clothesNames.Count; i < n; i++)
-            {
-                TriggerGroup.Add(new AccStateSync.TriggerGroup(outfitnum, i, AccStateSync._clothesNames[i]) { States = AccStateSync._statesNames });
             }
 
             foreach (var NameData in Names)
@@ -127,31 +199,26 @@ namespace Accessory_States
 
         public void Accstatesyncconvert(List<AccStateSync.TriggerProperty> TriggerProperty, List<AccStateSync.TriggerGroup> TriggerGroup)
         {
-            var Converted_Dictionary = new Dictionary<int, int>();
-            var Converted_array = new Dictionary<int, List<int[]>>();
-            var trigdict = new Dictionary<int, List<AccStateSync.TriggerProperty>>();
+            var triglistbyslot = new List<List<AccStateSync.TriggerProperty>>();
 
-            foreach (var item in TriggerProperty)
+            foreach (var slot in TriggerProperty.Distinct(x => x.Slot).Select(x => x.Slot))
             {
-                if (trigdict.TryGetValue(item.Slot, out var list))
-                {
-                    list.Add(item);
-                    continue;
-                }
-                trigdict[item.Slot] = new List<AccStateSync.TriggerProperty>() { item };
+                triglistbyslot.Add(TriggerProperty.Where(x => slot == x.Slot).OrderBy(x => x.RefKind).ThenBy(x => x.RefState).ToList());
             }
-
-            foreach (var list in trigdict.Values)
+            for (int index = 0, trigdictcount = triglistbyslot.Count; index < trigdictcount; index++)
             {
-                byte shoetype;
-                var slot = list[0].Slot;
-                bool inner = list.Any(x => x.RefKind == 7);
-                bool outer = list.Any(x => x.RefKind == 8);
-                var PriorityDict = new Dictionary<int, int>();
-                var refkindlist = new List<int>();
-                var statedict = new Dictionary<int, List<int[]>>();
-                var bothshoes = inner && outer || !(inner && outer);
+                var list = triglistbyslot[index];
 
+                var slot = list[0].Slot;
+                bool inner = list.Any(x => x.RefKind == 7 && x.Visible);
+                bool outer = list.Any(x => x.RefKind == 8 && x.Visible);
+                var refkindlist = list.Distinct(x => x.RefKind).Select(x => x.RefKind).ToList();
+                var PriorityDict = new Dictionary<int, int>();
+                var statedict = new Dictionary<int, List<int[]>>();
+
+                bool bothshoes = inner && outer || !inner && !outer;
+
+                byte shoetype;
                 if (bothshoes)
                 {
                     shoetype = 2;
@@ -165,20 +232,27 @@ namespace Accessory_States
                     shoetype = 1;
                 }
 
-                foreach (var item in list.Distinct(x => x.RefKind))
+                for (int shoe = 7; shoe <= 8; shoe++)
                 {
-                    refkindlist.Add(item.RefKind);
+                    if (refkindlist.Contains(shoe))
+                    {
+                        if (refkindlist.Any(x => x < shoe))
+                        {
+                            refkindlist.Remove(shoe);
+                        }
+                    }
                 }
 
                 foreach (var kind in refkindlist)
                 {
-                    var sortedlist = list.Where(x => x.Visible && x.RefKind == kind).OrderBy(x => x.RefState).ToList();
-                    PriorityDict[kind] = sortedlist.First(x => x.RefKind == kind).Priority;
+                    var visiblelist = list.Where(x => x.Visible && x.RefKind == kind).ToList();
+                    if (visiblelist.Count == 0) continue;
+                    PriorityDict[kind] = visiblelist.Count;
                     var statelist = statedict[kind] = new List<int[]>();
-                    for (int i = 0, n = sortedlist.Count; i < n; i++)
+                    for (int i = 0, n = visiblelist.Count; i < n; i++)
                     {
                         var j = i;
-                        while (j + 1 < n && sortedlist[j + 1].RefState == j + 1)
+                        while (j + 1 < n && visiblelist[j + 1].RefState == j + 1)
                         {
                             j++;
                         }
@@ -189,67 +263,26 @@ namespace Accessory_States
 
                 var selectedrefkind = PriorityDict.OrderByDescending(x => x.Value).First().Key;
 
-                Slotinfo[slot] = new Slotdata(selectedrefkind, statedict[selectedrefkind], shoetype);
-            }
-
-            foreach (var slot in Converted_Dictionary)
-            {
-                List<int[]> stateslist = new List<int[]>();
-                List<int> triggerstates = new List<int>();
-                TriggerProperty.ForEach(x =>
-                {
-                    if (x.Visible)
-                    {
-                        triggerstates.Add(x.RefState);
-                    }
-                });
-                var max = triggerstates.Max() + 1;
-                bool lastvis = false;
-                int[] addstate = new int[2];
-                if (slot.Value < 5 || 8 < slot.Value)
-                {
-                    for (int i = 0; i < max; i++)
-                    {
-                        bool show = triggerstates.Contains(i);
-                        if (show != lastvis)
-                        {
-                            if (show)
-                            {
-                                addstate[0] = i;
-                                lastvis = show;
-                                continue;
-                            }
-                            addstate[1] = i - 1;
-                            stateslist.Add(addstate);
-                            addstate = new int[2];
-                        }
-                        lastvis = show;
-                    }
-                }
-                else
-                {
-                    addstate[0] = (triggerstates.Contains(0)) ? 0 : 1;
-                    addstate[1] = (triggerstates.Contains(3)) ? 1 : 0;
-                    stateslist.Add(addstate);
-                    addstate = new int[2];
-                }
-                Converted_array[slot.Key] = stateslist;
-            }
-
-            for (int i = 0, n = Converted_Dictionary.Count; i < n; i++)
-            {
-                var element = Converted_Dictionary.ElementAt(i);
-                if (!Converted_array.TryGetValue(element.Key, out var states))
-                {
-                    continue;
-                }
-                Slotinfo[element.Key] = new Slotdata(element.Value, states, 2);
+                Slotinfo[slot] = new Slotdata(selectedrefkind, statedict[selectedrefkind], shoetype, false);
             }
 
             foreach (var item in TriggerGroup)
             {
                 Names[item.Kind] = new NameData(item.Label, item.States);
             }
+            NullCheck();
+        }
+
+        private List<AccStateSync.TriggerProperty> ClothingNotConversion(int outfitnum, int slot, List<int[]> statelist, int clothingkind)
+        {
+            var TriggerProperty = new List<AccStateSync.TriggerProperty>();
+            bool prioritycheck;
+            for (int state = 0; state < 4; state++)
+            {
+                prioritycheck = state % 3 == 0;
+                TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slot, clothingkind, state, (prioritycheck) ? ShowClothNotState(state, statelist) : false, (prioritycheck) ? 2 : 0));
+            }
+            return TriggerProperty;
         }
 
         private int MaxState(int binding)
@@ -267,22 +300,13 @@ namespace Accessory_States
             return max;
         }
 
-        private static bool ShowState(int state, List<int[]> list, bool singlestate)
+        private static bool ShowState(int state, List<int[]> list)
         {
-            if (singlestate)
-            {
-                for (int i = 0, n = list.Count; i < n; i++)
-                {
-                    var single = list[i];
-                    for (int j = 0, nn = single.Length; j < nn; j++)
-                    {
-                        if (single[j] != 0)
-                        {
-                            single[j] = 3;
-                        }
-                    }
-                }
-            }
+            return list.Any(x => x[0] <= state && state <= x[1]);
+        }
+
+        private static bool ShowClothNotState(int state, List<int[]> list)
+        {
             return list.Any(x => x[0] <= state && state <= x[1]);
         }
     }
@@ -295,24 +319,43 @@ namespace Accessory_States
         public int Binding { get; set; } = -1;
 
         [Key("_state")]
-        public List<int[]> States { get; set; } = new List<int[]>() { new int[] { 0, 3 } };
+        public List<int[]> States { get; set; }
 
         [Key("_shoetype")]
         public byte Shoetype { get; set; } = 2;
 
-        public Slotdata() { }
+        [Key("_parented")]
+        public bool Parented;
+
+        public Slotdata() { NullCheck(); }
 
         public Slotdata(Slotdata slotdata) => CopyData(slotdata);
 
-        public void CopyData(Slotdata slotdata) => CopyData(slotdata.Binding, slotdata.States, slotdata.Shoetype);
+        public void CopyData(Slotdata slotdata) => CopyData(slotdata.Binding, slotdata.States, slotdata.Shoetype, slotdata.Parented);
 
-        public Slotdata(int _binding, List<int[]> _state, byte _shoetype) => CopyData(_binding, _state, _shoetype);
+        public Slotdata(int _binding, List<int[]> _state, byte _shoetype, bool _parented) => CopyData(_binding, _state, _shoetype, _parented);
 
-        public void CopyData(int _binding, List<int[]> _state, byte _shoetype)
+        public void CopyData(int _binding, List<int[]> _state, byte _shoetype, bool _parented)
         {
             Binding = _binding;
-            States = _state;
+            States = _state.ToNewList(new int[] { 0, 3 });
             Shoetype = _shoetype;
+            Parented = _parented;
+            //if (States == null) States = new List<int[]>() {  };
+        }
+
+        public string Print()
+        {
+            string print = $"Binding {Binding}\t shoetype {Shoetype} \n States: ";
+            foreach (var item in States)
+            {
+                print += $" {item[0]} {item[1]} ";
+            }
+            return print;
+        }
+
+        private void NullCheck()
+        {
             if (States == null) States = new List<int[]>() { new int[] { 0, 3 } };
         }
     }
@@ -322,10 +365,10 @@ namespace Accessory_States
     public class NameData
     {
         [Key("_name")]
-        public string Name { get; set; } = "";
+        public string Name { get; set; }
 
         [Key("_statenames")]
-        public Dictionary<int, string> Statenames { get; set; } = new Dictionary<int, string>();
+        public Dictionary<int, string> Statenames { get; set; }
 
         public NameData() { NullCheck(); }
 
@@ -338,8 +381,7 @@ namespace Accessory_States
         public void CopyData(string _name, Dictionary<int, string> _statenames)
         {
             Name = _name;
-            Statenames = _statenames;
-            NullCheck();
+            Statenames = _statenames.ToNewDictionary();
         }
 
         private void NullCheck()
@@ -361,7 +403,7 @@ namespace Accessory_States
 
         public CoordinateData NowCoordinate = new CoordinateData();
 
-        public Dictionary<string, List<int>> Now_Parented_Name_Dictionary = new Dictionary<string, List<int>>();
+        public Dictionary<string, List<KeyValuePair<int, Slotdata>>> Now_Parented_Name_Dictionary = new Dictionary<string, List<KeyValuePair<int, Slotdata>>>();
 
         public Data(int _Personality, string _BirthDay, string _FullName, CharaEvent controller)
         {
@@ -379,8 +421,7 @@ namespace Accessory_States
                 coordinateData = new CoordinateData();
                 Coordinate[outfitnum] = coordinateData;
             }
-            //Settings.Logger.LogWarning((ChaFileDefine.CoordinateType)outfitnum);
-            if (KKAPI.KoikatuAPI.GetCurrentGameMode() == KKAPI.GameMode.Maker)
+            if (KKAPI.Maker.MakerAPI.InsideMaker)
             {
                 NowCoordinate = coordinateData;
             }
@@ -400,17 +441,20 @@ namespace Accessory_States
         public void Update_Parented_Name()
         {
             Now_Parented_Name_Dictionary.Clear();
-            var ParentedList = NowCoordinate.Parented.Where(x => x.Value);
+            var shoetype = Controller.ChaControl.fileStatus.shoesType;
+            var ParentedList = NowCoordinate.Slotinfo.Where(x => x.Value.Parented && (x.Value.Shoetype == 2 || x.Value.Shoetype == shoetype));
+#if !KKS
             Controller.Update_More_Accessories();
+#endif
             foreach (var item in ParentedList)
             {
                 var parentkey = Controller.Accessorys_Parts[item.Key].parentKey;
                 if (!Now_Parented_Name_Dictionary.TryGetValue(parentkey, out var list))
                 {
-                    list = new List<int>();
+                    list = new List<KeyValuePair<int, Slotdata>>();
                     Now_Parented_Name_Dictionary[parentkey] = list;
                 }
-                list.Add(item.Key);
+                list.Add(item);
             }
         }
 
@@ -422,7 +466,7 @@ namespace Accessory_States
 
         public void Clear()
         {
-            for (int i = 0, n = Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length; i < n; i++)
+            for (int i = 0, n = Coordinate.Count; i < n; i++)
             {
                 Coordinate[i].Clear();
             }

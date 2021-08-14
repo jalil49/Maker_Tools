@@ -1,19 +1,13 @@
-﻿using HarmonyLib;
-using KKAPI;
+﻿using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
-using MoreAccessoriesKOI;
 using System.Collections;
-using System.Collections.Generic;
-using ToolBox;
 using UniRx;
 
 namespace Accessory_Shortcuts
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        List<ChaFileAccessory.PartsInfo> Accessorys_Parts = new List<ChaFileAccessory.PartsInfo>();
-
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         { }
 
@@ -39,16 +33,6 @@ namespace Accessory_Shortcuts
             StartCoroutine(Wait());
         }
 
-        private void Update_More_Accessories()
-        {
-            WeakKeyDictionary<ChaFile, MoreAccessories.CharAdditionalData> _accessoriesByChar = (WeakKeyDictionary<ChaFile, MoreAccessories.CharAdditionalData>)Traverse.Create(MoreAccessories._self).Field("_accessoriesByChar").GetValue();
-            if (_accessoriesByChar.TryGetValue(ChaFileControl, out MoreAccessories.CharAdditionalData data) == false)
-            {
-                data = new MoreAccessories.CharAdditionalData();
-            }
-            Accessorys_Parts = data.nowAccessories;
-        }
-
         private IEnumerator Wait()
         {
             yield return null;
@@ -59,6 +43,8 @@ namespace Accessory_Shortcuts
                 Slot_Toggles.Clear();
                 UpdateSlots();
             }
+            if (Slot_Toggles.Count > 0 && !(Accessorys_Parts.Count < AccessoriesApi.SelectedMakerAccSlot))
+                Slot_Toggles[Slot_Toggles.Count - 1].isOn = true;
         }
     }
 }

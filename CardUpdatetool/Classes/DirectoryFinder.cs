@@ -44,7 +44,7 @@ namespace CardUpdateTool
             //step through each folder and grab files
             foreach (string path in Paths)
             {
-                if (path.Contains("BadCardData") || path.Contains("MissingMods"))
+                if (path.Contains("BadCardData") || path.Contains("MissingMods") || path.Contains("OutdatedMods"))
                 {
                     continue;
                 }

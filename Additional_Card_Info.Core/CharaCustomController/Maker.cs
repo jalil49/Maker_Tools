@@ -36,10 +36,12 @@ namespace Additional_Card_Info
         static MakerTextbox Set_Name;
         static MakerTextbox Sub_Set_Name;
 
-        static Dictionary<string, MakerTextbox> CharacterOutfitFolders = new Dictionary<string, MakerTextbox>();
-        static MakerTextbox ConstantCharacterOutfitFolders;
+        static readonly Dictionary<string, MakerTextbox> AdvancedCharacterOutfitFolders = new Dictionary<string, MakerTextbox>();
+        static MakerTextbox SimpleCharacterOutfitFolders;
 
         static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
+        public int ListInfoResult { get; internal set; }
 
         static string Creatorname = Settings.CreatorName.Value;
 
@@ -50,25 +52,15 @@ namespace Additional_Card_Info
 
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
-            MakerAPI.ReloadCustomInterface += (s, e2) =>
-            {
-                var Controller = GetController;
-
-                Controller.StartCoroutine(Controller.UpdateSlots());
-            };
+            MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
             AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
         }
 
-        internal void RemoveOutfitEvent()
+        private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
-            data.Removeoutfit(MaxKey);
-        }
-
-        internal void AddOutfitEvent()
-        {
-            for (int i = MaxKey; i < ChaFileControl.coordinate.Length; i++)
-                data.Createoutfit(i);
+            var Controller = GetController;
+            Controller.StartCoroutine(Controller.UpdateSlots());
         }
 
         private static void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -76,12 +68,11 @@ namespace Additional_Card_Info
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
 
-
             MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
 
             AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
-            MakerAPI.ReloadCustomInterface -= (s, e2) => { var Controller = GetController; Controller.StartCoroutine(Controller.UpdateSlots()); };
+            MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
         }
 
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
@@ -103,7 +94,7 @@ namespace Additional_Card_Info
                 var ACCKeep = Controller.AccKeep;
                 for (int i = 0, n = AccKeepToggles.Control.ControlObjects.Count(); i < n; i++)
                 {
-                    if (ChaControl.GetAccessoryObject(i) != null)
+                    if (AccessoriesApi.GetPartsInfo(i).type != 120)
                     {
                         AccKeepToggles.SetValue(i, true);
                         if (!ACCKeep.Contains(i))
@@ -131,58 +122,45 @@ namespace Additional_Card_Info
 
             MakeUpToggle.ValueChanged.Subscribe(x =>
             {
-                GetController.MakeupChanged(x);
+                GetController.MakeUpKeep = x;
             });
 
             e.AddControl(new MakerSeparator(category, owner));
+            #endregion
 
+            #region Folders
             Advanced = e.AddControl(new MakerToggle(category, "Advanced", false, owner));
             Advanced.ValueChanged.Subscribe(x =>
                {
-                   for (int i = 0, n = CharacterOutfitFolders.Count; i < n; i++)
+                   GetController.AdvancedDirectory = x;
+                   for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
                    {
-                       var foldertext = CharacterOutfitFolders.ElementAt(i).Value;
+                       var foldertext = AdvancedCharacterOutfitFolders.ElementAt(i).Value;
                        if (foldertext == null || foldertext.IsDisposed)
                        {
                            continue;
                        }
                        foldertext.Visible.OnNext(x);
                    }
-                   if (ConstantCharacterOutfitFolders != null && !ConstantCharacterOutfitFolders.IsDisposed)
-                       ConstantCharacterOutfitFolders.Visible.OnNext(!x);
                });
             e.AddControl(new MakerText("Custom Character Outfit Folders", category, owner));
-            ConstantCharacterOutfitFolders = e.AddControl(new MakerTextbox(category, "Simplified All Folders", "", owner));
-            ConstantCharacterOutfitFolders.ValueChanged.Subscribe(x =>
+            SimpleCharacterOutfitFolders = e.AddControl(new MakerTextbox(category, "Simplified All Folders", "", owner));
+            SimpleCharacterOutfitFolders.ValueChanged.Subscribe(x =>
             {
-                if (x == "")
-                {
-                    GetController.FolderDirectory.Clear();
-                    return;
-                }
-                for (int i = 0, n = CharacterOutfitFolders.Count; i < n; i++)
-                {
-                    var foldertext = CharacterOutfitFolders.ElementAt(i).Value;
-                    if (foldertext == null || foldertext.IsDisposed)
-                    {
-                        continue;
-                    }
-                    foldertext.SetValue(x);
-                }
+                GetController.SimpleFolderDirectory = x;
             });
-            for (int i = 0, n = Constants.SimplifiedCoordinateTypesLength + 1; i < n; i++)
+            for (int i = 0, n = Constants.SimplifiedCoordinateTypesLength; i < n; i++)
             {
-                CustomOutfitFolders(i, e);
+                CustomOutfitFoldersControls(i, e);
             }
-            CharacterOutfitFolders["Underwear"] = e.AddControl(new MakerTextbox(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), "Underwear", "", Settings.Instance));
-            CharacterOutfitFolders["Underwear"].ValueChanged.Subscribe(x =>
+            AdvancedCharacterOutfitFolders["Underwear"] = e.AddControl(new MakerTextbox(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), "Underwear", "", Settings.Instance));
+            AdvancedCharacterOutfitFolders["Underwear"].ValueChanged.Subscribe(x =>
             {
-                GetController.FolderDirectory["Underwear"] = x;
+                GetController.AdvancedFolderDirectory["Underwear"] = x;
             });
-            CharacterOutfitFolders["Underwear"].Visible.OnNext(false);
+            AdvancedCharacterOutfitFolders["Underwear"].Visible.OnNext(false);
 
             #endregion
-
 
             #endregion
 
@@ -212,25 +190,26 @@ namespace Additional_Card_Info
             Set_Name = new MakerTextbox(category, "Set Name", "", owner);
             Sub_Set_Name = new MakerTextbox(category, "Sub Set Name", "", owner);
             e.AddControl(Creator).ValueChanged.Subscribe(x => { Creatorname = x; });
-            e.AddControl(Set_Name).ValueChanged.Subscribe(x => { var Controller = GetController; Controller.SetNames = x; });
-            e.AddControl(Sub_Set_Name).ValueChanged.Subscribe(x => { var Controller = GetController; Controller.SubSetNames = x; });
+            e.AddControl(Set_Name).ValueChanged.Subscribe(x => { GetController.SetNames = x; });
+            e.AddControl(Sub_Set_Name).ValueChanged.Subscribe(x => { GetController.SubSetNames = x; });
 
 
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Coordinate Type information", category, owner));
 
-            var SimpleCoord = Enum.GetNames(typeof(Constants.SimplifiedCoordinateTypes));
-            for (int i = 0; i < Constants.SimplifiedCoordinateTypesLength; i++)
+            var SimpleCoord = new List<string>() { "Unassigned" };
+            SimpleCoord.AddRange(Enum.GetNames(typeof(Constants.SimplifiedCoordinateTypes)));
+            for (int i = 0, n = SimpleCoord.Count; i < n; i++)
             {
                 SimpleCoord[i] = SimpleCoord[i].Replace('_', ' ');
             }
-            CoordinateTypeRadio = new MakerRadioButtons(category, owner, "Coordinate Type", 0, SimpleCoord)
+            CoordinateTypeRadio = new MakerRadioButtons(category, owner, "Coordinate Type", 0, SimpleCoord.ToArray())
             {
                 ColumnCount = 2
             };
-            e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x => { var Controller = GetController; Controller.CoordinateType = x; });
+            e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x => { GetController.CoordinateType = x; });
 
-            List<string> buttons = new List<string> { "General" };
+            List<string> buttons = new List<string> { "Unassigned", "General" };
             buttons.AddRange(Enum.GetNames(typeof(Constants.ClothingTypes)));
             buttons.AddRange(Enum.GetNames(typeof(Constants.AdditonalClothingTypes)));
             for (int i = 0, n = buttons.Count; i < n; i++)
@@ -244,14 +223,13 @@ namespace Additional_Card_Info
             };
             e.AddControl(CoordinateSubTypeRadio).ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-                Controller.CoordinateSubType = x;
+                GetController.CoordinateSubType = x;
             });
 
             e.AddControl(new MakerText(null, category, owner));
 
             GenderRadio = new MakerRadioButtons(category, owner, "Gender", new string[] { "Female", "Both", "Male" });
-            e.AddControl(GenderRadio).ValueChanged.Subscribe(x => { var Controller = GetController; Controller.GenderType = x; });
+            e.AddControl(GenderRadio).ValueChanged.Subscribe(x => { GetController.GenderType = x; });
 
 
             e.AddControl(new MakerSeparator(category, owner));
@@ -267,9 +245,7 @@ namespace Additional_Card_Info
             };
             e.AddControl(HStateTypeRadio).ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-
-                Controller.HstateType_Restriction = x;
+                GetController.HstateType_Restriction = x;
             });
 
             //e.AddControl(new MakerText(null, category, owner));
@@ -288,8 +264,7 @@ namespace Additional_Card_Info
 
             e.AddControl(ClubTypeRadio).ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-                Controller.ClubType_Restriction = x;
+                GetController.ClubType_Restriction = x;
             });
 
             e.AddControl(new MakerSeparator(category, owner));
@@ -344,29 +319,17 @@ namespace Additional_Card_Info
             HairKeepToggles.Control.GroupingID = GroupingID;
         }
 
-        private static void CustomOutfitFolders(int ClothingInt, RegisterSubCategoriesEvent e)
-        {
-            var stringname = ((Constants.SimplifiedCoordinateTypes)ClothingInt).ToString();
-            CharacterOutfitFolders[stringname] = e.AddControl(new MakerTextbox(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), stringname, "", Settings.Instance));
-            CharacterOutfitFolders[stringname].ValueChanged.Subscribe(x =>
-            {
-                GetController.FolderDirectory[stringname] = x;
-            });
-            CharacterOutfitFolders[stringname].Visible.OnNext(false);
-        }
+        #region Control Creation
 
-        private void MakeupChanged(bool keep)
+        private static void CustomOutfitFoldersControls(int ClothingInt, RegisterSubCategoriesEvent e)
         {
-            var coord = (int)CurrentCoordinate.Value;
-            if (keep)
+            var stringname = ((Constants.SimplifiedCoordinateTypes)ClothingInt).ToString().Replace('_', ' ');
+            AdvancedCharacterOutfitFolders[stringname] = e.AddControl(new MakerTextbox(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), stringname, "", Settings.Instance));
+            AdvancedCharacterOutfitFolders[stringname].ValueChanged.Subscribe(x =>
             {
-                if (!MakeUpKeep.Contains(coord))
-                {
-                    MakeUpKeep.Add(coord);
-                }
-                return;
-            }
-            MakeUpKeep.Remove(coord);
+                GetController.AdvancedFolderDirectory[stringname] = x;
+            });
+            AdvancedCharacterOutfitFolders[stringname].Visible.OnNext(false);
         }
 
         private static void PersonalClothingKeepControls(int ClothingInt, RegisterSubCategoriesEvent e)
@@ -374,8 +337,7 @@ namespace Additional_Card_Info
             PersonalKeepToggles[ClothingInt] = e.AddControl(new MakerToggle(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), $"Keep {((Constants.ClothingTypes)ClothingInt).ToString().Replace('_', ' ')}", false, Settings.Instance));
             PersonalKeepToggles[ClothingInt].ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-                Controller.PersonalClothingBools[ClothingInt] = x; /*Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.ClothingTypes)ClothingInt}");*/
+                GetController.PersonalClothingBools[ClothingInt] = x;
             });
         }
 
@@ -384,13 +346,7 @@ namespace Additional_Card_Info
             PersonalityToggles[PersonalityNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Personality)PersonalityNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             PersonalityToggles[PersonalityNum].ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-                if (--x == 0)
-                {
-                    Controller.PersonalityType_Restriction.Remove(PersonalityNum);
-                    return;
-                }
-                Controller.PersonalityType_Restriction[PersonalityNum] = x;
+                GetController.PersonalityType_Restriction[PersonalityNum] = --x;
             });
         }
 
@@ -399,13 +355,7 @@ namespace Additional_Card_Info
             TraitToggles[TraitNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Traits)TraitNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             TraitToggles[TraitNum].ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-                if (--x == 0)
-                {
-                    Controller.TraitType_Restriction.Remove(TraitNum);
-                    return;
-                }
-                Controller.TraitType_Restriction[TraitNum] = x;
+                GetController.TraitType_Restriction[TraitNum] = --x;
             });
         }
 
@@ -414,13 +364,7 @@ namespace Additional_Card_Info
             InterestToggles[IntrestNum] = e.AddControl(new MakerRadioButtons(new MakerCategory("03_ClothesTop", "tglClothSettings", MakerConstants.Clothes.Copy.Position + 2, "Clothing Settings"), Settings.Instance, ((Constants.Interests)IntrestNum).ToString().Replace('_', ' '), 1, new string[] { "Exclude", "Neutral", "Include" }));
             InterestToggles[IntrestNum].ValueChanged.Subscribe(x =>
             {
-                var Controller = GetController;
-                if (--x == 0)
-                {
-                    Controller.Interest_Restriction.Remove(IntrestNum);
-                    return;
-                }
-                Controller.Interest_Restriction[IntrestNum] = x;
+                GetController.Interest_Restriction[IntrestNum] = --x;
             });
         }
 
@@ -450,6 +394,8 @@ namespace Additional_Card_Info
                 GetController.Height_Restriction[size] = x;
             });
         }
+
+        #endregion
 
         private static void AccHairKeep_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
         {
@@ -502,25 +448,25 @@ namespace Additional_Card_Info
             if (!MakerAPI.InsideMaker)
                 return;
 
-#pragma warning disable CS0612 // Type or member is obsolete
-            var accessory = AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type == 120;
-#pragma warning restore CS0612 // Type or member is obsolete
-            if (accessory)
-            {
+            var controller = GetController;
+            controller.Update_More_Accessories();
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
+            var visible = slot < controller.Accessorys_Parts.Count && AccessoriesApi.GetPartsInfo(slot).type != 120;
 
-                AccKeepToggles.Control.Visible.OnNext(false);
-                HairKeepToggles.Control.Visible.OnNext(false);
-            }
-            else
+            if (visible)
             {
                 HairKeepToggles.Control.Visible.OnNext(true);
                 AccKeepToggles.Control.Visible.OnNext(true);
+            }
+            else
+            {
+                AccKeepToggles.Control.Visible.OnNext(false);
+                HairKeepToggles.Control.Visible.OnNext(false);
             }
         }
 
         private IEnumerator UpdateSlots()
         {
-
             if (!MakerAPI.InsideMaker)
             {
                 yield break;
@@ -532,12 +478,14 @@ namespace Additional_Card_Info
             }
             while (!MakerAPI.InsideAndLoaded);
 
+            Update_More_Accessories();
+
             for (int i = 0; i < PersonalClothingBools.Length; i++)
             {
                 PersonalKeepToggles[i].SetValue(PersonalClothingBools[i], false);
             }
 
-            for (int i = 0, n = AccessoriesApi.GetMakerAccessoryCount(); i < n; i++)
+            for (int i = 0, n = Accessorys_Parts.Count; i < n; i++)
             {
                 AccKeepToggles.SetValue(i, AccKeep.Contains(i), false);
                 HairKeepToggles.SetValue(i, HairAcc.Contains(i), false);
@@ -595,35 +543,35 @@ namespace Additional_Card_Info
 
 
 
-            if (FolderDirectory.Count == 0)
+            if (AdvancedFolderDirectory.Count == 0)
             {
                 Advanced.SetValue(false);
-                ConstantCharacterOutfitFolders.SetValue("", false);
-                for (int i = 0, n = CharacterOutfitFolders.Count; i < n; i++)
+                SimpleCharacterOutfitFolders.SetValue("", false);
+                for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
                 {
-                    var textbox = CharacterOutfitFolders.ElementAt(i).Value;
+                    var textbox = AdvancedCharacterOutfitFolders.ElementAt(i).Value;
                     textbox.SetValue("", false);
                 }
             }
             else
             {
-                ConstantCharacterOutfitFolders.SetValue("", false);
-                var folder = FolderDirectory.ElementAt(0).Value;
-                if (CharacterOutfitFolders.Count == FolderDirectory.Count && FolderDirectory.Values.All(x => x == folder))
+                SimpleCharacterOutfitFolders.SetValue("", false);
+                var folder = AdvancedFolderDirectory.ElementAt(0).Value;
+                if (AdvancedCharacterOutfitFolders.Count == AdvancedFolderDirectory.Count && AdvancedFolderDirectory.Values.All(x => x == folder))
                 {
                     Advanced.SetValue(false);
 
-                    ConstantCharacterOutfitFolders.SetValue(folder, false);
+                    SimpleCharacterOutfitFolders.SetValue(folder, false);
                 }
                 else
                 {
                     Advanced.SetValue(true);
-                    for (int i = 0, n = CharacterOutfitFolders.Count; i < n; i++)
+                    for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
                     {
-                        var textbox = CharacterOutfitFolders.ElementAt(i);
-                        if (FolderDirectory.TryGetValue(textbox.Key, out var foldername))
+                        var textbox = AdvancedCharacterOutfitFolders.ElementAt(i);
+                        if (AdvancedFolderDirectory.TryGetValue(textbox.Key, out var foldername))
                         {
-                            textbox.Value.SetValue(FolderDirectory[foldername], false);
+                            textbox.Value.SetValue(AdvancedFolderDirectory[foldername], false);
                             continue;
                         }
                         textbox.Value.SetValue("", false);
@@ -631,13 +579,15 @@ namespace Additional_Card_Info
                 }
             }
 
-            MakeUpToggle.SetValue(MakeUpKeep.Contains((int)CurrentCoordinate.Value), false);
+            MakeUpToggle.SetValue(MakeUpKeep, false);
             CoordinateTypeRadio.SetValue(CoordinateType, false);
             CoordinateSubTypeRadio.SetValue(CoordinateSubType, false);
             ClubTypeRadio.SetValue(ClubType_Restriction, false);
             HStateTypeRadio.SetValue(HstateType_Restriction, false);
             Set_Name.SetValue(SetNames, false);
         }
+
+        #region external event
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
@@ -723,16 +673,70 @@ namespace Additional_Card_Info
             }
         }
 
+        internal void RemoveOutfitEvent()
+        {
+            data.Removeoutfit(MaxKey);
+        }
+
+        internal void AddOutfitEvent()
+        {
+            for (int i = MaxKey; i < ChaFileControl.coordinate.Length; i++)
+                data.Createoutfit(i);
+        }
+
+        #endregion
+
         internal void UpdateClothingNots()
         {
-            if (ClothNotData == null)
+            if (!MakerAPI.InsideMaker)
             {
                 return;
             }
             var clothingnot = ClothNotData;
-            clothingnot[0] = ChaControl.notBot;
-            clothingnot[1] = ChaControl.notBra;
-            clothingnot[2] = ChaControl.notShorts;
+            for (int i = 0, n = clothingnot.Length; i < n; i++)
+            {
+                clothingnot[i] = false;
+            }
+
+            var clothinfo = ChaControl.infoClothes;
+
+            UpdateTopClothingNots(clothinfo[0], ref clothingnot);
+            UpdateBraClothingNots(clothinfo[2], ref clothingnot);
+        }
+
+        private void UpdateTopClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
+        {
+            if (infoBase == null)
+            {
+                return;
+            }
+            Hooks.ClothingNotPatch.IsshortsCheck = false;
+            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
+            var key = ChaListDefine.KeyType.Coordinate;
+            infoBase.GetInfo(key);
+            bool notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
+            key = ChaListDefine.KeyType.NotBra;
+            infoBase.GetInfo(key);
+            bool notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
+            clothingnot[0] = clothingnot[0] || notbot;
+            clothingnot[1] = clothingnot[1] || notbra;
+        }
+
+        private void UpdateBraClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
+        {
+            if (infoBase == null)
+            {
+                return;
+            }
+            Hooks.ClothingNotPatch.IsshortsCheck = true;
+
+            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
+            var key = ChaListDefine.KeyType.HideShorts;//just using a different keytype that makes sense
+
+            infoBase.GetInfo(ChaListDefine.KeyType.Coordinate);//kk uses coordinate to hide shorts
+
+            bool notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
+            clothingnot[2] = clothingnot[2] || notShorts;
         }
     }
 }

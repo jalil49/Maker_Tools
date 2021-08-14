@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Extensions;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,47 +51,60 @@ namespace Additional_Card_Info
     [MessagePackObject]
     public class Cardinfo
     {
-        [Key("_makeup")]
-        public List<int> MakeUpKeep = new List<int>();
-
         [Key("_cosplayready")]
-        public bool CosplayReady = false;
+        public bool CosplayReady;
+
+        [Key("_advdir")]
+        public bool AdvancedDirectory;
 
         [Key("_personalsavebool")]
-        public bool[] PersonalClothingBools = new bool[9];
+        public bool[] PersonalClothingBools;
 
-        [Key("_folderdirectory")]
-        public Dictionary<string, string> FolderDirectory = new Dictionary<string, string>();
+        [Key("_simpledirectory")]
+        public string SimpleFolderDirectory;
+
+        [Key("_advdirectory")]
+        public Dictionary<string, string> AdvancedFolderDirectory;
+
+        public Cardinfo() { NullCheck(); }
+
+        public Cardinfo(bool _advdir, bool _cosplayready, bool[] _personalsavebool, string _simpledirectory, Dictionary<string, string> _advdirectory)
+        {
+            CosplayReady = _cosplayready;
+            SimpleFolderDirectory = _simpledirectory;
+            AdvancedDirectory = _advdir;
+            PersonalClothingBools = _personalsavebool.ToNewArray(9);
+
+            AdvancedFolderDirectory = _advdirectory.ToNewDictionary();
+            NullCheck();
+        }
 
         internal void CleanUp()
         {
-            NullCheck();
             var invalidpath = System.IO.Path.GetInvalidPathChars().Select(x => x.ToString());
-            var folderkeys = FolderDirectory.Keys.ToList();
+            var folderkeys = AdvancedFolderDirectory.Keys.ToList();
             foreach (var key in folderkeys)
             {
-                var path = FolderDirectory[key] = FolderDirectory[key].Trim();
+                var path = AdvancedFolderDirectory[key] = AdvancedFolderDirectory[key].Trim();
 
                 if (path.Length == 0 || path.ContainsAny(invalidpath))
                 {
-                    FolderDirectory.Remove(key);
+                    AdvancedFolderDirectory.Remove(key);
                 }
             }
         }
 
         public void Clear()
         {
-            NullCheck();
-            MakeUpKeep.Clear();
             CosplayReady = false;
             PersonalClothingBools = new bool[9];
-            FolderDirectory.Clear();
+            AdvancedFolderDirectory.Clear();
         }
 
         private void NullCheck()
         {
-            if (FolderDirectory == null) FolderDirectory = new Dictionary<string, string>();
-            if (MakeUpKeep == null) MakeUpKeep = new List<int>();
+            if (SimpleFolderDirectory == null) SimpleFolderDirectory = "";
+            if (AdvancedFolderDirectory == null) AdvancedFolderDirectory = new Dictionary<string, string>();
             if (PersonalClothingBools == null) PersonalClothingBools = new bool[9];
         }
     }
@@ -100,32 +114,35 @@ namespace Additional_Card_Info
     public class CoordinateInfo
     {
         #region fields
+        [Key("_makeup")]
+        public bool MakeUpKeep;
+
         [Key("_clothnot")]
-        public bool[] ClothNotData = new bool[3];
+        public bool[] ClothNotData;
 
         [Key("_coordsavebool")]
-        public bool[] CoordinateSaveBools = new bool[9];
+        public bool[] CoordinateSaveBools;
 
         [Key("_acckeep")]
-        public List<int> AccKeep = new List<int>();
+        public List<int> AccKeep;
 
         [Key("_hairkeep")]
-        public List<int> HairAcc = new List<int>();
+        public List<int> HairAcc;
 
         [Key("_creatornames")]
-        public List<string> CreatorNames = new List<string>();
+        public List<string> CreatorNames;
 
         [Key("_set")]
-        public string SetNames = "";
+        public string SetNames;
 
         [Key("_subset")]
-        public string SubSetNames = "";
+        public string SubSetNames;
 
         [Key("_restrictioninfo")]
-        public RestrictionInfo RestrictionInfo = new RestrictionInfo();
+        public RestrictionInfo RestrictionInfo;
         #endregion
 
-        public CoordinateInfo() { }
+        public CoordinateInfo() { NullCheck(); }
 
         public CoordinateInfo(CoordinateInfo _copy) => CopyData(_copy);
 
@@ -133,36 +150,24 @@ namespace Additional_Card_Info
 
         public void CopyData(bool[] _clothnot, bool[] _coordsavebool, List<int> _acckeep, List<int> _hairkeep, List<string> _creatornames, string _set, string _subset, RestrictionInfo _restrictioninfo)
         {
-            ClothNotReset(_clothnot);
-
-            CoordinateSaveBoolsReset(_coordsavebool);
-
-            AccKeep.Clear();
-            AccKeep = new List<int>(_acckeep);
-            HairAcc.Clear();
-            HairAcc = new List<int>(_hairkeep);
-            CreatorNames.Clear();
-            CreatorNames = new List<string>(_creatornames);
-            SetNames = "";
             SetNames = _set;
-            SubSetNames = "";
             SubSetNames = _subset;
-            RestrictionInfo.Clear();
-            RestrictionInfo = _restrictioninfo;
+
+            CoordinateSaveBools = _coordsavebool.ToNewArray(9);
+            AccKeep = _acckeep.ToNewList();
+            HairAcc = _hairkeep.ToNewList();
+            CreatorNames = _creatornames.ToNewList();
+            ClothNotData = _clothnot.ToNewArray(3);
+
+            if (_restrictioninfo != null) RestrictionInfo = new RestrictionInfo(_restrictioninfo);
+            else RestrictionInfo = null;
             NullCheck();
         }
 
         public void Clear()
         {
-            NullCheck();
-            for (int i = 0; i < ClothNotData.Length; i++)
-            {
-                ClothNotData[i] = false;
-            }
-            for (int i = 0; i < CoordinateSaveBools.Length; i++)
-            {
-                CoordinateSaveBools[i] = false;
-            }
+            ClothNotData = new bool[3];
+            CoordinateSaveBools = new bool[9];
             AccKeep.Clear();
             HairAcc.Clear();
             CreatorNames.Clear();
@@ -171,42 +176,8 @@ namespace Additional_Card_Info
             RestrictionInfo.Clear();
         }
 
-        private void ClothNotReset(bool[] _clothnot)
-        {
-            if (_clothnot != null)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    ClothNotData[i] = _clothnot[i];
-                }
-                return;
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                ClothNotData[i] = false;
-            }
-        }
-
-        private void CoordinateSaveBoolsReset(bool[] _coordsavebool)
-        {
-            if (_coordsavebool != null)
-            {
-                for (int i = 0; i < 9; i++)
-                {
-                    CoordinateSaveBools[i] = _coordsavebool[i];
-                }
-            }
-
-            for (int i = 0; i < 9; i++)
-            {
-                CoordinateSaveBools[i] = false;
-            }
-        }
-
         internal void CleanUp()
         {
-            NullCheck();
             var invalidpath = System.IO.Path.GetInvalidPathChars();
 
             foreach (var item in invalidpath)
@@ -236,37 +207,37 @@ namespace Additional_Card_Info
     {
         #region fields
         [Key("_personality")]
-        public Dictionary<int, int> PersonalityType_Restriction = new Dictionary<int, int>();
+        public Dictionary<int, int> PersonalityType_Restriction;
 
         [Key("_trait")]
-        public Dictionary<int, int> TraitType_Restriction = new Dictionary<int, int>();
+        public Dictionary<int, int> TraitType_Restriction;
 
         [Key("_interest")]
-        public Dictionary<int, int> Interest_Restriction = new Dictionary<int, int>();
+        public Dictionary<int, int> Interest_Restriction;
 
         [Key("_height")]
-        public bool[] Height_Restriction = new bool[3];
+        public bool[] Height_Restriction;
 
         [Key("_breast")]
-        public bool[] Breastsize_Restriction = new bool[3];
+        public bool[] Breastsize_Restriction;
 
         [Key("_htype")]
-        public int HstateType_Restriction = 0;
+        public int HstateType_Restriction;
 
         [Key("_club")]
-        public int ClubType_Restriction = 0;
+        public int ClubType_Restriction;
 
         [Key("_gender")]
-        public int GenderType = 0;
+        public int GenderType;
 
         [Key("_coordtype")]
-        public int CoordinateType = 0;
+        public int CoordinateType;
 
         [Key("_coordsubtype")]
-        public int CoordinateSubType = 0;
+        public int CoordinateSubType;
         #endregion
 
-        public RestrictionInfo() { }
+        public RestrictionInfo() { NullCheck(); }
 
         public RestrictionInfo(RestrictionInfo _copy) => CopyData(_copy);
 
@@ -274,16 +245,35 @@ namespace Additional_Card_Info
 
         public void CopyData(Dictionary<int, int> _personality, Dictionary<int, int> _trait, Dictionary<int, int> _interest, int _htype, int _club, int _gender, int _coordtype, int _coordsubtype, bool[] _height, bool[] _breast)
         {
-            PersonalityType_Restriction = new Dictionary<int, int>(_personality);
-            TraitType_Restriction = new Dictionary<int, int>(_trait);
-            Interest_Restriction = new Dictionary<int, int>(_interest);
             HstateType_Restriction = _htype;
             ClubType_Restriction = _club;
             GenderType = _gender;
             CoordinateType = _coordtype;
             CoordinateSubType = _coordsubtype;
-            Height_Restriction = _height;
-            Breastsize_Restriction = _breast;
+
+            Height_Restriction = _height.ToNewArray(3);
+            Breastsize_Restriction = _breast.ToNewArray(3);
+
+            PersonalityType_Restriction = _personality.ToNewDictionary();
+            TraitType_Restriction = _trait.ToNewDictionary();
+            Interest_Restriction = _interest.ToNewDictionary();
+            //if (_personality != null) PersonalityType_Restriction = new Dictionary<int, int>(_personality);
+            //else PersonalityType_Restriction = null;
+            //if (_trait != null) TraitType_Restriction = new Dictionary<int, int>(_personality);
+            //else TraitType_Restriction = null;
+            //if (_interest != null) Interest_Restriction = new Dictionary<int, int>(_personality);
+            //else Interest_Restriction = null;
+
+            //NullCheck();
+        }
+
+        private void NullCheck()
+        {
+            if (PersonalityType_Restriction == null) PersonalityType_Restriction = new Dictionary<int, int>();
+            if (Interest_Restriction == null) Interest_Restriction = new Dictionary<int, int>();
+            if (TraitType_Restriction == null) TraitType_Restriction = new Dictionary<int, int>();
+            if (Height_Restriction == null) Height_Restriction = new bool[3];
+            if (Breastsize_Restriction == null) Breastsize_Restriction = new bool[3];
         }
 
         public void Clear()
@@ -312,20 +302,20 @@ namespace Additional_Card_Info
 
         internal void CleanUp()
         {
-            var personclean = PersonalityType_Restriction.Where(x => x.Value == 0).ToList();
-            foreach (var item in personclean)
+            var clean = PersonalityType_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            foreach (var item in clean)
             {
-                PersonalityType_Restriction.Remove(item.Key);
+                PersonalityType_Restriction.Remove(item);
             }
-            var traitclean = TraitType_Restriction.Where(x => x.Value == 0).ToList();
-            foreach (var item in traitclean)
+            clean = TraitType_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            foreach (var item in clean)
             {
-                TraitType_Restriction.Remove(item.Key);
+                TraitType_Restriction.Remove(item);
             }
-            var interestclean = Interest_Restriction.Where(x => x.Value == 0).ToList();
-            foreach (var item in interestclean)
+            clean = Interest_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            foreach (var item in clean)
             {
-                Interest_Restriction.Remove(item.Key);
+                Interest_Restriction.Remove(item);
             }
         }
     }

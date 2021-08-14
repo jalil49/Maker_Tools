@@ -155,20 +155,15 @@ namespace Accessory_Parents
         {
             if (!MakerAPI.InsideMaker)
                 return;
+            var controller = GetController;
 
-#pragma warning disable CS0612 // Type or member is obsolete
-            var accessory = AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type == 120;
-#pragma warning restore CS0612 // Type or member is obsolete
-            if (accessory)
-            {
-                Parent_DropDown.Visible.OnNext(false);
-                ParentText.Visible.OnNext(false);
-                Child_Button.Visible.OnNext(false);
-                Save_Relative_Button.Visible.OnNext(false);
-                ChildText.Visible.OnNext(false);
-                Gui_Button.Visible.OnNext(false);
-            }
-            else
+            controller.Update_More_Accessories();
+
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
+            var count = controller.Accessorys_Parts.Count;
+
+            var visible = slot < count && AccessoriesApi.GetPartsInfo(slot).type != 120;
+            if (visible)
             {
                 Parent_DropDown.Visible.OnNext(true);
                 ParentText.Visible.OnNext(true);
@@ -177,6 +172,15 @@ namespace Accessory_Parents
                 ChildText.Visible.OnNext(true);
                 Gui_Button.Visible.OnNext(true);
                 GetController.Update_Text();
+            }
+            else
+            {
+                Parent_DropDown.Visible.OnNext(false);
+                ParentText.Visible.OnNext(false);
+                Child_Button.Visible.OnNext(false);
+                Save_Relative_Button.Visible.OnNext(false);
+                ChildText.Visible.OnNext(false);
+                Gui_Button.Visible.OnNext(false);
             }
         }
 
@@ -882,7 +886,6 @@ namespace Accessory_Parents
                 if (RelativeData.TryGetValue(item.SrcSlot, out var RelativeVector))
                 {
                     RelativeData[item.DstSlot] = RelativeVector;
-                    RelativeData.Remove(item.SrcSlot);
                 }
                 RelativeData.Remove(item.SrcSlot);
             }
@@ -1080,9 +1083,7 @@ namespace Accessory_Parents
 
         private void VectorExtraction(int slot, out Vector3[] vectorarray)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
             var partinfo = AccessoriesApi.GetPartsInfo(slot);
-#pragma warning restore CS0612 // Type or member is obsolete
             vectorarray = new Vector3[3];
             for (int i = 0; i < 3; i++)
             {
@@ -1093,9 +1094,8 @@ namespace Accessory_Parents
 
         private void VectorExtraction(int slot, int kind, out Vector3 vector)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
             var partinfo = AccessoriesApi.GetPartsInfo(slot);
-#pragma warning restore CS0612 // Type or member is obsolete
+
             var addmove = partinfo.addMove[0, kind];
             vector = new Vector3(addmove.x, addmove.y, addmove.z);
         }

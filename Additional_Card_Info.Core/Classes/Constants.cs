@@ -149,33 +149,34 @@ namespace Additional_Card_Info
 #endif
         }
 
-        public readonly static SortedDictionary<int, int> Koi_to_Sun_Traits = new SortedDictionary<int, int>() {
-            {0, 16},
-            {1, 0 },
-            {2, 5 },
-            {3, 1 },
-            {4, 18 },
-            {5, 19},
-            {6, 2},
-            {7, 3},
-            {8, 13},
-            {9, 14},
-            {10, 5},
-            {11, 6},
-            {12, 15},
-            {13, 7},
-            {14, 8},
-            {15, 9},
-            {16, 10},
-            {17, 18},
-            {18, 11},
-            {19, 12},
-            {20, 20}
+        public readonly static SortedDictionary<int, int> Koi_to_Sun_Traits = new SortedDictionary<int, int>()
+        {
+            [0] = 16,
+            [1] = 0,
+            [2] = 5,
+            [3] = 1,
+            [4] = 18,
+            [5] = 19,
+            [6] = 2,
+            [7] = 3,
+            [8] = 13,
+            [9] = 14,
+            [10] = 5,
+            [11] = 6,
+            [12] = 15,
+            [13] = 7,
+            [14] = 8,
+            [15] = 9,
+            [16] = 10,
+            [17] = 18,
+            [18] = 11,
+            [19] = 12,
+            [20] = 20
         };
 
         public enum SimplifiedCoordinateTypes
         {
-            Uniform,
+            School_Uniform,
             Gym,
             Swimsuit,
             Club,

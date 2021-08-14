@@ -15,6 +15,11 @@ namespace Accessory_Themes
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                return;
+            }
+
             for (int i = 0; i < ChaFileControl.coordinate.Length; i++)
             {
                 if (Coordinate.ContainsKey(i))
@@ -29,6 +34,7 @@ namespace Accessory_Themes
 
             CurrentCoordinate.Subscribe(x =>
             {
+                ShowCustomGui = false;
                 UpdateNowCoordinate();
                 StartCoroutine(WaitForSlots());
             });
@@ -59,22 +65,42 @@ namespace Accessory_Themes
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                var Data = GetExtendedData();
+                if (Data != null)
+                {
+                    SetExtendedData(Data);
+                }
+                return;
+            }
+
             PluginData MyData = new PluginData() { version = 1 };
-            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
+
             data.CleanUp();
-            SetExtendedData(MyData);
+
+            bool nulldata = Coordinate.All(x => x.Value.Themes.Count == 0);
+
+            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
+            SetExtendedData((nulldata) ? null : MyData);
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
             PluginData MyData = new PluginData() { version = 1 };
             NowCoordinate.CleanUp();
+            bool nulldata = Themes.Count == 0;
             MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(NowCoordinate));
-            SetCoordinateExtendedData(coordinate, MyData);
+            SetCoordinateExtendedData(coordinate, (nulldata) ? null : MyData);
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                return;
+            }
+
             NowCoordinate.Clear();
             var MyData = GetCoordinateExtendedData(coordinate);
             if (MyData != null)
@@ -160,8 +186,9 @@ namespace Accessory_Themes
         {
             if (Int32.TryParse(CopyTextbox.Value, out int slot))
             {
+                Update_More_Accessories();
                 slot--;
-                if (slot >= AccessoriesApi.GetMakerAccessoryCount() || slot < 0)
+                if (slot >= Accessorys_Parts.Count || slot < 0)
                 {
                     return;
                 }
@@ -191,6 +218,7 @@ namespace Accessory_Themes
             {
                 return;
             }
+            Update_More_Accessories();
             string[] comparison;
             if (Simple)
             {
@@ -202,7 +230,7 @@ namespace Accessory_Themes
             }
             HairAcc = ACI_Ref.HairAcc;
             var themedslots = Themes[themenum].ThemedSlots;
-            for (int Slot = 0, n = AccessoriesApi.GetMakerAccessoryCount(); Slot < n; Slot++)
+            for (int Slot = 0, n = Accessorys_Parts.Count; Slot < n; Slot++)
             {
                 var slotinfo = AccessoriesApi.GetPartsInfo(Slot);
                 if (slotinfo.type == 120 || Theme_Dict.ContainsKey(Slot))
@@ -426,9 +454,9 @@ namespace Accessory_Themes
             }
             Color input = RelativeSkewColor.Value;
 
-            Color.RGBToHSV(input, out float In_Hue, out float In_S, out float In_V);
-            In_S = SaturationSlider.Value;
-            In_V = ValuesSlider.Value;
+            Color.RGBToHSV(input, out float In_Hue, out var _, out var _);
+            var In_S = SaturationSlider.Value;
+            var In_V = ValuesSlider.Value;
             var list = Relative_ACC_Dictionary;
             var UndoACCQueue = new Queue<Color>();
             var ClothesUndoQueue = new Queue<Color>();

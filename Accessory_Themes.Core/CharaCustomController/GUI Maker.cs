@@ -14,9 +14,7 @@ namespace Accessory_Themes
 
         static private Vector2 NameScrolling = new Vector2();
         static private Vector2 StateScrolling = new Vector2();
-        static private Vector3 mousepos = new Vector3();
         static private bool mouseassigned = false;
-        static private bool moveassigned = false;
         static Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
 
         static bool showdelete = false;
@@ -28,7 +26,7 @@ namespace Accessory_Themes
 
         internal void OnGUI()
         {
-            if (!ShowCustomGui || !MakerAPI.IsInterfaceVisible() || !AccessoriesApi.AccessoryCanvasVisible)
+            if (!ShowCustomGui || !AccessoriesApi.AccessoryCanvasVisible || !MakerAPI.IsInterfaceVisible())
             {
                 return;
             }
@@ -39,11 +37,14 @@ namespace Accessory_Themes
                 buttonstyle = new GUIStyle(GUI.skin.button);
                 fieldstyle = new GUIStyle(GUI.skin.textField);
                 togglestyle = new GUIStyle(GUI.skin.toggle);
+                buttonstyle.hover.textColor = Color.red;
+                buttonstyle.onNormal.textColor = Color.red;
+
                 SetFontSize(Screen.height / 108);
             }
 
             IMGUIUtils.DrawSolidBox(screenRect);
-            GUILayout.Window(2902, screenRect, CustomGui, $"Accessory Themes Gui: Slot {AccessoriesApi.SelectedMakerAccSlot + 1}");
+            screenRect = GUILayout.Window(2902, screenRect, CustomGui, $"Accessory Themes Gui: Slot {AccessoriesApi.SelectedMakerAccSlot + 1}");
         }
 
         private void CustomGui(int id)
@@ -67,6 +68,7 @@ namespace Accessory_Themes
                         {
                             if (GUILayout.Button("Add Theme", buttonstyle))
                             {
+                                Update_More_Accessories();
                                 AddThemeValueToList(slot, false);
                             }
                         }
@@ -165,25 +167,9 @@ namespace Accessory_Themes
                 GUILayout.FlexibleSpace();
                 DrawFontSize();
 
-                moveassigned = GUILayout.Toggle(moveassigned, "Move", togglestyle, GUILayout.ExpandWidth(false));
-                if (moveassigned)
-                //if (GUILayout.Button("Move") || mouseassigned && !Input.GetMouseButtonUp(0))
+                if (Input.GetMouseButtonDown(0) && !mouseassigned && screenRect.Contains(Input.mousePosition))
                 {
-                    var pos = Input.mousePosition;
-                    if (!mouseassigned)
-                    {
-                        mousepos = new Vector3(pos.x, pos.y, pos.z);
-                        mouseassigned = true;
-                    }
-                    var delta = pos - mousepos;
-                    screenRect.x += delta.x;
-                    screenRect.y -= delta.y;
-
-                    mousepos = new Vector3(pos.x, pos.y, pos.z);
-                    if (Input.GetKeyDown(KeyCode.Escape))
-                    {
-                        moveassigned = false;
-                    }
+                    StartCoroutine(DragEvent());
                 }
 
                 if (GUILayout.Button("X", buttonstyle, GUILayout.ExpandWidth(false)))
@@ -225,6 +211,29 @@ namespace Accessory_Themes
             buttonstyle.fontSize = size;
             fieldstyle.fontSize = size;
             togglestyle.fontSize = size;
+        }
+
+        private IEnumerator<int> DragEvent()
+        {
+            var pos = Input.mousePosition;
+            Vector2 mousepos = pos;
+            mouseassigned = true;
+            bool mousebuttonup = false;
+            for (int i = 0; i < 20; i++)
+            {
+                mousebuttonup = Input.GetMouseButtonUp(0);
+                yield return 0;
+            }
+
+            while (!mousebuttonup)
+            {
+                mousebuttonup = Input.GetMouseButtonUp(0);
+                screenRect.position += (Vector2)pos - mousepos;
+                mousepos = pos;
+                yield return 0;
+            }
+            yield return 0;
+            mouseassigned = false;
         }
     }
 }

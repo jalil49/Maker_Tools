@@ -1,7 +1,6 @@
 ﻿using ExtensibleSaveFormat;
 using MessagePack;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Accessory_States
 {
@@ -9,6 +8,7 @@ namespace Accessory_States
     {
         public static void MigrateV0(PluginData plugindata, ref Data data)
         {
+
             if (plugindata.data.TryGetValue("ACC_Binding_Dictionary", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
@@ -26,11 +26,6 @@ namespace Accessory_States
                             result = element.Value;
                         slotinfo[element.Key] = new Slotdata() { Binding = result };
                     }
-
-                    foreach (var item in slotinfo)
-                    {
-                        Settings.Logger.LogWarning($"coord {i}: Slot {item.Key} is binded to {item.Value.Binding}");
-                    }
                 }
             }
 
@@ -45,11 +40,15 @@ namespace Accessory_States
                     {
                         if (slotinfo.TryGetValue(pair.Key, out var slotdata))
                         {
-                            slotdata.States = new List<int[]> { pair.Value };
-                        }
-                        else
-                        {
-                            Settings.Logger.LogError($"coord {i} Slot {pair.Key} slotdata not found");
+                            var list = slotdata.States = new List<int[]> { pair.Value };
+                            if (list[0][0] == 1)
+                            {
+                                list[0][0] = 3;
+                            }
+                            if (list[0][1] == 1)
+                            {
+                                list[0][1] = 3;
+                            }
                         }
                     }
                 }
@@ -72,7 +71,15 @@ namespace Accessory_States
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
                 for (int i = 0; i < temp.Length; i++)
                 {
-                    data.Coordinate[i].Parented = temp[i];
+                    var slotinfo = data.Coordinate[i].Slotinfo;
+                    foreach (var item in temp[i])
+                    {
+                        if (!slotinfo.TryGetValue(item.Key, out var slotdata))
+                        {
+                            slotdata = slotinfo[item.Key] = new Slotdata();
+                        }
+                        slotdata.Parented = item.Value;
+                    }
                 }
             }
         }
@@ -120,7 +127,15 @@ namespace Accessory_States
             if (plugindata.data.TryGetValue("ACC_Parented_Dictionary", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, bool>>((byte[])ByteData);
-                data.Parented = temp;
+                var slotinfo = data.Slotinfo;
+                foreach (var item in temp)
+                {
+                    if (!slotinfo.TryGetValue(item.Key, out var slotdata))
+                    {
+                        slotdata = slotinfo[item.Key] = new Slotdata();
+                    }
+                    slotdata.Parented = item.Value;
+                }
             }
             return data;
         }

@@ -3,6 +3,7 @@ using HarmonyLib;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,7 @@ namespace Accessory_Shortcuts
         static Transform Slots_Location;
         static Traverse More_Acc;
         static bool Skip = false;
+        static bool makerslottriggered = false;
 
         internal static void MakerAPI_MakerFinishedLoading(object sender, EventArgs e)
         {
@@ -24,9 +26,29 @@ namespace Accessory_Shortcuts
 #else
             var Slots_Location_string = "CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/";
 #endif
+            AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             Slots_Location = GameObject.Find(Slots_Location_string).transform;
             Slot_Toggles.Clear();
             UpdateSlots();
+        }
+
+        private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
+        {
+            if (!makerslottriggered)
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MakerslotAddedcoroutine();
+        }
+
+        private void MakerslotAddedcoroutine()
+        {
+            StartCoroutine(MakerslotAdded());
+        }
+
+        private IEnumerator MakerslotAdded()
+        {
+            makerslottriggered = true;
+            yield return new WaitForSeconds(0.1f);
+            UpdateSlots();
+            makerslottriggered = false;
         }
 
         internal void Update_Stored_Accessory(int slotNo, int type, int id, string parentKey)
@@ -35,19 +57,9 @@ namespace Accessory_Shortcuts
             {
                 return;
             }
-            ChaFileAccessory.PartsInfo partsInfo;
-            if (slotNo < 20)
-            {
-                partsInfo = ChaControl.nowCoordinate.accessory.parts[slotNo];
-            }
-            else
-            {
-                if (slotNo - 20 >= Accessorys_Parts.Count)
-                {
-                    Update_More_Accessories();
-                }
-                partsInfo = Accessorys_Parts[slotNo - 20];
-            }
+            Update_More_Accessories();
+
+            var partsInfo = Accessorys_Parts[slotNo];
 
             if (type == partsInfo.type)
             {
@@ -122,10 +134,8 @@ namespace Accessory_Shortcuts
                     PrevSlot(slot);
                     return;
                 }
-#pragma warning disable CS0612 // Type or member is obsolete
-                var accessory = AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type == 120;
-#pragma warning restore CS0612 // Type or member is obsolete
-                if (accessory && slot < Slot_Toggles.Count)
+                var Emptyandvalid = slot < Slot_Toggles.Count && AccessoriesApi.GetPartsInfo(slot).type == 120;
+                if (Emptyandvalid)
                 {
                     Skip = true;
                     CvsAccessory CVS_Slot = More_Acc.Method("GetCvsAccessory", new object[] { slot }).GetValue<CvsAccessory>();

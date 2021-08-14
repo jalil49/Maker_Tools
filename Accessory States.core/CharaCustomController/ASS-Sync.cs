@@ -75,10 +75,10 @@ namespace Accessory_States
             var list = Slotinfo[_slot].States;
             var _coord = (int)CurrentCoordinate.Value;
             bool single = 3 < _refKind && _refKind < 9;
-            for (int _refState = 0, n = MaxState(_slot, _refKind) + 1; _refState < n; _refState++)
+            for (int _refState = 0, n = MaxState(_refKind) + 1; _refState < n; _refState++)
             {
                 var test = ASS_Traverse.Method("NewOrGetTriggerProperty", new object[] { _coord, _slot, _refKind, _refState }).GetValue();
-                Traverse.Create(test).Property("Visible").SetValue(ShowState(_refState, list, single));
+                Traverse.Create(test).Property("Visible").SetValue(ShowState(_refState, list));
             }
             RefreshCache();
         }

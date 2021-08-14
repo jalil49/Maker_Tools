@@ -30,7 +30,7 @@ namespace Additional_Card_Info
                 for (int i = 0; i < 7; i++)
                 {
                     if (temp[i])
-                        data.CardInfo.MakeUpKeep.Add(i);
+                        data.CoordinateInfo[i].MakeUpKeep = true;
                 }
             }
             if (ACI_Data.data.TryGetValue("CoordinateSaveBools", out ByteData) && ByteData != null)
@@ -102,7 +102,7 @@ namespace Additional_Card_Info
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 for (int i = 0; i < 7; i++)
                 {
-                    data.CoordinateInfo[i].RestrictionInfo.CoordinateType = temp[i];
+                    data.CoordinateInfo[i].RestrictionInfo.CoordinateType = temp[i] + 1;
                 }
             }
             if (ACI_Data.data.TryGetValue("CoordinateSubType", out ByteData) && ByteData != null)
@@ -110,7 +110,7 @@ namespace Additional_Card_Info
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])ByteData);
                 for (int i = 0; i < 7; i++)
                 {
-                    data.CoordinateInfo[i].RestrictionInfo.CoordinateSubType = temp[i];
+                    data.CoordinateInfo[i].RestrictionInfo.CoordinateSubType = temp[i] + 1;
                 }
             }
             if (ACI_Data.data.TryGetValue("Creator", out ByteData) && ByteData != null)
@@ -186,11 +186,11 @@ namespace Additional_Card_Info
             }
             if (ACI_Data.data.TryGetValue("CoordinateType", out ByteData) && ByteData != null)
             {
-                restrictionInfo.CoordinateType = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
+                restrictionInfo.CoordinateType = MessagePackSerializer.Deserialize<int>((byte[])ByteData) + 1;
             }
             if (ACI_Data.data.TryGetValue("CoordinateSubType", out ByteData) && ByteData != null)
             {
-                restrictionInfo.CoordinateSubType = MessagePackSerializer.Deserialize<int>((byte[])ByteData);
+                restrictionInfo.CoordinateSubType = MessagePackSerializer.Deserialize<int>((byte[])ByteData) + 1;
             }
             if (ACI_Data.data.TryGetValue("Set_Name", out ByteData) && ByteData != null)
             {

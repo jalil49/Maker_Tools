@@ -24,6 +24,9 @@ namespace Additional_Card_Info
                 Harmony.CreateAndPatchAll(typeof(MovUrACC));
             if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
                 Harmony.CreateAndPatchAll(typeof(MoreOutfits));
+#if ACI || States
+            ClothingNotPatch.Init();
+#endif
         }
 
         private static bool TryfindPluginInstance(string pluginName)
@@ -62,17 +65,54 @@ namespace Additional_Card_Info
             }
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
-        public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
+#if ACI || States
+        internal static class ClothingNotPatch
         {
-#if ACI
-            __instance.chaCtrl.GetComponent<CharaEvent>().UpdateClothingNots();
-#elif States
-            __instance.chaCtrl.GetComponent<CharaEvent>().ClothingTypeChange(__instance.clothesType, index);
-#endif
-        }
+            internal static bool IsshortsCheck = false;
+            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; set; } = new Dictionary<ChaListDefine.KeyType, int>() { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0, [ChaListDefine.KeyType.HideShorts] = 0 };
 
+            internal static void Init()
+            {
+                Harmony.CreateAndPatchAll(typeof(ClothingNotPatch));
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
+            public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
+            {
+                var clothingnum = __instance.clothesType;
+                var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
+                if (clothingnum < 4)
+                {
+                    charaevent.UpdateClothingNots();
+                }
+#if States
+                charaevent.ClothingTypeChange(clothingnum, index);
+#endif
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPriority(Priority.HigherThanNormal)]
+            [HarmonyPatch(typeof(ListInfoBase), nameof(ListInfoBase.GetInfo))]
+            internal static void Hook_GetInfo(ChaListDefine.KeyType keyType, string __result)
+            {
+                ClothingNotEvent(keyType, __result);
+            }
+
+            private static void ClothingNotEvent(ChaListDefine.KeyType keyType, string result)
+            {
+                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate && keyType != ChaListDefine.KeyType.HideShorts || !int.TryParse(result, out int value))
+                {
+                    return;
+                }
+                if (IsshortsCheck && keyType == ChaListDefine.KeyType.Coordinate)
+                {
+                    keyType = ChaListDefine.KeyType.HideShorts;
+                }
+                ListInfoResult[keyType] = value;
+            }
+        }
+#endif
     }
 
     internal class QueueItem

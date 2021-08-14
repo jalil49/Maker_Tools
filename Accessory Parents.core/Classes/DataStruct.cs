@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Extensions;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,31 +9,31 @@ namespace Accessory_Parents
 {
     [Serializable]
     [MessagePackObject]
-    class CoordinateData
+    public class CoordinateData
     {
         [Key("_theme_names")]
-        public List<Custom_Name> Parent_Groups = new List<Custom_Name>();
+        public List<Custom_Name> Parent_Groups;
 
         [Key("_relative_data")]
-        public Dictionary<int, Vector3[]> Relative_Data = new Dictionary<int, Vector3[]>();
+        public Dictionary<int, Vector3[]> Relative_Data;
 
         [IgnoreMember]
-        internal Dictionary<int, int> Child = new Dictionary<int, int>();
+        internal Dictionary<int, int> Child;
 
         [IgnoreMember]
-        internal Dictionary<int, List<int>> RelatedNames = new Dictionary<int, List<int>>();
-
+        internal Dictionary<int, List<int>> RelatedNames;
         [IgnoreMember]
-        internal Dictionary<int, string> Old_Parent = new Dictionary<int, string>();
+        internal Dictionary<int, string> Old_Parent;
 
-        public CoordinateData() { }
+        public CoordinateData() { NullCheck(); }
 
         public CoordinateData(CoordinateData _copy) => CopyData(_copy);
 
         public CoordinateData(List<Custom_Name> _theme_names, Dictionary<int, Vector3[]> _relative_data)
         {
-            Parent_Groups = _theme_names;
-            Relative_Data = _relative_data;
+            Parent_Groups = _theme_names.ToNewList();
+            Relative_Data = _relative_data.ToNewDictionary();
+            NullCheck();
         }
 
         public void CleanUp()
@@ -69,17 +70,18 @@ namespace Accessory_Parents
 
         public void CopyData(List<Custom_Name> _theme_names, Dictionary<int, Vector3[]> _relative_data, Dictionary<int, int> _child, Dictionary<int, List<int>> _related, Dictionary<int, string> _oldparent)
         {
-            Parent_Groups = new List<Custom_Name>(_theme_names);
-            Relative_Data = new Dictionary<int, Vector3[]>(_relative_data);
-            Child = new Dictionary<int, int>(_child);
-            RelatedNames = new Dictionary<int, List<int>>(_related);
-            Old_Parent = new Dictionary<int, string>(_oldparent);
+            Parent_Groups = _theme_names.ToNewList();
+            Relative_Data = _relative_data.ToNewDictionary();
+            Child = _child.ToNewDictionary();
+            RelatedNames = _related.ToNewDictionary();
+            Old_Parent = _oldparent.ToNewDictionary(); ;
+            NullCheck();
         }
     }
 
     [Serializable]
     [MessagePackObject]
-    class Custom_Name
+    public class Custom_Name
     {
         [Key("_name")]
         public string Name { get; set; }
@@ -88,24 +90,32 @@ namespace Accessory_Parents
         public int ParentSlot { get; set; } = -1;
 
         [Key("_childslots")]
-        public List<int> ChildSlots = new List<int>();
+        public List<int> ChildSlots;
 
         public Custom_Name(string _name, int _slot, List<int> _childslots)
         {
             Name = _name;
             ParentSlot = _slot;
-            ChildSlots = _childslots;
+            ChildSlots = _childslots.ToNewList();
+            NullCheck();
         }
 
         public Custom_Name(string _name, int _slot)
         {
             Name = _name;
             ParentSlot = _slot;
+            NullCheck();
         }
 
         public Custom_Name(string _name)
         {
             Name = _name;
+            NullCheck();
+        }
+        private void NullCheck()
+        {
+            if (Name == null) Name = "";
+            if (ChildSlots == null) ChildSlots = new List<int>();
         }
     }
 }

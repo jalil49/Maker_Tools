@@ -325,8 +325,9 @@ namespace Accessory_Themes
 
             if (int.TryParse(bulkrange[0], out var split1) && int.TryParse(bulkrange[1], out var split2))
             {
+                Update_More_Accessories();
                 var small = Math.Max(Math.Min(split1, split2) - 1, 0);
-                var large = Math.Min(Math.Max(split1, split2), AccessoriesApi.GetMakerAccessoryCount());
+                var large = Math.Min(Math.Max(split1, split2), Accessorys_Parts.Count);
                 var themeslots = Themes[themenum].ThemedSlots;
                 var themed = Theme_Dict;
                 for (int slot = small, n = large; slot < n; slot++)
@@ -388,18 +389,20 @@ namespace Accessory_Themes
             if (!MakerAPI.InsideMaker)
                 return;
 
-#pragma warning disable CS0612 // Type or member is obsolete
-            var accessory = AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type == 120;
-#pragma warning restore CS0612 // Type or member is obsolete
-            if (accessory)
-            {
-                Guibutton.Visible.OnNext(false);
-                ThemesDropdownwrapper.Control.Visible.OnNext(false);
-            }
-            else
+            var controller = ControllerGet;
+            controller.Update_More_Accessories();
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
+            var visible = slot < controller.Accessorys_Parts.Count && AccessoriesApi.GetPartsInfo(slot).type != 120;
+
+            if (visible)
             {
                 Guibutton.Visible.OnNext(true);
                 ThemesDropdownwrapper.Control.Visible.OnNext(true);
+            }
+            else
+            {
+                Guibutton.Visible.OnNext(false);
+                ThemesDropdownwrapper.Control.Visible.OnNext(false);
             }
         }
 
@@ -529,13 +532,13 @@ namespace Accessory_Themes
             {
                 yield return null;
             } while (!MakerAPI.InsideAndLoaded);
-
+            Update_More_Accessories();
             makerColorSimilar.SetValue(new Color(), false);
 
             var set = Theme_Dict;
             Update_ACC_Dropbox();
             Update_RelativeColor_Dropbox();
-            for (int SlotIndex = 0, ACC_Count = AccessoriesApi.GetMakerAccessoryCount(); SlotIndex < ACC_Count; SlotIndex++)
+            for (int SlotIndex = 0, ACC_Count = Accessorys_Parts.Count; SlotIndex < ACC_Count; SlotIndex++)
             {
                 if (set.ContainsKey(SlotIndex))
                 {
@@ -558,7 +561,10 @@ namespace Accessory_Themes
                 Themes.Clear();
                 Theme_Dict.Clear();
             }
-            for (int slot = 0, n = AccessoriesApi.GetMakerAccessoryCount(); slot < n; slot++)
+
+            Update_More_Accessories();
+
+            for (int slot = 0, n = Accessorys_Parts.Count; slot < n; slot++)
             {
                 AddThemeValueToList(slot);
             }
@@ -592,7 +598,7 @@ namespace Accessory_Themes
                 slot = 0;
             }
 
-            for (int n = AccessoriesApi.GetMakerAccessoryCount(); slot < n; slot++)
+            for (int n = Accessorys_Parts.Count; slot < n; slot++)
             {
                 var SlotInfo2 = AccessoriesApi.GetPartsInfo(slot);
 
@@ -620,7 +626,7 @@ namespace Accessory_Themes
                 {
                     themes[themenum].ThemedSlots.Remove(item.SrcSlot);
                     themes[themenum].ThemedSlots.Add(item.DstSlot);
-                    ThemesDropdownwrapper.SetValue(item.DstSlot, themenum, false);
+                    ThemesDropdownwrapper.SetValue(item.DstSlot, themenum + 1, false);
                     ThemesDropdownwrapper.SetValue(item.SrcSlot, 0, false);
                 }
             }

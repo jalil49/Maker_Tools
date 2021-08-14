@@ -48,14 +48,32 @@ namespace Additional_Card_Info
             get { return CardInfo.PersonalClothingBools; }
             set { CardInfo.PersonalClothingBools = value; }
         }
+
+        public Dictionary<string, string> AdvancedFolderDirectory
+        {
+            get { return CardInfo.AdvancedFolderDirectory; }
+            set { CardInfo.AdvancedFolderDirectory = value; }
+        }
+
+        public bool AdvancedDirectory
+        {
+            get { return CardInfo.AdvancedDirectory; }
+            set { CardInfo.AdvancedDirectory = value; }
+        }
+        public string SimpleFolderDirectory
+        {
+            get { return CardInfo.SimpleFolderDirectory; }
+            set { CardInfo.SimpleFolderDirectory = value; }
+        }
+
         #endregion 
 
         #region Coordinate
 
-        public List<int> MakeUpKeep
+        public bool MakeUpKeep
         {
-            get { return CardInfo.MakeUpKeep; }
-            set { CardInfo.MakeUpKeep = value; }
+            get { return NowCoordinateInfo.MakeUpKeep; }
+            set { NowCoordinateInfo.MakeUpKeep = value; }
         }
 
         public List<int> AccKeep
@@ -161,12 +179,6 @@ namespace Additional_Card_Info
         {
             get { return NowRestrictionInfo.GenderType; }
             set { NowRestrictionInfo.GenderType = value; }
-        }
-
-        public Dictionary<string, string> FolderDirectory
-        {
-            get { return CardInfo.FolderDirectory; }
-            set { CardInfo.FolderDirectory = value; }
         }
         #endregion
 

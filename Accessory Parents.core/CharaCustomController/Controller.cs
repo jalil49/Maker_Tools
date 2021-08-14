@@ -1,6 +1,7 @@
 ﻿using ExtensibleSaveFormat;
 using KKAPI;
 using KKAPI.Chara;
+using KKAPI.Maker;
 using MessagePack;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,10 @@ namespace Accessory_Parents
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
+            if (currentGameMode != GameMode.Maker)
+            {
+                return;
+            }
             for (int i = 0; i < ChaFileControl.coordinate.Length; i++)
             {
                 if (Parent_Data.ContainsKey(i))
@@ -25,6 +30,7 @@ namespace Accessory_Parents
             }
             CurrentCoordinate.Subscribe(X =>
             {
+                ShowCustomGui = false;
                 var CoordinateNum = (int)X;
                 if (!Parent_Data.ContainsKey(CoordinateNum))
                 {
@@ -61,6 +67,11 @@ namespace Accessory_Parents
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                return;
+            }
+
             Current_Parent_Data.Clear();
 
             var Data = GetCoordinateExtendedData(coordinate);
@@ -94,20 +105,33 @@ namespace Accessory_Parents
         {
             PluginData data = new PluginData() { version = 1 };
             Current_Parent_Data.CleanUp();
+            bool nulldata = Parent_Groups.Count == 0;
             data.data.Add("Coordinate_Data", MessagePackSerializer.Serialize(Current_Parent_Data));
-            SetCoordinateExtendedData(coordinate, data);
+            SetCoordinateExtendedData(coordinate, (nulldata) ? null : data);
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            if (!MakerAPI.InsideMaker)
+            {
+                var Data = GetExtendedData();
+                if (Data != null)
+                {
+                    SetExtendedData(Data);
+                }
+                return;
+            }
+
             Update_Old_Parents();
             PluginData data = new PluginData() { version = 1 };
             foreach (var item in Parent_Data)
             {
                 item.Value.CleanUp();
             }
+            bool nulldata = Parent_Data.All(x => x.Value.Parent_Groups.Count == 0);
+
             data.data.Add("Coordinate_Data", MessagePackSerializer.Serialize(Parent_Data));
-            SetExtendedData(data);
+            SetExtendedData((nulldata) ? null : data);
         }
 
         private void UpdateNowCoordinate()

@@ -86,12 +86,14 @@ namespace Accessory_States
             {
                 ThisCharactersData.Update_Now_Coordinate(Coordchange);
             }
-
+            var names = ThisCharactersData.NowCoordinate.Names;
+            var slotinfo = ThisCharactersData.NowCoordinate.Slotinfo;
             //Settings.Logger.LogWarning("create");
-
-            foreach (var item in ThisCharactersData.NowCoordinate.Names)
+            var shoetype = Heroine_Ctrl.fileStatus.shoesType;
+            foreach (var item in names)
             {
-                Createbutton(Female, Harem, item.Value.Name, item.Key, ThisCharactersData, 0);
+                if (slotinfo.Count(x => x.Value.Binding == item.Key && (x.Value.Shoetype == shoetype || x.Value.Shoetype == 2)) > 0)
+                    Createbutton(Female, Harem, item.Value.Name, item.Key, ThisCharactersData, 0);
             }
 
             foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary)

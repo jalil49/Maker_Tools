@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Extensions;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,47 +52,46 @@ namespace Accessory_Themes
     public class CoordinateData
     {
         [Key("_themes")]
-        public List<ThemeData> Themes = new List<ThemeData>();
+        public List<ThemeData> Themes;
 
         [IgnoreMember]
-        public Dictionary<int, int> Theme_Dict = new Dictionary<int, int>();
+        public Dictionary<int, int> Theme_Dict;
 
         [IgnoreMember]
-        public Dictionary<int, List<int[]>> Relative_ACC_Dictionary = new Dictionary<int, List<int[]>>();
+        public Dictionary<int, List<int[]>> Relative_ACC_Dictionary;
 
         [IgnoreMember]
-        public Stack<Queue<Color>> UndoACCSkew = new Stack<Queue<Color>>();
+        public Stack<Queue<Color>> UndoACCSkew;
 
         [IgnoreMember]
-        public Stack<Queue<Color>> ClothsUndoSkew = new Stack<Queue<Color>>();
+        public Stack<Queue<Color>> ClothsUndoSkew;
 
-        public CoordinateData() { }
+        public CoordinateData() { NullCheck(); }
 
         public CoordinateData(List<ThemeData> _themes)
         {
-            Themes = _themes;
+            Themes = _themes.ToNewList();
+            NullCheck();
         }
 
-        public CoordinateData(CoordinateData _copy) => CopyData(_copy.Themes, _copy.Relative_ACC_Dictionary);
+        public CoordinateData(CoordinateData _copy) => CopyData(_copy);
 
         public void CopyData(CoordinateData _copy) => CopyData(_copy.Themes, _copy.Relative_ACC_Dictionary);
 
         public void CopyData(List<ThemeData> _themes, Dictionary<int, List<int[]>> _relativedict)
         {
-            Themes = _themes;
-            Relative_ACC_Dictionary = _relativedict;
+            Themes = _themes.ToNewList();
+            Relative_ACC_Dictionary = _relativedict.ToNewDictionary();
             NullCheck();
         }
 
         public void CleanUp()
         {
-            NullCheck();
             Themes.RemoveAll(x => x.ThemedSlots.Count == 0);
         }
 
         public void Clear()
         {
-            NullCheck();
             Themes.Clear();
             Relative_ACC_Dictionary.Clear();
             Theme_Dict.Clear();
@@ -117,64 +117,60 @@ namespace Accessory_Themes
         public string ThemeName { get; set; }
 
         [Key("_isrelative")]
-        public bool Isrelative { get; set; } = false;
+        public bool Isrelative { get; set; }
 
         [Key("_colors")]
-        public Color[] Colors { get; set; } = new Color[] { new Color(), new Color(), new Color(), new Color() };
+        public Color[] Colors { get; set; }
 
         [Key("_slots")]
-        public List<int> ThemedSlots { get; set; } = new List<int>();
+        public List<int> ThemedSlots { get; set; }
 
         public ThemeData(string _themename)
         {
             ThemeName = _themename;
             NullCheck();
         }
+
         public ThemeData(ThemeData _copy, bool partial)
         {
             ThemeName = _copy.ThemeName;
             Isrelative = _copy.Isrelative;
-            var _colors = _copy.Colors;
-            for (int i = 0; i < _colors.Length; i++)
-            {
-                var color = _colors[i];
-                Colors[i] = new Color(color.r, color.g, color.b, color.a);
-            }
-            if (partial)
-            {
-                return;
-            }
-            ThemedSlots = new List<int>(_copy.ThemedSlots);
+            Colors = _copy.Colors.ToNewArray(4);
+            if (!partial) ThemedSlots = _copy.ThemedSlots.ToNewList();
             NullCheck();
         }
 
         public ThemeData(string _themename, Color[] _colors)
         {
             ThemeName = _themename;
-            for (int i = 0; i < _colors.Length; i++)
-            {
-                var color = _colors[i];
-                Colors[i] = new Color(color.r, color.g, color.b, color.a);
-            }
+            Colors = _colors.ToNewArray(4);
             NullCheck();
         }
 
-        public ThemeData(string _themename, bool _isrelative, Color[] _colors, List<int> _slots)
+        public ThemeData(string _themename, bool _isrelative, Color[] _colors, List<int> _slots) => CopyData(_themename, _isrelative, _colors, _slots);
+
+        public ThemeData(ThemeData _copy) => CopyData(_copy.ThemeName, _copy.Isrelative, _copy.Colors, _copy.ThemedSlots);
+
+        public void CopyData(string _themename, bool _isrelative, Color[] _colors, List<int> _slots)
         {
             ThemeName = _themename;
             Isrelative = _isrelative;
-            ThemedSlots = _slots;
-            for (int i = 0; i < _colors.Length; i++)
-            {
-                var color = _colors[i];
-                Colors[i] = new Color(color.r, color.g, color.b, color.a);
-            }
+            ThemedSlots = _slots.ToNewList();
+            Colors = _colors.ToNewArray(4);
             NullCheck();
         }
 
         private void NullCheck()
         {
-            if (Colors == null) Colors = new Color[] { new Color(), new Color(), new Color(), new Color() };
+            if (ThemeName == null) ThemeName = "";
+            if (Colors == null) Colors = new Color[4];
+            for (int i = 0; i < Colors.Length; i++)
+            {
+                if (Colors[i] == null)
+                {
+                    Colors[i] = new Color();
+                }
+            }
             if (ThemedSlots == null) ThemedSlots = new List<int>();
         }
     }

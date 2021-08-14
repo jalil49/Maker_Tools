@@ -6,7 +6,7 @@ namespace CardUpdateTool
     [BepInProcess("Koikatsu Party")]
     [BepInProcess("KoikatuVR")]
     [BepInProcess("Koikatsu Party VR")]
-    public partial class Settings : BaseUnityPlugin
+    public partial class CardUpdateTool : BaseUnityPlugin
     {
         private void EventRegister()
         {

@@ -7,6 +7,7 @@ using KKAPI.MainGame;
 using KKAPI.Maker;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Accessory_States
 {
@@ -17,6 +18,8 @@ namespace Accessory_States
         public const string Version = "1.3";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
+        internal static bool showstacktrace = false;
+
         public static ConfigEntry<string> NamingID { get; private set; }
         public static ConfigEntry<bool> Enable { get; private set; }
         public static ConfigEntry<bool> ASS_SAVE { get; private set; }
