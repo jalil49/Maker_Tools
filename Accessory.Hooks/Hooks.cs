@@ -1,22 +1,18 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
 using KKAPI.Maker;
-using System;
 using System.Collections.Generic;
 #if Parents
-using Accessory_Parents;
+namespace Accessory_Parents
 #elif States
-using Accessory_States;
+namespace Accessory_States
 #elif Themes
-using Accessory_Themes;
+namespace Accessory_Themes
 #elif ACI
-using Additional_Card_Info;
-#elif Shortcuts
-using Accessory_Shortcuts;
+namespace Additional_Card_Info
 #endif
-namespace Hook_Space
 {
-    internal static class Hooks
+    internal static partial class Hooks
     {
         static ManualLogSource Logger;
 
@@ -24,84 +20,19 @@ namespace Hook_Space
         {
             Logger = Setting_Logger;
             Harmony.CreateAndPatchAll(typeof(Hooks));
-        }
-
-#if Parents
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetAccessoryPos))]
-        private static void PositionPatch(ChaControl __instance, int slotNo, int correctNo, float value, bool add, int flags)
-        {
-            __instance.GetComponent<CharaEvent>().Position_Change(slotNo, correctNo, value, add, flags);
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetAccessoryScl))]
-        private static void ScalePatch(ChaControl __instance, int slotNo, int correctNo, float value, bool add, int flags)
-        {
-            __instance.GetComponent<CharaEvent>().Scale_Change(slotNo, correctNo, value, add, flags);
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetAccessoryRot))]
-        private static void RotationPatch(ChaControl __instance, int slotNo, int correctNo, float value, bool add, int flags)
-        {
-            __instance.GetComponent<CharaEvent>().Rotation_Change(slotNo, correctNo, value, add, flags);
-        }
+            if (TryfindPluginInstance("madevil.kk.MovUrAcc"))
+                Harmony.CreateAndPatchAll(typeof(MovUrACC));
+            if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
+                Harmony.CreateAndPatchAll(typeof(MoreOutfits));
+#if ACI || States
+            ClothingNotPatch.Init();
 #endif
-
-#if States
-        public static event EventHandler<OnClickCoordinateChange> HcoordChange;
-
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ChaControl), "SetClothesState")]
-        public static void Hook_SetClothesState(ChaControl __instance, int clothesKind, byte state)
-        {
-            __instance.GetComponent<CharaEvent>().SetClothesState(clothesKind, state);
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ChaControl), "ChangeCoordinateType", new Type[] { typeof(ChaFileDefine.CoordinateType), typeof(bool) })]
-        public static void Hook_ChangeCoordinateType(ChaControl __instance)
+        private static bool TryfindPluginInstance(string pluginName)
         {
-            var Controller = __instance.GetComponent<CharaEvent>();
-            if (Controller?.ThisCharactersData != null)
-            {
-                Controller.ChangedCoord();
-            }
+            return BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out _); ;
         }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSprite), "OnClickCoordinateChange", new Type[] { typeof(int) })]
-        public static void Hook_OnClickCoordinateChange(int _coordinate)
-        {
-            OnClickCoordinateChangeEvent(0, _coordinate);
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSprite), "OnClickCoordinateChange", new Type[] { typeof(int), typeof(int) })]
-        public static void Hook_OnClickCoordinateChange2(int _female, int _coordinate)
-        {
-            OnClickCoordinateChangeEvent(_female, _coordinate);
-        }
-
-        private static void OnClickCoordinateChangeEvent(int _female, int _coordinate)
-        {
-            var args = new OnClickCoordinateChange(_female, _coordinate);
-            if (HcoordChange == null || HcoordChange.GetInvocationList().Length == 0)
-            {
-                return;
-            }
-            try
-            {
-                HcoordChange?.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(HcoordChange)} - {ex}");
-            }
-        }
-#endif
 
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
@@ -109,12 +40,77 @@ namespace Hook_Space
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
         }
 
-#if !KKS
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(MovUrAcc.MovUrAcc), "ProcessQueue")]
-        private static void MovPatch(List<QueueItem> Queue)
+        internal static class MovUrACC
         {
-            MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
+            [HarmonyPostfix]
+            [HarmonyPatch("MovUrAcc.MovUrAcc, KK_MovUrAcc", "ProcessQueue")]
+            internal static void MovPatch(List<QueueItem> Queue)
+            {
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
+            }
+        }
+
+        internal static class MoreOutfits
+        {
+            [HarmonyPostfix, HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+AddCoordinateSlot, KK_MoreOutfits")]
+            internal static void AddOutfitHook(ChaControl chaControl)
+            {
+                chaControl.GetComponent<CharaEvent>().AddOutfitEvent();
+            }
+
+            [HarmonyPostfix, HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+RemoveCoordinateSlot, KK_MoreOutfits")]
+            internal static void RemoveOutfitHook(ChaControl chaControl)
+            {
+                chaControl.GetComponent<CharaEvent>().RemoveOutfitEvent();
+            }
+        }
+
+#if ACI || States
+        internal static class ClothingNotPatch
+        {
+            internal static bool IsshortsCheck = false;
+            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; set; } = new Dictionary<ChaListDefine.KeyType, int>() { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0, [ChaListDefine.KeyType.HideShorts] = 0 };
+
+            internal static void Init()
+            {
+                Harmony.CreateAndPatchAll(typeof(ClothingNotPatch));
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
+            public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
+            {
+                var clothingnum = __instance.clothesType;
+                var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
+                if (clothingnum < 4)
+                {
+                    charaevent.UpdateClothingNots();
+                }
+#if States
+                charaevent.ClothingTypeChange(clothingnum, index);
+#endif
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPriority(Priority.HigherThanNormal)]
+            [HarmonyPatch(typeof(ListInfoBase), nameof(ListInfoBase.GetInfo))]
+            internal static void Hook_GetInfo(ChaListDefine.KeyType keyType, string __result)
+            {
+                ClothingNotEvent(keyType, __result);
+            }
+
+            private static void ClothingNotEvent(ChaListDefine.KeyType keyType, string result)
+            {
+                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate && keyType != ChaListDefine.KeyType.HideShorts || !int.TryParse(result, out int value))
+                {
+                    return;
+                }
+                if (IsshortsCheck && keyType == ChaListDefine.KeyType.Coordinate)
+                {
+                    keyType = ChaListDefine.KeyType.HideShorts;
+                }
+                ListInfoResult[keyType] = value;
+            }
         }
 #endif
     }

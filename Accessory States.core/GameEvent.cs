@@ -1,7 +1,5 @@
 ﻿#if !KKS
-using Hook_Space;
 using KKAPI.MainGame;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -88,17 +86,19 @@ namespace Accessory_States
             {
                 ThisCharactersData.Update_Now_Coordinate(Coordchange);
             }
-
+            var names = ThisCharactersData.NowCoordinate.Names;
+            var slotinfo = ThisCharactersData.NowCoordinate.Slotinfo;
             //Settings.Logger.LogWarning("create");
-
-            foreach (var item in ThisCharactersData.Now_ACC_Name_Dictionary)
+            var shoetype = Heroine_Ctrl.fileStatus.shoesType;
+            foreach (var item in names)
             {
-                Createbutton(Female, Harem, item.Value, item.Key, ThisCharactersData, 0);
+                if (slotinfo.Count(x => x.Value.Binding == item.Key && (x.Value.Shoetype == shoetype || x.Value.Shoetype == 2)) > 0)
+                    Createbutton(Female, Harem, item.Value.Name, item.Key, ThisCharactersData, 0);
             }
 
-            foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary.Distinct())
+            foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary)
             {
-                Createbutton(Female, Harem, item.Value, 0, ThisCharactersData, 1);
+                Createbutton(Female, Harem, item.Key, 0, ThisCharactersData, 1);
             }
         }
 
@@ -164,11 +164,14 @@ namespace Accessory_States
             if (ButtonKind == 0)
             {
                 int state = 0;
-                var binded = CharacterData.Now_ACC_Binding_Dictionary.Where(x => x.Value == kind);
+                var binded = CharacterData.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
                 int final = 0;
                 foreach (var item in binded)
                 {
-                    final = Mathf.Max(final, CharacterData.Now_ACC_State_array[item.Key][1]);
+                    foreach (var item2 in item.Value.States)
+                    {
+                        final = Mathf.Max(final, item2[1]);
+                    }
                 }
                 final += 2;
                 button.onClick.AddListener(delegate ()
