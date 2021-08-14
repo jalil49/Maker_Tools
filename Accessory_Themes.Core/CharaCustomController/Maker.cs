@@ -589,7 +589,7 @@ namespace Accessory_Themes
 
             Update_ACC_Dropbox();
 
-            var themecount = Themes.Count - 1;
+            var themecount = Themes.Count;
             themed[slot] = themecount;
             ThemesDropdownwrapper.SetValue(slot, themecount, false);
 
