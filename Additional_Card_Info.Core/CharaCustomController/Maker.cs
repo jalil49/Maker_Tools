@@ -53,8 +53,6 @@ namespace Additional_Card_Info
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
-            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
-            MakerAPI.MakerFinishedLoading += (s, e2) => VisibiltyToggle();
         }
 
         private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
@@ -70,8 +68,6 @@ namespace Additional_Card_Info
 
             MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
 
-            AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e2) => VisibiltyToggle();
-            MakerAPI.MakerFinishedLoading -= (s, e2) => VisibiltyToggle();
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
         }
 
@@ -167,11 +163,11 @@ namespace Additional_Card_Info
             #region Accessory Window Settings
             category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 2, "Accessory Settings");
             var Keep = new MakerToggle(category, "Keep this Accessory", owner);
-            AccKeepToggles = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(Keep);
+            AccKeepToggles = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(Keep, true);
             AccKeepToggles.ValueChanged += AccKeep_ValueChanged;
 
             var HairKeep = new MakerToggle(category, "Is this a hair piece?", owner);
-            HairKeepToggles = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(HairKeep);
+            HairKeepToggles = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(HairKeep, true);
             HairKeepToggles.ValueChanged += AccHairKeep_ValueChanged;
             #endregion
 
@@ -440,29 +436,6 @@ namespace Additional_Card_Info
                 HairAcc.Remove(slotNo);
                 AccKeep.Remove(slotNo);
             }
-            VisibiltyToggle();
-        }
-
-        private static void VisibiltyToggle()
-        {
-            if (!MakerAPI.InsideMaker)
-                return;
-
-            var controller = GetController;
-            controller.Update_More_Accessories();
-            var slot = AccessoriesApi.SelectedMakerAccSlot;
-            var visible = slot < controller.Accessorys_Parts.Count && AccessoriesApi.GetPartsInfo(slot).type != 120;
-
-            if (visible)
-            {
-                HairKeepToggles.Control.Visible.OnNext(true);
-                AccKeepToggles.Control.Visible.OnNext(true);
-            }
-            else
-            {
-                AccKeepToggles.Control.Visible.OnNext(false);
-                HairKeepToggles.Control.Visible.OnNext(false);
-            }
         }
 
         private IEnumerator UpdateSlots()
@@ -542,41 +515,19 @@ namespace Additional_Card_Info
             CoordinateCreatorNames.Text = creators;
 
 
+            Advanced.SetValue(AdvancedDirectory, false);
 
-            if (AdvancedFolderDirectory.Count == 0)
-            {
-                Advanced.SetValue(false);
-                SimpleCharacterOutfitFolders.SetValue("", false);
-                for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
-                {
-                    var textbox = AdvancedCharacterOutfitFolders.ElementAt(i).Value;
-                    textbox.SetValue("", false);
-                }
-            }
-            else
-            {
-                SimpleCharacterOutfitFolders.SetValue("", false);
-                var folder = AdvancedFolderDirectory.ElementAt(0).Value;
-                if (AdvancedCharacterOutfitFolders.Count == AdvancedFolderDirectory.Count && AdvancedFolderDirectory.Values.All(x => x == folder))
-                {
-                    Advanced.SetValue(false);
+            SimpleCharacterOutfitFolders.SetValue(SimpleFolderDirectory, false);
 
-                    SimpleCharacterOutfitFolders.SetValue(folder, false);
-                }
-                else
+            for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
+            {
+                var textbox = AdvancedCharacterOutfitFolders.ElementAt(i);
+                if (AdvancedFolderDirectory.TryGetValue(textbox.Key, out var foldername))
                 {
-                    Advanced.SetValue(true);
-                    for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
-                    {
-                        var textbox = AdvancedCharacterOutfitFolders.ElementAt(i);
-                        if (AdvancedFolderDirectory.TryGetValue(textbox.Key, out var foldername))
-                        {
-                            textbox.Value.SetValue(AdvancedFolderDirectory[foldername], false);
-                            continue;
-                        }
-                        textbox.Value.SetValue("", false);
-                    }
+                    textbox.Value.SetValue(foldername, false);
+                    continue;
                 }
+                textbox.Value.SetValue("", false);
             }
 
             MakeUpToggle.SetValue(MakeUpKeep, false);
@@ -609,7 +560,6 @@ namespace Additional_Card_Info
             HairKeepToggles.SetValue(e.DestinationSlotIndex, HairKeepToggles.GetValue(e.SourceSlotIndex));
             AccKeepToggles.SetValue(e.DestinationSlotIndex, AccKeepToggles.GetValue(e.SourceSlotIndex));
 
-            VisibiltyToggle();
         }
 
         private void AccessoriesCopied(AccessoryCopyEventArgs e)
@@ -641,8 +591,6 @@ namespace Additional_Card_Info
                 }
 
             }
-            VisibiltyToggle();
-
         }
 
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)

@@ -33,12 +33,6 @@ namespace Accessory_Parents
 
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
-            AccessoriesApi.AccessoriesCopied -= (s, es) => VisibiltyToggle();
-            AccessoriesApi.AccessoryTransferred -= (s, es) => VisibiltyToggle();
-            AccessoriesApi.MakerAccSlotAdded -= (s, es) => VisibiltyToggle();
-            AccessoriesApi.SelectedMakerAccSlotChanged -= (s, es) => VisibiltyToggle();
-            MakerAPI.MakerFinishedLoading -= (s, es) => VisibiltyToggle();
-
             AccessoriesApi.AccessoryKindChanged -= AccessoriesApi_AccessoryKindChanged;
 
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
@@ -50,7 +44,6 @@ namespace Accessory_Parents
             ShowCustomGui = false;
             showreplace = false;
             showdelete = false;
-
         }
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
@@ -60,11 +53,6 @@ namespace Accessory_Parents
             {
                 return;
             }
-            AccessoriesApi.AccessoriesCopied += (s, es) => VisibiltyToggle();
-            AccessoriesApi.AccessoryTransferred += (s, es) => VisibiltyToggle();
-            AccessoriesApi.MakerAccSlotAdded += (s, es) => VisibiltyToggle();
-            AccessoriesApi.SelectedMakerAccSlotChanged += (s, es) => VisibiltyToggle();
-            MakerAPI.MakerFinishedLoading += (s, es) => VisibiltyToggle();
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
@@ -92,23 +80,23 @@ namespace Accessory_Parents
             var owner = Settings.Instance;
             var category = new MakerCategory("", "");
 
-            ParentText = MakerAPI.AddAccessoryWindowControl<MakerText>(new MakerText("Not Parent", category, owner));
-            ChildText = MakerAPI.AddAccessoryWindowControl<MakerText>(new MakerText("Not Child", category, owner));
+            ParentText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Parent", category, owner), true);
+            ChildText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Child", category, owner), true);
             var Dropdown = new MakerDropdown("Parent", new string[] { "None" }, category, 0, owner);
-            Parent_DropDown = MakerAPI.AddAccessoryWindowControl<MakerDropdown>(Dropdown);
+            Parent_DropDown = MakerAPI.AddAccessoryWindowControl(Dropdown, true);
 
-            Child_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Make Child", category, owner));
+            Child_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Make Child", category, owner), true);
             Child_Button.OnClick.AddListener(delegate ()
             {
                 GetController.MakeChild();
             });
-            Save_Relative_Button = MakerAPI.AddAccessoryWindowControl<MakerButton>(new MakerButton("Save Position", category, owner));
+            Save_Relative_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Save Position", category, owner), true);
             Save_Relative_Button.OnClick.AddListener(delegate ()
             {
                 GetController.Save_Relative_Data(AccessoriesApi.SelectedMakerAccSlot);
             });
 
-            Gui_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Parent GUI", category, owner));
+            Gui_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Parent GUI", category, owner), true);
             Gui_Button.OnClick.AddListener(delegate ()
             {
                 GUI_Toggle();
@@ -128,11 +116,6 @@ namespace Accessory_Parents
             GetController.Update_Drop_boxes();
         }
 
-        private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
-        {
-            VisibiltyToggle();
-        }
-
         private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
         {
             ControllerGet.AccessoryKindChanged(e);
@@ -147,40 +130,6 @@ namespace Accessory_Parents
             else if (Old_Parent.ContainsKey(e.SlotIndex) && Relative_Data.ContainsKey(e.SlotIndex))
             {
                 Keep_Last_Data(e.SlotIndex);
-            }
-            VisibiltyToggle();
-        }
-
-        private static void VisibiltyToggle()
-        {
-            if (!MakerAPI.InsideMaker)
-                return;
-            var controller = GetController;
-
-            controller.Update_More_Accessories();
-
-            var slot = AccessoriesApi.SelectedMakerAccSlot;
-            var count = controller.Accessorys_Parts.Count;
-
-            var visible = slot < count && AccessoriesApi.GetPartsInfo(slot).type != 120;
-            if (visible)
-            {
-                Parent_DropDown.Visible.OnNext(true);
-                ParentText.Visible.OnNext(true);
-                Child_Button.Visible.OnNext(true);
-                Save_Relative_Button.Visible.OnNext(true);
-                ChildText.Visible.OnNext(true);
-                Gui_Button.Visible.OnNext(true);
-                GetController.Update_Text();
-            }
-            else
-            {
-                Parent_DropDown.Visible.OnNext(false);
-                ParentText.Visible.OnNext(false);
-                Child_Button.Visible.OnNext(false);
-                Save_Relative_Button.Visible.OnNext(false);
-                ChildText.Visible.OnNext(false);
-                Gui_Button.Visible.OnNext(false);
             }
         }
 
@@ -605,7 +554,6 @@ namespace Accessory_Parents
                     Keep_Last_Data(slotNo);
                 }
             }
-            VisibiltyToggle();
         }
 
         private void Save_Relative_Data(int slot)
@@ -662,7 +610,6 @@ namespace Accessory_Parents
                     yield return null;
                 }
 
-                VisibiltyToggle();
 
                 var ControlObjects = Parent_DropDown.ControlObjects;
                 List<TMP_Dropdown.OptionData> Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);

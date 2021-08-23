@@ -62,7 +62,6 @@ namespace Accessory_Themes
 
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
-            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
         }
@@ -70,7 +69,6 @@ namespace Accessory_Themes
         private static void MakerAPI_MakerFinishedLoading(object sender, EventArgs e)
         {
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
-            VisibiltyToggle();
         }
 
         internal void RemoveOutfitEvent()
@@ -90,7 +88,6 @@ namespace Accessory_Themes
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
-            AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e2) => VisibiltyToggle();
             MakerAPI.MakerFinishedLoading -= MakerAPI_MakerFinishedLoading;
 
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
@@ -360,7 +357,6 @@ namespace Accessory_Themes
                     PopulateThemeDict();
                 }
             }
-            VisibiltyToggle();
         }
 
         private void Themes_ValueChanged(int slot, int value)
@@ -382,28 +378,6 @@ namespace Accessory_Themes
             }
 
             Theme_Dict.Remove(slot);
-        }
-
-        private static void VisibiltyToggle()
-        {
-            if (!MakerAPI.InsideMaker)
-                return;
-
-            var controller = ControllerGet;
-            controller.Update_More_Accessories();
-            var slot = AccessoriesApi.SelectedMakerAccSlot;
-            var visible = slot < controller.Accessorys_Parts.Count && AccessoriesApi.GetPartsInfo(slot).type != 120;
-
-            if (visible)
-            {
-                Guibutton.Visible.OnNext(true);
-                ThemesDropdownwrapper.Control.Visible.OnNext(true);
-            }
-            else
-            {
-                Guibutton.Visible.OnNext(false);
-                ThemesDropdownwrapper.Control.Visible.OnNext(false);
-            }
         }
 
         private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
@@ -434,7 +408,6 @@ namespace Accessory_Themes
                 Theme_Dict.Remove(e.DestinationSlotIndex);
                 ThemesDropdownwrapper.SetValue(e.DestinationSlotIndex, 0, false);
             }
-            VisibiltyToggle();
         }
 
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
@@ -475,7 +448,6 @@ namespace Accessory_Themes
                 Dest.Theme_Dict[slot] = Dest.Themes.IndexOf(sourcetheme);
             }
             PopulateThemeDict((int)e.CopyDestination);
-            VisibiltyToggle();
         }
 
         private void Update_ACC_Dropbox()
@@ -551,7 +523,6 @@ namespace Accessory_Themes
             }
             ThemesDropDown_Setting.SetValue(0, false);
             IsThemeRelativeBool.SetValue(false, false);
-            VisibiltyToggle();
         }
 
         private void AutoTheme()

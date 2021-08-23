@@ -43,25 +43,25 @@ namespace Accessory_States
             string[] ACC_app_Dropdown = Constants.ConstantOutfitNames.Values.ToArray();
             //string[] ACC_app_Dropdown = new string[] { "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
 
-            ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing\nBind", ACC_app_Dropdown, category, 0, owner));
+            ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing\nBind", ACC_app_Dropdown, category, 0, owner), true);
             ACC_Appearance_dropdown.ValueChanged += (s, es) => ControllerGet.ACC_Appearance_dropdown_ValueChanged(es.SlotIndex, es.NewValue - 1);
 
             var Start_Slider = new MakerSlider(category, "Start", 0, 3, 0, owner)
             {
                 WholeNumbers = true
             };
-            ACC_Appearance_state = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(Start_Slider);
+            ACC_Appearance_state = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(Start_Slider, true);
             ACC_Appearance_state.ValueChanged += (s, es) => ControllerGet.ACC_Appearance_state_ValueChanged(es.SlotIndex, Mathf.RoundToInt(es.NewValue), 0);
 
             var Stop_Slider = new MakerSlider(category, "Stop", 0, 3, 3, owner)
             {
                 WholeNumbers = true
             };
-            ACC_Appearance_state2 = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(Stop_Slider);
+            ACC_Appearance_state2 = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(Stop_Slider, true);
             ACC_Appearance_state2.ValueChanged += (s, es) => ControllerGet.ACC_Appearance_state2_ValueChanged(es.SlotIndex, Mathf.RoundToInt(es.NewValue), 0);
 
             gui_button = new MakerButton("States GUI", category, owner);
-            MakerAPI.AddAccessoryWindowControl(gui_button);
+            MakerAPI.AddAccessoryWindowControl(gui_button, true);
             gui_button.OnClick.AddListener(delegate () { GUI_Toggle(); });
 
             SetupInterface();
@@ -103,11 +103,6 @@ namespace Accessory_States
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
-            AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
-
-            MakerAPI.MakerFinishedLoading += (s, e) => VisibiltyToggle();
-            AccessoriesApi.SelectedMakerAccSlotChanged += (s, e) => VisibiltyToggle();
-
         }
 
         public static void Maker_Ended()
@@ -119,18 +114,10 @@ namespace Accessory_States
             AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
-            AccessoriesApi.AccessoryKindChanged -= AccessoriesApi_AccessoryKindChanged;
 
-            AccessoriesApi.SelectedMakerAccSlotChanged -= (s, e) => VisibiltyToggle();
-            MakerAPI.MakerFinishedLoading -= (s, e) => VisibiltyToggle();
             ShowCustomGui = false;
             MakerEnabled = false;
             ShowToggleInterface = false;
-        }
-
-        private static void AccessoriesApi_AccessoryKindChanged(object sender, AccessorySlotEventArgs e)
-        {
-            VisibiltyToggle();
         }
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
@@ -161,7 +148,6 @@ namespace Accessory_States
                 slotinfo.Remove(e.DestinationSlotIndex);
             }
             thisdata.Update_Parented_Name();
-            VisibiltyToggle();
         }
 
         private void AccessoriesCopied(AccessoryCopyEventArgs e)
@@ -202,14 +188,12 @@ namespace Accessory_States
             }
             ThisCharactersData.Update_Parented_Name();
             Refresh();
-            VisibiltyToggle();
         }
 
         private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
             var Controller = ControllerGet;
             Controller.StartCoroutine(Controller.WaitForSlots());
-            VisibiltyToggle();
         }
 
         private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
@@ -456,48 +440,6 @@ namespace Accessory_States
             }
             UpdateClothingNots();
             Update_Toggles_GUI();
-            VisibiltyToggle();
-        }
-
-        private static void VisibiltyToggle()
-        {
-            if (!MakerAPI.InsideMaker)
-                return;
-            var controller = ControllerGet;
-            controller.Update_More_Accessories();
-            var Slot = AccessoriesApi.SelectedMakerAccSlot;
-            var visible = Slot < controller.Accessorys_Parts.Count && AccessoriesApi.GetPartsInfo(Slot).type != 120;
-            if (visible)
-            {
-                ACC_Appearance_dropdown.Control.Visible.OnNext(true);
-                ACC_Appearance_state.Control.Visible.OnNext(true);
-                ACC_Appearance_state2.Control.Visible.OnNext(true);
-                gui_button.Visible.OnNext(true);
-                if (ACC_Appearance_dropdown.GetValue(Slot) > 8)
-                {
-                    var slotinfo = controller.Slotinfo;
-
-                    var Max = 1;
-
-                    if (slotinfo.TryGetValue(Slot, out var slotdata))
-                    {
-                        Max = controller.MaxState(slotdata.Binding);
-                    }
-
-                    var slider = ACC_Appearance_state.Control.ControlObjects.ElementAt(Slot).GetComponentInChildren<Slider>();
-                    var slider2 = ACC_Appearance_state2.Control.ControlObjects.ElementAt(Slot).GetComponentInChildren<Slider>();
-                    slider.maxValue = ++Max;
-                    slider2.maxValue = Max;
-                }
-            }
-            else
-            {
-                ACC_Appearance_dropdown.Control.Visible.OnNext(false);
-                ACC_Appearance_state.Control.Visible.OnNext(false);
-                ACC_Appearance_state2.Control.Visible.OnNext(false);
-                gui_button.Visible.OnNext(false);
-
-            }
         }
 
         internal void MovIt(List<QueueItem> queue)
@@ -553,7 +495,6 @@ namespace Accessory_States
                 ACC_Appearance_state.SetValue(slotNo, 0, false);
                 ACC_Appearance_state2.SetValue(slotNo, 3, false);
             }
-            VisibiltyToggle();
         }
 
         private int IndexOfName(int binding)
