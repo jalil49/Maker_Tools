@@ -102,7 +102,7 @@ namespace Additional_Card_Info
 
         public enum Traits
         {
-#if !KKS
+#if KK
             Pees_Often,
             Hungry,
             Insensitive,
@@ -124,7 +124,7 @@ namespace Additional_Card_Info
             Information,
             Love_Love,
             Lonely
-#else
+#elif KKS
             Hungry,
             Simple,
             Likes_Reading,
