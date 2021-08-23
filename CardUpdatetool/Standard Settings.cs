@@ -1,7 +1,5 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
-using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Studio;
 
@@ -13,7 +11,7 @@ namespace CardUpdateTool
     public partial class CardUpdateTool : BaseUnityPlugin
     {
         public const string GUID = "Card_Update_Tool";
-        public const string Version = "1.0";
+        public const string Version = "1.1";
         internal static CardUpdateTool Instance;
         internal static new ManualLogSource Logger;
 

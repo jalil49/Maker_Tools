@@ -7,7 +7,6 @@ using KKAPI.MainGame;
 using KKAPI.Maker;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Accessory_States
 {
@@ -15,7 +14,7 @@ namespace Accessory_States
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_States";
-        public const string Version = "1.3";
+        public const string Version = "1.4";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         internal static bool showstacktrace = false;
