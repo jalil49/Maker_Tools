@@ -15,12 +15,11 @@ namespace Accessory_States
 
         readonly Dictionary<int, List<int>> ButtonList = new Dictionary<int, List<int>>();
 
-        protected override void OnStartH(HSceneProc hSceneProc, bool freeH)
+        protected override void OnStartH(BaseLoader proc, HFlag hFlag, bool vr)
         {
             Hooks.HcoordChange += Hooks_HcoordChange;
             CharaEvent.Coordloaded += CharaEvent_coordloaded;
-            hScene = hSceneProc;
-            var heroines = hScene.dataH.lstFemale;
+            var heroines = hFlag.lstHeroine;
             for (int i = 0; i < heroines.Count; i++)
             {
                 var ThisCharactersData = Constants.CharacterInfo.Find(x => heroines[i].chaCtrl.fileParam.personality == x.Personality && x.FullName == heroines[i].chaCtrl.fileParam.fullname && x.BirthDay == heroines[i].chaCtrl.fileParam.strBirthDay);
@@ -32,6 +31,7 @@ namespace Accessory_States
                 }
                 Buttonlogic(i, false);
             }
+            base.OnStartH(proc, hFlag, vr);
         }
 
         private void CharaEvent_coordloaded(object sender, CoordinateLoadedEventARG e)
@@ -47,11 +47,12 @@ namespace Accessory_States
             }
         }
 
-        protected override void OnEndH(HSceneProc hSceneProc, bool freeH)
+        protected override void OnEndH(BaseLoader proc, HFlag hFlag, bool vr)
         {
             Hooks.HcoordChange -= Hooks_HcoordChange;
             ButtonList.Clear();
             hScene = null;
+            base.OnEndH(proc, hFlag, vr);
         }
 
         private void Hooks_HcoordChange(object sender, OnClickCoordinateChange e)
