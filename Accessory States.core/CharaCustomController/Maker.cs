@@ -526,29 +526,6 @@ namespace Accessory_States
             ForceClothDataUpdate = false;
         }
 
-        internal void UpdateClothingNots(ChaListDefine.KeyType keyType, int result, bool isbra)
-        {
-            switch (keyType)
-            {
-                case ChaListDefine.KeyType.Coordinate:
-                    if (isbra)
-                    {
-                        ClothNotData[2] = result == 2; //only in ChangeClothesBraAsync
-                        return;
-                    }
-                    ClothNotData[0] = result == 2; //only in ChangeClothesTopAsync
-                    break;
-
-                case ChaListDefine.KeyType.NotBra:
-                    ClothNotData[1] = result == 1;
-                    break;
-
-                case ChaListDefine.KeyType.HideShorts:
-                    ClothNotData[2] = result == 1; // doesn't do anything in KK
-                    break;
-            }
-        }
-
         private void UpdateTopClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
         {
             if (infoBase == null)
@@ -579,9 +556,9 @@ namespace Accessory_States
             Hooks.ClothingNotPatch.IsshortsCheck = true;
 
             var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
-            var key = ChaListDefine.KeyType.HideShorts;
+            var key = ChaListDefine.KeyType.Coordinate;
 
-            infoBase.GetInfo(ChaListDefine.KeyType.Coordinate);//kk uses coordinate to hide shorts
+            infoBase.GetInfo(key);//kk uses coordinate to hide shorts
 
             bool notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
 

@@ -679,9 +679,9 @@ namespace Additional_Card_Info
             Hooks.ClothingNotPatch.IsshortsCheck = true;
 
             var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
-            var key = ChaListDefine.KeyType.HideShorts;//just using a different keytype that makes sense
+            var key = ChaListDefine.KeyType.Coordinate;
 
-            infoBase.GetInfo(ChaListDefine.KeyType.Coordinate);//kk uses coordinate to hide shorts
+            infoBase.GetInfo(key);
 
             bool notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
             clothingnot[2] = clothingnot[2] || notShorts;

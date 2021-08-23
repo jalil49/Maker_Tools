@@ -69,7 +69,7 @@ namespace Additional_Card_Info
         internal static class ClothingNotPatch
         {
             internal static bool IsshortsCheck = false;
-            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; set; } = new Dictionary<ChaListDefine.KeyType, int>() { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0, [ChaListDefine.KeyType.HideShorts] = 0 };
+            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; set; } = new Dictionary<ChaListDefine.KeyType, int>() { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0 };
 
             internal static void Init()
             {
@@ -101,13 +101,9 @@ namespace Additional_Card_Info
 
             private static void ClothingNotEvent(ChaListDefine.KeyType keyType, string result)
             {
-                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate && keyType != ChaListDefine.KeyType.HideShorts || !int.TryParse(result, out int value))
+                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate || !int.TryParse(result, out int value))
                 {
                     return;
-                }
-                if (IsshortsCheck && keyType == ChaListDefine.KeyType.Coordinate)
-                {
-                    keyType = ChaListDefine.KeyType.HideShorts;
                 }
                 ListInfoResult[keyType] = value;
             }
