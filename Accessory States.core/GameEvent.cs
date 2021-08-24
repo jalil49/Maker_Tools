@@ -11,15 +11,24 @@ namespace Accessory_States
 {
     public class GameEvent : GameCustomFunctionController
     {
+        List<SaveData.Heroine> heroines = new List<SaveData.Heroine>();
         HSceneProc hScene;
 
         readonly Dictionary<int, List<int>> ButtonList = new Dictionary<int, List<int>>();
 
         protected override void OnStartH(BaseLoader proc, HFlag hFlag, bool vr)
         {
+            if (vr)
+            {
+
+            }
+            else
+            {
+                hScene = proc as HSceneProc;
+            }
             Hooks.HcoordChange += Hooks_HcoordChange;
             CharaEvent.Coordloaded += CharaEvent_coordloaded;
-            var heroines = hFlag.lstHeroine;
+            heroines = hFlag.lstHeroine;
             for (int i = 0; i < heroines.Count; i++)
             {
                 var ThisCharactersData = Constants.CharacterInfo.Find(x => heroines[i].chaCtrl.fileParam.personality == x.Personality && x.FullName == heroines[i].chaCtrl.fileParam.fullname && x.BirthDay == heroines[i].chaCtrl.fileParam.strBirthDay);
@@ -36,7 +45,6 @@ namespace Accessory_States
 
         private void CharaEvent_coordloaded(object sender, CoordinateLoadedEventARG e)
         {
-            var heroines = hScene.dataH.lstFemale;
             for (int i = 0; i < heroines.Count; i++)
             {
                 if (heroines[i].chaCtrl.name == e.Character.name)
@@ -51,6 +59,7 @@ namespace Accessory_States
         {
             Hooks.HcoordChange -= Hooks_HcoordChange;
             ButtonList.Clear();
+            heroines.Clear();
             hScene = null;
             base.OnEndH(proc, hFlag, vr);
         }
@@ -62,8 +71,12 @@ namespace Accessory_States
 
         private void Buttonlogic(int Female, bool Coordloaded, int Coordchange = -1)
         {
-            bool Harem = hScene.dataH.lstFemale.Count > 1;
-            var Heroine_Ctrl = hScene.dataH.lstFemale[Female].chaCtrl;
+            if (hScene == null)
+            {
+                return;
+            }
+            bool Harem = heroines.Count > 1;
+            var Heroine_Ctrl = heroines[Female].chaCtrl;
             var ThisCharactersData = Constants.CharacterInfo.Find(x => Heroine_Ctrl.fileParam.personality == x.Personality && x.FullName == Heroine_Ctrl.fileParam.fullname && x.BirthDay == Heroine_Ctrl.fileParam.strBirthDay);
             if (!ButtonList.TryGetValue(Female, out var list))
             {
