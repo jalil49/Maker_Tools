@@ -156,11 +156,11 @@ namespace Accessory_Themes
             var emptyarray = new string[] { "None" };
 
             ThemesDropDown_ACC = new MakerDropdown("Theme: ", emptyarray, category, 0, owner);
-            ThemesDropdownwrapper = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(ThemesDropDown_ACC);
+            ThemesDropdownwrapper = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(ThemesDropDown_ACC, true);
             ThemesDropdownwrapper.ValueChanged += (s, e) => ControllerGet.Themes_ValueChanged(e.SlotIndex, e.NewValue - 1);
 
             Guibutton = new MakerButton("Accessory Themes GUI", category, owner);
-            MakerAPI.AddAccessoryWindowControl(Guibutton);
+            MakerAPI.AddAccessoryWindowControl(Guibutton, true);
             Guibutton.OnClick.AddListener(delegate () { ShowCustomGui = !ShowCustomGui; });
 
             #endregion

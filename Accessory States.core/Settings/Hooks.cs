@@ -1,7 +1,6 @@
 ﻿using ChaCustom;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 
 namespace Accessory_States
 {
