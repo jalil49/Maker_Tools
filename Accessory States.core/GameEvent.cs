@@ -1,5 +1,6 @@
 ﻿#if !KKS
 using KKAPI.MainGame;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -11,8 +12,8 @@ namespace Accessory_States
 {
     public class GameEvent : GameCustomFunctionController
     {
-        List<SaveData.Heroine> heroines = new List<SaveData.Heroine>();
-        HSceneProc hScene;
+        List<SaveData.Heroine> heroines;
+        HSprite[] HSprites;
 
         readonly Dictionary<int, List<int>> ButtonList = new Dictionary<int, List<int>>();
 
@@ -20,11 +21,12 @@ namespace Accessory_States
         {
             if (vr)
             {
-
+                var vrHSceneType = Type.GetType("VRHScene, Assembly-CSharp");
+                HSprites = (HSprite[])vrHSceneType.GetField("sprites").GetValue(null);
             }
             else
             {
-                hScene = proc as HSceneProc;
+                HSprites = new HSprite[] { ((HSceneProc)proc).sprite };
             }
             Hooks.HcoordChange += Hooks_HcoordChange;
             CharaEvent.Coordloaded += CharaEvent_coordloaded;
@@ -45,6 +47,10 @@ namespace Accessory_States
 
         private void CharaEvent_coordloaded(object sender, CoordinateLoadedEventARG e)
         {
+            if (heroines == null)
+            {
+                return;
+            }
             for (int i = 0; i < heroines.Count; i++)
             {
                 if (heroines[i].chaCtrl.name == e.Character.name)
@@ -59,8 +65,8 @@ namespace Accessory_States
         {
             Hooks.HcoordChange -= Hooks_HcoordChange;
             ButtonList.Clear();
-            heroines.Clear();
-            hScene = null;
+            heroines = null;
+            HSprites = null;
             base.OnEndH(proc, hFlag, vr);
         }
 
@@ -71,7 +77,7 @@ namespace Accessory_States
 
         private void Buttonlogic(int Female, bool Coordloaded, int Coordchange = -1)
         {
-            if (hScene == null)
+            if (HSprites == null)
             {
                 return;
             }
@@ -121,99 +127,91 @@ namespace Accessory_States
             //Settings.Logger.LogWarning("deleting button");
             Button ToRemove;
             HSceneSpriteCategory hSceneSpriteCategory;
-            if (Harem)
+            foreach (var Sprite in HSprites)
             {
-                hSceneSpriteCategory = hScene.sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
+                if (Harem)
+                {
+                    hSceneSpriteCategory = Sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
+                }
+                else
+                {
+                    hSceneSpriteCategory = Sprite.categoryAccessoryAll;
+                }
+                ToRemove = hSceneSpriteCategory.lstButton[Remove];
+                Destroy(ToRemove.gameObject);
+                hSceneSpriteCategory.lstButton.RemoveAt(Remove);
             }
-            else
-            {
-                hSceneSpriteCategory = hScene.sprite.categoryAccessoryAll;
-            }
-            ToRemove = hSceneSpriteCategory.lstButton[Remove];
-            Destroy(ToRemove.gameObject);
-            hSceneSpriteCategory.lstButton.RemoveAt(Remove);
-
-            //Settings.Logger.LogWarning("deleting button");
-            //HSceneSpriteCategory hSceneSpriteCategory;
-            //if (Harem)
-            //{
-            //    hSceneSpriteCategory = hScene.sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
-            //}
-            //else
-            //{
-            //    hSceneSpriteCategory = hScene.sprite.categoryAccessoryAll;
-            //}
-            //Destroy(hSceneSpriteCategory.gameObject.transform.GetChild(Remove).gameObject);
-            //hSceneSpriteCategory.lstButton.RemoveAt(Remove);
-
         }
 
         private void Createbutton(int Female, bool Harem, string name, int kind, Data CharacterData, int ButtonKind)
         {
             Transform parent;
             HSceneSpriteCategory hSceneSpriteCategory;
-            if (Harem)
+            foreach (var Sprite in HSprites)
             {
-                hSceneSpriteCategory = hScene.sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
-            }
-            else
-            {
-                hSceneSpriteCategory = hScene.sprite.categoryAccessoryAll;
-            }
-
-            parent = hSceneSpriteCategory.transform;
-
-            Transform origin = hScene.sprite.categoryAccessory.lstButton[0].transform;
-            Transform copy = Instantiate(origin.transform, parent, false);
-            copy.name = $"btn_{name}_{kind}";
-            copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
-            var trans = copy.GetComponent<RectTransform>();
-            trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
-
-            Button button = copy.GetComponentInChildren<Button>();
-            button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
-            button.onClick.RemoveAllListeners();
-            button.onClick = new Button.ButtonClickedEvent();
-            button.image.raycastTarget = true;
-            if (ButtonKind == 0)
-            {
-                int state = 0;
-                var binded = CharacterData.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
-                int final = 0;
-                foreach (var item in binded)
+                if (Harem)
                 {
-                    foreach (var item2 in item.Value.States)
-                    {
-                        final = Mathf.Max(final, item2[1]);
-                    }
+                    hSceneSpriteCategory = Sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
                 }
-                final += 2;
-                button.onClick.AddListener(delegate ()
+                else
                 {
-                    state = (state + 1) % (final);
-                    //Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
-                    CharacterData.Controller.Custom_Groups(kind, state);
-                    Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
-                });
-            }
-            else
-            {
-                bool state = true;
-                button.onClick.AddListener(delegate ()
+                    hSceneSpriteCategory = Sprite.categoryAccessoryAll;
+                }
+
+                parent = hSceneSpriteCategory.transform;
+
+                Transform origin = Sprite.categoryAccessory.lstButton[0].transform;
+                Transform copy = Instantiate(origin.transform, parent, false);
+                copy.name = $"btn_{name}_{kind}";
+                copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
+                var trans = copy.GetComponent<RectTransform>();
+                trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
+
+                Button button = copy.GetComponentInChildren<Button>();
+                button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
+                button.onClick.RemoveAllListeners();
+                button.onClick = new Button.ButtonClickedEvent();
+                button.image.raycastTarget = true;
+                if (ButtonKind == 0)
                 {
-                    state = !state;
-                    //Settings.Logger.LogWarning($"Setting {name} show to {state} state");
-                    CharacterData.Controller.Parent_toggle(name, state);
-                    Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
-                });
+                    int state = 0;
+                    var binded = CharacterData.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
+                    int final = 0;
+                    foreach (var item in binded)
+                    {
+                        foreach (var item2 in item.Value.States)
+                        {
+                            final = Mathf.Max(final, item2[1]);
+                        }
+                    }
+                    final += 2;
+                    button.onClick.AddListener(delegate ()
+                    {
+                        state = (state + 1) % (final);
+                        //Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
+                        CharacterData.Controller.Custom_Groups(kind, state);
+                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
+                    });
+                }
+                else
+                {
+                    bool state = true;
+                    button.onClick.AddListener(delegate ()
+                    {
+                        state = !state;
+                        //Settings.Logger.LogWarning($"Setting {name} show to {state} state");
+                        CharacterData.Controller.Parent_toggle(name, state);
+                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
+                    });
+                }
+                if (!ButtonList.TryGetValue(Female, out var list))
+                {
+                    list = new List<int>();
+                    ButtonList.Add(Female, list);
+                }
+                list.Add(hSceneSpriteCategory.lstButton.Count);
+                hSceneSpriteCategory.lstButton.Add(button);
             }
-            if (!ButtonList.TryGetValue(Female, out var list))
-            {
-                list = new List<int>();
-                ButtonList.Add(Female, list);
-            }
-            list.Add(hSceneSpriteCategory.lstButton.Count);
-            hSceneSpriteCategory.lstButton.Add(button);
         }
     }
 }
