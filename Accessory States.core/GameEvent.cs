@@ -1,4 +1,5 @@
 ﻿#if !KKS
+using HarmonyLib;
 using KKAPI.MainGame;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,7 @@ namespace Accessory_States
         {
             if (vr)
             {
-                var vrHSceneType = Type.GetType("VRHScene, Assembly-CSharp");
-                HSprites = (HSprite[])vrHSceneType.GetField("sprites").GetValue(null);
+                HSprites = Traverse.Create(proc).Field("sprites").GetValue<HSprite[]>();
             }
             else
             {
