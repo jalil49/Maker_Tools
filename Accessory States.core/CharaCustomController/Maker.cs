@@ -136,7 +136,6 @@ namespace Accessory_States
             ACC_Appearance_state.SetValue(e.DestinationSlotIndex, ACC_Appearance_state.GetValue(e.SourceSlotIndex), false);
             ACC_Appearance_state2.SetValue(e.DestinationSlotIndex, ACC_Appearance_state2.GetValue(e.SourceSlotIndex), false);
 
-            var thisdata = ThisCharactersData;
             var slotinfo = Slotinfo;
 
             if (slotinfo.ContainsKey(e.SourceSlotIndex))
@@ -147,7 +146,7 @@ namespace Accessory_States
             {
                 slotinfo.Remove(e.DestinationSlotIndex);
             }
-            thisdata.Update_Parented_Name();
+            Update_Parented_Name();
         }
 
         private void AccessoriesCopied(AccessoryCopyEventArgs e)
@@ -186,7 +185,7 @@ namespace Accessory_States
                     dest.Names[binding] = custom;
                 }
             }
-            ThisCharactersData.Update_Parented_Name();
+            Update_Parented_Name();
             Refresh();
         }
 
@@ -216,7 +215,7 @@ namespace Accessory_States
             }
             slotdata.Parented = isparented;
 
-            ThisCharactersData.Update_Parented_Name();
+            Update_Parented_Name();
 
             if (!GUI_Parent_Dict.TryGetValue(Accessorys_Parts[slot].parentKey, out var show) || !isparented)
             {
@@ -399,7 +398,7 @@ namespace Accessory_States
             {
                 yield return null;
             } while (!MakerAPI.InsideAndLoaded || ACC_Appearance_state.Control.ControlObjects.Count() < ACCData);
-            ThisCharactersData.Update_Now_Coordinate();
+            Update_Now_Coordinate();
             Refresh();
 
             Update_Drop_boxes();

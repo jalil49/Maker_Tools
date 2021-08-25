@@ -4,7 +4,6 @@ namespace Accessory_States
 {
     public static class Constants
     {
-        public static List<Data> CharacterInfo = new List<Data>();
         public static Dictionary<int, string> ConstantOutfitNames = new Dictionary<int, string>()
         {
             [-1] = "None",

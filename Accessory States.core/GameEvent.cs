@@ -33,13 +33,9 @@ namespace Accessory_States
             heroines = hFlag.lstHeroine;
             for (int i = 0; i < heroines.Count; i++)
             {
-                var ThisCharactersData = Constants.CharacterInfo.Find(x => heroines[i].chaCtrl.fileParam.personality == x.Personality && x.FullName == heroines[i].chaCtrl.fileParam.fullname && x.BirthDay == heroines[i].chaCtrl.fileParam.strBirthDay);
-                if (ThisCharactersData != null)
-                {
-                    ThisCharactersData.Controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
-                    ThisCharactersData.Update_Now_Coordinate();
-                    ThisCharactersData.Controller.Refresh();
-                }
+                var controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
+                controller.Update_Now_Coordinate();
+                controller.Refresh();
                 Buttonlogic(i, false);
             }
             base.OnStartH(proc, hFlag, vr);
@@ -67,6 +63,10 @@ namespace Accessory_States
             ButtonList.Clear();
             heroines = null;
             HSprites = null;
+            if (hFlag.isFreeH)
+            {
+                CharaEvent.FreeHHeroines = new List<SaveData.Heroine>();
+            }
             base.OnEndH(proc, hFlag, vr);
         }
 
@@ -83,7 +83,7 @@ namespace Accessory_States
             }
             bool Harem = heroines.Count > 1;
             var Heroine_Ctrl = heroines[Female].chaCtrl;
-            var ThisCharactersData = Constants.CharacterInfo.Find(x => Heroine_Ctrl.fileParam.personality == x.Personality && x.FullName == Heroine_Ctrl.fileParam.fullname && x.BirthDay == Heroine_Ctrl.fileParam.strBirthDay);
+            var controller = Heroine_Ctrl.GetComponent<CharaEvent>();
             if (!ButtonList.TryGetValue(Female, out var list))
             {
                 list = new List<int>();
@@ -100,25 +100,25 @@ namespace Accessory_States
 
             if (!Coordloaded && Coordchange == -1)
             {
-                ThisCharactersData.Update_Now_Coordinate();
+                controller.Update_Now_Coordinate();
             }
             if (Coordchange > -1)
             {
-                ThisCharactersData.Update_Now_Coordinate(Coordchange);
+                controller.Update_Now_Coordinate(Coordchange);
             }
-            var names = ThisCharactersData.NowCoordinate.Names;
-            var slotinfo = ThisCharactersData.NowCoordinate.Slotinfo;
+            var names = controller.NowCoordinate.Names;
+            var slotinfo = controller.NowCoordinate.Slotinfo;
             //Settings.Logger.LogWarning("create");
             var shoetype = Heroine_Ctrl.fileStatus.shoesType;
             foreach (var item in names)
             {
                 if (slotinfo.Count(x => x.Value.Binding == item.Key && (x.Value.Shoetype == shoetype || x.Value.Shoetype == 2)) > 0)
-                    Createbutton(Female, Harem, item.Value.Name, item.Key, ThisCharactersData, 0);
+                    Createbutton(Female, Harem, item.Value.Name, item.Key, controller, 0);
             }
 
-            foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary)
+            foreach (var item in controller.Now_Parented_Name_Dictionary)
             {
-                Createbutton(Female, Harem, item.Key, 0, ThisCharactersData, 1);
+                Createbutton(Female, Harem, item.Key, 0, controller, 1);
             }
         }
 
@@ -143,7 +143,7 @@ namespace Accessory_States
             }
         }
 
-        private void Createbutton(int Female, bool Harem, string name, int kind, Data CharacterData, int ButtonKind)
+        private void Createbutton(int Female, bool Harem, string name, int kind, CharaEvent Controller, int ButtonKind)
         {
             Transform parent;
             HSceneSpriteCategory hSceneSpriteCategory;
@@ -175,7 +175,7 @@ namespace Accessory_States
                 if (ButtonKind == 0)
                 {
                     int state = 0;
-                    var binded = CharacterData.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
+                    var binded = Controller.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
                     int final = 0;
                     foreach (var item in binded)
                     {
@@ -189,7 +189,7 @@ namespace Accessory_States
                     {
                         state = (state + 1) % (final);
                         //Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
-                        CharacterData.Controller.Custom_Groups(kind, state);
+                        Controller.Custom_Groups(kind, state);
                         Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                     });
                 }
@@ -200,7 +200,7 @@ namespace Accessory_States
                     {
                         state = !state;
                         //Settings.Logger.LogWarning($"Setting {name} show to {state} state");
-                        CharacterData.Controller.Parent_toggle(name, state);
+                        Controller.Parent_toggle(name, state);
                         Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                     });
                 }
@@ -212,6 +212,11 @@ namespace Accessory_States
                 list.Add(hSceneSpriteCategory.lstButton.Count);
                 hSceneSpriteCategory.lstButton.Add(button);
             }
+        }
+
+        protected override void OnGameLoad(GameSaveLoadEventArgs args)
+        {
+            base.OnGameLoad(args);
         }
     }
 }

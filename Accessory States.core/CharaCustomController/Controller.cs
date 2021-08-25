@@ -23,121 +23,107 @@ namespace Accessory_States
 
             GUI_int_state_copy_Dict.Clear();
 
-            ThisCharactersData = Constants.CharacterInfo.Find(x => ChaControl.fileParam.personality == x.Personality && x.FullName == ChaControl.fileParam.fullname && x.BirthDay == ChaControl.fileParam.strBirthDay);
-            if (ThisCharactersData == null)
+            for (int i = 0; i < ChaFileControl.coordinate.Length; i++)
             {
-                ThisCharactersData = new Data(ChaControl.fileParam.personality, ChaControl.fileParam.strBirthDay, ChaControl.fileParam.fullname, this);
-                Constants.CharacterInfo.Add(ThisCharactersData);
+                if (Coordinate.ContainsKey(i))
+                    Clearoutfit(i);
+                else
+                    Createoutfit(i);
             }
-            if (!ThisCharactersData.processed || currentGameMode == GameMode.Maker
-#if !KKS
-                || GameAPI.InsideHScene
-#endif
-                )
+            for (int i = ChaFileControl.coordinate.Length, n = Coordinate.Keys.Max() + 1; i < n; i++)
             {
-                ThisCharactersData.processed = true;
-                for (int i = 0; i < ChaFileControl.coordinate.Length; i++)
+                Removeoutfit(i);
+            }
+
+            chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
+
+            Clear();
+
+            Clear_Now_Coordinate();
+
+            Update_More_Accessories();
+
+            var Extended_Data = GetExtendedData();
+            if (Extended_Data != null)
+            {
+                if (Extended_Data.version == 1)
                 {
-                    if (Coordinate.ContainsKey(i))
-                        Clearoutfit(i);
-                    else
-                        Createoutfit(i);
-                }
-                for (int i = ChaFileControl.coordinate.Length, n = Coordinate.Keys.Max() + 1; i < n; i++)
-                {
-                    Removeoutfit(i);
-                }
-
-                ThisCharactersData.Controller = this;
-                chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
-
-                ThisCharactersData.Clear();
-
-                ThisCharactersData.Clear_Now_Coordinate();
-
-                Update_More_Accessories();
-
-                var Extended_Data = GetExtendedData();
-                if (Extended_Data != null)
-                {
-                    if (Extended_Data.version == 1)
+                    if (Extended_Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
                     {
-                        if (Extended_Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
+                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
+                    }
+                }
+                else if (Extended_Data.version == 0)
+                {
+                    Migrator.MigrateV0(Extended_Data, ref Coordinate);
+                }
+                else
+                {
+                    Settings.Logger.LogWarning("New plugin version found on card please update");
+                }
+            }
+
+            var _pluginData = ExtendedSave.GetExtendedDataById(chafile, "madevil.kk.ass");
+            if (Extended_Data == null && _pluginData != null)
+            {
+                List<AccStateSync.TriggerProperty> TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                List<AccStateSync.TriggerGroup> TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+                if (_pluginData.version > 6)
+                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
+                else if (_pluginData.version < 6)
+                {
+                    AccStateSync.Migration.ConvertCharaPluginData(_pluginData, ref TriggerPropertyList, ref TriggerGroupList);
+                }
+                else
+                {
+                    if (_pluginData.data.TryGetValue("TriggerPropertyList", out object _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                    {
+                        List<AccStateSync.TriggerProperty> _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+                        if (_tempTriggerProperty?.Count > 0)
+                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+
+                        if (_pluginData.data.TryGetValue("TriggerGroupList", out object _loadedTriggerGroup) && _loadedTriggerGroup != null)
                         {
-                            Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
-                        }
-                    }
-                    else if (Extended_Data.version == 0)
-                    {
-                        Migrator.MigrateV0(Extended_Data, ref ThisCharactersData);
-                    }
-                    else
-                    {
-                        Settings.Logger.LogWarning("New plugin version found on card please update");
-                    }
-                }
-
-                var _pluginData = ExtendedSave.GetExtendedDataById(chafile, "madevil.kk.ass");
-                if (Extended_Data == null && _pluginData != null)
-                {
-                    List<AccStateSync.TriggerProperty> TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                    List<AccStateSync.TriggerGroup> TriggerGroupList = new List<AccStateSync.TriggerGroup>();
-
-                    if (_pluginData.version > 6)
-                        Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
-                    else if (_pluginData.version < 6)
-                    {
-                        AccStateSync.Migration.ConvertCharaPluginData(_pluginData, ref TriggerPropertyList, ref TriggerGroupList);
-                    }
-                    else
-                    {
-                        if (_pluginData.data.TryGetValue("TriggerPropertyList", out object _loadedTriggerProperty) && _loadedTriggerProperty != null)
-                        {
-                            List<AccStateSync.TriggerProperty> _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                            if (_tempTriggerProperty?.Count > 0)
-                                TriggerPropertyList.AddRange(_tempTriggerProperty);
-
-                            if (_pluginData.data.TryGetValue("TriggerGroupList", out object _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                            List<AccStateSync.TriggerGroup> _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                            if (_tempTriggerGroup?.Count > 0)
                             {
-                                List<AccStateSync.TriggerGroup> _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                                if (_tempTriggerGroup?.Count > 0)
+                                foreach (var _group in _tempTriggerGroup)
                                 {
-                                    foreach (var _group in _tempTriggerGroup)
-                                    {
-                                        if (_group.GUID.IsNullOrEmpty())
-                                            _group.GUID = Guid.NewGuid().ToString("D").ToUpper();
-                                    }
-                                    TriggerGroupList.AddRange(_tempTriggerGroup);
+                                    if (_group.GUID.IsNullOrEmpty())
+                                        _group.GUID = Guid.NewGuid().ToString("D").ToUpper();
                                 }
+                                TriggerGroupList.AddRange(_tempTriggerGroup);
                             }
                         }
                     }
-
-                    if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                    if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
-
-                    foreach (var item in Coordinate)
-                    {
-                        item.Value.Accstatesyncconvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
-                    }
                 }
 
-                ThisCharactersData.Update_Now_Coordinate();
-                CurrentCoordinate.Subscribe(x =>
-                {
-                    Update_More_Accessories();
+                if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                    ShowCustomGui = false;
-                    StartCoroutine(ChangeOutfitCoroutine());
-                });
+                foreach (var item in Coordinate)
+                {
+                    item.Value.Accstatesyncconvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
+                }
             }
+
+            Update_Now_Coordinate();
+            CurrentCoordinate.Subscribe(x =>
+            {
+                Update_More_Accessories();
+
+                ShowCustomGui = false;
+                StartCoroutine(ChangeOutfitCoroutine());
+            });
+
         }
 
         private IEnumerator<int> ChangeOutfitCoroutine()
         {
             GUI_int_state_copy_Dict.Clear();
             yield return 0;
-            ThisCharactersData.Update_Now_Coordinate();
+            Update_Now_Coordinate();
             yield return 0;
             Refresh();
             StartCoroutine(WaitForSlots());
@@ -208,7 +194,7 @@ namespace Accessory_States
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            ThisCharactersData.Clear_Now_Coordinate();
+            Clear_Now_Coordinate();
             var Extended_Data = GetCoordinateExtendedData(coordinate);
             if (Extended_Data != null)
             {
@@ -216,12 +202,12 @@ namespace Accessory_States
                 {
                     if (Extended_Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
                     {
-                        ThisCharactersData.NowCoordinate = MessagePackSerializer.Deserialize<CoordinateData>((byte[])ByteData);
+                        NowCoordinate = MessagePackSerializer.Deserialize<CoordinateData>((byte[])ByteData);
                     }
                 }
                 else if (Extended_Data.version == 0)
                 {
-                    ThisCharactersData.NowCoordinate = Migrator.CoordinateMigrateV0(Extended_Data);
+                    NowCoordinate = Migrator.CoordinateMigrateV0(Extended_Data);
                 }
             }
 
@@ -258,7 +244,7 @@ namespace Accessory_States
 
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
             {
-                Coordinate[(int)CurrentCoordinate.Value] = ThisCharactersData.NowCoordinate;
+                Coordinate[(int)CurrentCoordinate.Value] = NowCoordinate;
             }
 
             //call event
@@ -277,7 +263,7 @@ namespace Accessory_States
 
             if (MakerAPI.InsideMaker)
             {
-                Coordinate[(int)CurrentCoordinate.Value] = ThisCharactersData.NowCoordinate;
+                Coordinate[(int)CurrentCoordinate.Value] = NowCoordinate;
             }
 
             if (ForceClothDataUpdate && !MakerAPI.InsideMaker)
@@ -371,7 +357,7 @@ namespace Accessory_States
         {
             Update_More_Accessories();
             lastknownshoetype = ChaControl.fileStatus.shoesType;
-            foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary)
+            foreach (var item in Now_Parented_Name_Dictionary)
             {
                 if (!GUI_Parent_Dict.TryGetValue(item.Key, out bool show))
                 {
@@ -406,8 +392,6 @@ namespace Accessory_States
 
         internal void SetClothesState(int clothesKind, byte state)
         {
-            if (ThisCharactersData == null)
-                return;
             Update_More_Accessories();
             ChangedOutfit(clothesKind, state);
             SetClothesState_switch(clothesKind, state);
@@ -507,7 +491,7 @@ namespace Accessory_States
         public void Parent_toggle(string parent, bool toggleshow)
         {
             byte shoetype = ChaControl.fileStatus.shoesType;
-            var ParentedList = ThisCharactersData.Now_Parented_Name_Dictionary[parent];
+            var ParentedList = Now_Parented_Name_Dictionary[parent];
             foreach (var slot in ParentedList)
             {
                 if (slot.Key >= Accessorys_Parts.Count)
@@ -523,26 +507,6 @@ namespace Accessory_States
 
                 ChaControl.SetAccessoryState(slot.Key, show);
             }
-        }
-
-        private void Clearoutfit(int key)
-        {
-            ThisCharactersData.Clearoutfit(key);
-        }
-
-        private void Createoutfit(int key)
-        {
-            ThisCharactersData.Createoutfit(key);
-        }
-
-        private void Moveoutfit(int dest, int src)
-        {
-            ThisCharactersData.Moveoutfit(dest, src);
-        }
-
-        private void Removeoutfit(int key)
-        {
-            ThisCharactersData.Removeoutfit(key);
         }
 
         private IEnumerator ForceClothNotUpdate()

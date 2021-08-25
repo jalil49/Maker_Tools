@@ -6,16 +6,15 @@ namespace Accessory_States
 {
     class Migrator
     {
-        public static void MigrateV0(PluginData plugindata, ref Data data)
+        public static void MigrateV0(PluginData plugindata, ref Dictionary<int, CoordinateData> data)
         {
-
             if (plugindata.data.TryGetValue("ACC_Binding_Dictionary", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 for (int i = 0; i < temp.Length; i++)
                 {
                     var sub = temp[i];
-                    var slotinfo = data.Coordinate[i].Slotinfo;
+                    var slotinfo = data[i].Slotinfo;
 
                     foreach (var element in sub)
                     {
@@ -34,7 +33,7 @@ namespace Accessory_States
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int[]>[]>((byte[])ByteData);
                 for (int i = 0; i < temp.Length; i++)
                 {
-                    var slotinfo = data.Coordinate[i].Slotinfo;
+                    var slotinfo = data[i].Slotinfo;
 
                     foreach (var pair in temp[i])
                     {
@@ -61,7 +60,7 @@ namespace Accessory_States
                 {
                     foreach (var item in temp[i])
                     {
-                        data.Coordinate[i].Names[item.Key] = new NameData() { Name = item.Value };
+                        data[i].Names[item.Key] = new NameData() { Name = item.Value };
                     }
                 }
             }
@@ -71,7 +70,7 @@ namespace Accessory_States
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
                 for (int i = 0; i < temp.Length; i++)
                 {
-                    var slotinfo = data.Coordinate[i].Slotinfo;
+                    var slotinfo = data[i].Slotinfo;
                     foreach (var item in temp[i])
                     {
                         if (!slotinfo.TryGetValue(item.Key, out var slotdata))

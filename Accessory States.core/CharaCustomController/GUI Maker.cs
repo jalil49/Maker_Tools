@@ -692,7 +692,7 @@ namespace Accessory_States
                             DrawCustomButton(item.Key, item.Value.Name);
                         }
                         //Parent
-                        foreach (var item in ThisCharactersData.Now_Parented_Name_Dictionary.Keys)
+                        foreach (var item in Now_Parented_Name_Dictionary.Keys)
                         {
                             DrawParentButton(item);
                         }

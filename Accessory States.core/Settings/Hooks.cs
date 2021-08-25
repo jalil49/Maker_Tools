@@ -61,5 +61,13 @@ namespace Accessory_States
                 Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(HcoordChange)} - {ex}");
             }
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(HSceneProc), nameof(HSceneProc.SetState))]
+        internal static void LoadSethook(HSceneProc __instance)
+        {
+            if (__instance.flags.isFreeH)
+                CharaEvent.FreeHHeroines = __instance.flags.lstHeroine;
+        }
     }
 }
