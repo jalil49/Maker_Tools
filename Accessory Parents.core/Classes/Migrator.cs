@@ -13,9 +13,9 @@ namespace Accessory_Parents
             if (Data.data.TryGetValue("Parenting_Names", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<string, int>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
-                    List<Custom_Name> Convert = new List<Custom_Name>();
+                    var Convert = new List<Custom_Name>();
                     foreach (var item in temp[i])
                     {
                         Convert.Add(new Custom_Name(item.Key, item.Value));
@@ -26,7 +26,7 @@ namespace Accessory_Parents
             if (Data.data.TryGetValue("Parenting_Data", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, List<int>>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     foreach (var item in temp[i])
                     {
@@ -41,7 +41,7 @@ namespace Accessory_Parents
             if (Data.data.TryGetValue("Relative_Data", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, Vector3[,]>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     var relative_data = data[i].Relative_Data;
                     foreach (var item in temp[i])
@@ -59,7 +59,7 @@ namespace Accessory_Parents
             if (PlugininData.data.TryGetValue("Parenting_Names", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<string, int>>((byte[])ByteData);
-                List<Custom_Name> Convert = new List<Custom_Name>();
+                var Convert = new List<Custom_Name>();
                 foreach (var item in temp)
                 {
                     Convert.Add(new Custom_Name(item.Key, item.Value));

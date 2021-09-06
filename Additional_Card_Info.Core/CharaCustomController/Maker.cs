@@ -42,6 +42,7 @@ namespace Additional_Card_Info
         static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
         public int ListInfoResult { get; internal set; }
+        public ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
 
         static string Creatorname = Settings.CreatorName.Value;
 
@@ -76,7 +77,7 @@ namespace Additional_Card_Info
             var owner = Settings.Instance;
 
             #region Personal Settings
-            MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
+            var category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
             e.AddSubCategory(category);
 
             //e.AddControl(new MakerText(null, category, owner));
@@ -109,7 +110,7 @@ namespace Additional_Card_Info
             e.AddControl(new MakerText("Example Mecha Chika who doesn't work with socks/pantyhose and requires her shoes/glove", category, owner));
             #region Keep Toggles
 
-            for (int i = 0; i < Constants.ClothingTypesLength; i++)
+            for (var i = 0; i < Constants.ClothingTypesLength; i++)
             {
                 PersonalClothingKeepControls(i, e);
             }
@@ -205,7 +206,7 @@ namespace Additional_Card_Info
             };
             e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x => { GetController.CoordinateType = x; });
 
-            List<string> buttons = new List<string> { "Unassigned", "General" };
+            var buttons = new List<string> { "Unassigned", "General" };
             buttons.AddRange(Enum.GetNames(typeof(Constants.ClothingTypes)));
             buttons.AddRange(Enum.GetNames(typeof(Constants.AdditonalClothingTypes)));
             for (int i = 0, n = buttons.Count; i < n; i++)
@@ -230,8 +231,8 @@ namespace Additional_Card_Info
 
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("H State Restrictions", category, owner));
-            string[] HstatesOptions = Enum.GetNames(typeof(Constants.HStates));
-            for (int i = 0; i < HstatesOptions.Length; i++)
+            var HstatesOptions = Enum.GetNames(typeof(Constants.HStates));
+            for (var i = 0; i < HstatesOptions.Length; i++)
             {
                 HstatesOptions[i] = HstatesOptions[i].Replace('_', ' ');
             }
@@ -248,8 +249,8 @@ namespace Additional_Card_Info
 
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Club Restrictions", category, owner));
-            string[] ClubOptions = Enum.GetNames(typeof(Constants.Club));
-            for (int i = 0; i < ClubOptions.Length; i++)
+            var ClubOptions = Enum.GetNames(typeof(Constants.Club));
+            for (var i = 0; i < ClubOptions.Length; i++)
             {
                 ClubOptions[i] = ClubOptions[i].Replace('_', ' ');
             }
@@ -265,7 +266,7 @@ namespace Additional_Card_Info
 
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Non-replaceable", category, owner));
-            for (int ClothingInt = 0; ClothingInt < 9; ClothingInt++)
+            for (var ClothingInt = 0; ClothingInt < 9; ClothingInt++)
             {
                 ClothingKeepControls(ClothingInt, e);
             }
@@ -274,14 +275,14 @@ namespace Additional_Card_Info
             e.AddControl(new MakerSeparator(category, owner));
 
             e.AddControl(new MakerText("Breast Size Restrictions (exclusive)", category, owner));
-            for (int i = 0; i < Constants.BreastsizeLength; i++)
+            for (var i = 0; i < Constants.BreastsizeLength; i++)
             {
                 BreastSizeRestrictionControls(i, e);
             }
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Height Restrictions (exclusive)", category, owner));
 
-            for (int i = 0; i < Constants.HeightLength; i++)
+            for (var i = 0; i < Constants.HeightLength; i++)
             {
                 HeightRestrictionControls(i, e);
             }
@@ -289,7 +290,7 @@ namespace Additional_Card_Info
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Interest Restrictions: Koi_Sun", category, owner));
 
-            for (int i = 0; i < Constants.InterestLength; i++)
+            for (var i = 0; i < Constants.InterestLength; i++)
             {
                 InterestsRestrictionControls(i, e);
             }
@@ -451,47 +452,45 @@ namespace Additional_Card_Info
             }
             while (!MakerAPI.InsideAndLoaded);
 
-            Update_More_Accessories();
-
-            for (int i = 0; i < PersonalClothingBools.Length; i++)
+            for (var i = 0; i < PersonalClothingBools.Length; i++)
             {
                 PersonalKeepToggles[i].SetValue(PersonalClothingBools[i], false);
             }
 
-            for (int i = 0, n = Accessorys_Parts.Count; i < n; i++)
+            for (int i = 0, n = Parts.Length; i < n; i++)
             {
                 AccKeepToggles.SetValue(i, AccKeep.Contains(i), false);
                 HairKeepToggles.SetValue(i, HairAcc.Contains(i), false);
             }
 
-            for (int i = 0; i < CoordinateKeepToggles.Length; i++)
+            for (var i = 0; i < CoordinateKeepToggles.Length; i++)
             {
                 CoordinateKeepToggles[i].SetValue(CoordinateSaveBools[i], false);
             }
 
-            for (int i = 0; i < PersonalityToggles.Length; i++)
+            for (var i = 0; i < PersonalityToggles.Length; i++)
             {
-                PersonalityType_Restriction.TryGetValue(i, out int Value);
+                PersonalityType_Restriction.TryGetValue(i, out var Value);
                 PersonalityToggles[i].SetValue(++Value, false);
             }
 
-            for (int i = 0; i < TraitToggles.Length; i++)
+            for (var i = 0; i < TraitToggles.Length; i++)
             {
-                TraitType_Restriction.TryGetValue(i, out int Value);
+                TraitType_Restriction.TryGetValue(i, out var Value);
                 TraitToggles[i].SetValue(++Value, false);
             }
 
-            for (int i = 0; i < HeightToggles.Length; i++)
+            for (var i = 0; i < HeightToggles.Length; i++)
             {
                 HeightToggles[i].SetValue(Height_Restriction[i], false);
             }
 
-            for (int i = 0; i < BreastsizeToggles.Length; i++)
+            for (var i = 0; i < BreastsizeToggles.Length; i++)
             {
                 BreastsizeToggles[i].SetValue(Breastsize_Restriction[i], false);
             }
 
-            for (int i = 0; i < Constants.InterestLength; i++)
+            for (var i = 0; i < Constants.InterestLength; i++)
             {
                 Interest_Restriction.TryGetValue(i, out var value);
                 InterestToggles[i].SetValue(++value, false);
@@ -501,7 +500,7 @@ namespace Additional_Card_Info
 
             Character_Cosplay_Ready.SetValue(CosplayReady);
 
-            string creators = "[None]";
+            var creators = "[None]";
             if (CreatorNames.Count > 0)
             {
                 creators = "";
@@ -568,7 +567,7 @@ namespace Additional_Card_Info
             var Source = CoordinateInfo[(int)e.CopySource];
             var Dest = CoordinateInfo[(int)e.CopyDestination];
 
-            for (int i = 0; i < CopiedSlots.Length; i++)
+            for (var i = 0; i < CopiedSlots.Length; i++)
             {
                 if (Source.AccKeep.Contains(CopiedSlots[i]))
                 {
@@ -628,7 +627,7 @@ namespace Additional_Card_Info
 
         internal void AddOutfitEvent()
         {
-            for (int i = MaxKey; i < ChaFileControl.coordinate.Length; i++)
+            for (var i = MaxKey; i < ChaFileControl.coordinate.Length; i++)
                 data.Createoutfit(i);
         }
 
@@ -662,10 +661,10 @@ namespace Additional_Card_Info
             var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
             var key = ChaListDefine.KeyType.Coordinate;
             infoBase.GetInfo(key);
-            bool notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
+            var notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
             key = ChaListDefine.KeyType.NotBra;
             infoBase.GetInfo(key);
-            bool notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
+            var notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
             clothingnot[0] = clothingnot[0] || notbot;
             clothingnot[1] = clothingnot[1] || notbra;
         }
@@ -683,7 +682,7 @@ namespace Additional_Card_Info
 
             infoBase.GetInfo(key);
 
-            bool notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
+            var notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
             clothingnot[2] = clothingnot[2] || notShorts;
         }
     }

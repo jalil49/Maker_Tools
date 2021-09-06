@@ -1,4 +1,5 @@
 ﻿using BepInEx.Logging;
+using ChaCustom;
 using HarmonyLib;
 using KKAPI;
 
@@ -9,7 +10,8 @@ namespace Accessory_Shortcuts
         static ManualLogSource Logger;
         public static void Init()
         {
-            Harmony.CreateAndPatchAll(typeof(Hooks));
+            var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
+            harmony.PatchAll(typeof(CustomAcsChangeSlot_KKS_Start_Patches));
             Logger = Settings.Logger;
         }
 
@@ -32,5 +34,15 @@ namespace Accessory_Shortcuts
             }
             __instance.GetComponent<CharaEvent>().Update_Stored_Accessory(slotNo, type, id, parentKey);
         }
+
+        [HarmonyPatch(typeof(CustomAcsChangeSlot), nameof(CustomAcsChangeSlot.Start))]
+        internal static class CustomAcsChangeSlot_KKS_Start_Patches
+        {
+            private static void Postfix(CustomAcsChangeSlot __instance)
+            {
+                CharaEvent.CustomAcs = __instance;
+            }
+        }
+
     }
 }

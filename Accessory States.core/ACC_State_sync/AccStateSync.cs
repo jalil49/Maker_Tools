@@ -117,12 +117,12 @@ namespace Accessory_States
 
             public int AddNewState()
             {
-                int state = States.OrderByDescending(x => x.Key).FirstOrDefault().Key + 1;
+                var state = States.OrderByDescending(x => x.Key).FirstOrDefault().Key + 1;
                 return AddNewState(state);
             }
             public int AddNewState(int state)
             {
-                string label = $"State {state + 1}";
+                var label = $"State {state + 1}";
                 States[state] = label;
                 return state;
             }
@@ -137,7 +137,7 @@ namespace Accessory_States
         {
             _cordNames = Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).ToList();
 
-            foreach (object _key in Enum.GetValues(typeof(ChaAccessoryDefine.AccessoryParentKey)))
+            foreach (var _key in Enum.GetValues(typeof(ChaAccessoryDefine.AccessoryParentKey)))
                 _accessoryParentNames[_key.ToString()] = ChaAccessoryDefine.dictAccessoryParent[(int)_key];
         }
 

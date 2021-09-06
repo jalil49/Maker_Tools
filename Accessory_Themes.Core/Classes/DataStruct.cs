@@ -164,7 +164,7 @@ namespace Accessory_Themes
         {
             if (ThemeName == null) ThemeName = "";
             if (Colors == null) Colors = new Color[4];
-            for (int i = 0; i < Colors.Length; i++)
+            for (var i = 0; i < Colors.Length; i++)
             {
                 if (Colors[i] == null)
                 {

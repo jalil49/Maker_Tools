@@ -35,10 +35,10 @@ namespace Extensions
 
         public static bool[] ToNewArray(this bool[] value, int size)
         {
-            bool[] array = new bool[size];
+            var array = new bool[size];
             if (value != null)
             {
-                for (int i = 0; i < size; i++)
+                for (var i = 0; i < size; i++)
                 {
                     array[i] = value[i];
                 }
@@ -48,17 +48,17 @@ namespace Extensions
         }
         public static Color[] ToNewArray(this Color[] value, int size)
         {
-            Color[] array = new Color[size];
+            var array = new Color[size];
             if (value != null)
             {
-                for (int i = 0; i < size; i++)
+                for (var i = 0; i < size; i++)
                 {
                     var color = value[i];
                     array[i] = new Color(color.r, color.g, color.b, color.a);
                 }
                 return array;
             }
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 array[i] = new Color();
             }

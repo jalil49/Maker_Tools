@@ -25,6 +25,8 @@ namespace Accessory_States
 
         public Dictionary<string, List<KeyValuePair<int, Slotdata>>> Now_Parented_Name_Dictionary = new Dictionary<string, List<KeyValuePair<int, Slotdata>>>();
 
+        internal ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
+
         public void Update_Now_Coordinate()
         {
             var outfitnum = (int)CurrentCoordinate.Value;
@@ -55,12 +57,9 @@ namespace Accessory_States
             Now_Parented_Name_Dictionary.Clear();
             var shoetype = ChaControl.fileStatus.shoesType;
             var ParentedList = NowCoordinate.Slotinfo.Where(x => x.Value.Parented && (x.Value.Shoetype == 2 || x.Value.Shoetype == shoetype));
-#if !KKS
-            Update_More_Accessories();
-#endif
             foreach (var item in ParentedList)
             {
-                var parentkey = Accessorys_Parts[item.Key].parentKey;
+                var parentkey = Parts[item.Key].parentKey;
                 if (!Now_Parented_Name_Dictionary.TryGetValue(parentkey, out var list))
                 {
                     list = new List<KeyValuePair<int, Slotdata>>();

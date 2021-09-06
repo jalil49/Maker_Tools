@@ -73,9 +73,9 @@ namespace Accessory_Parents
 
         private void CustomGui(int id)
         {
-            int slot = AccessoriesApi.SelectedMakerAccSlot;
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
             var partinfo = AccessoriesApi.GetPartsInfo(slot);
-            bool valid = partinfo.type != 120;
+            var valid = partinfo.type != 120;
 
             GUILayout.BeginVertical();
             {
@@ -168,9 +168,9 @@ namespace Accessory_Parents
             for (int i = 0, n = Parent_Groups.Count; i < n; i++)
             {
                 var item = Parent_Groups[i];
-                bool parentof = item.ParentSlot == slot;
-                bool childof = item.ChildSlots.Contains(slot);
-                bool relatedto = relation.Contains(item.ParentSlot);
+                var parentof = item.ParentSlot == slot;
+                var childof = item.ChildSlots.Contains(slot);
+                var relatedto = relation.Contains(item.ParentSlot);
                 if (parentof || childof)
                     GUILayout.BeginHorizontal(GUI.skin.box);
                 else
@@ -257,7 +257,7 @@ namespace Accessory_Parents
                     break;
             }
 
-            for (int vectortype = 0; vectortype < 3; vectortype++)
+            for (var vectortype = 0; vectortype < 3; vectortype++)
             {
                 AdjustmentTool(slot, 0, vectortype, vectornames[vectortype], movement[vectortype], adjustment);
             }
@@ -291,7 +291,7 @@ namespace Accessory_Parents
                     float.TryParse(customvalues[1], out adjustment);
                     break;
             }
-            for (int vectortype = 0; vectortype < 3; vectortype++)
+            for (var vectortype = 0; vectortype < 3; vectortype++)
             {
                 AdjustmentTool(slot, 1, vectortype, vectornames[vectortype], rotation[vectortype], adjustment);
             }
@@ -324,7 +324,7 @@ namespace Accessory_Parents
                     float.TryParse(customvalues[2], out adjustment);
                     break;
             }
-            for (int vectortype = 0; vectortype < 3; vectortype++)
+            for (var vectortype = 0; vectortype < 3; vectortype++)
             {
                 AdjustmentTool(slot, 2, vectortype, vectornames[vectortype], scale[vectortype], adjustment);
             }
@@ -333,9 +333,9 @@ namespace Accessory_Parents
         private void AdjustmentTool(int slot, int typeindex, int vectortype, string label, float value, float adjustment)
         {
             var resultingvalue = 0f;
-            bool reset = false;
-            bool fullreset = false;
-            bool assigned = false;
+            var reset = false;
+            var fullreset = false;
+            var assigned = false;
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label(label, labelstyle);
@@ -350,8 +350,8 @@ namespace Accessory_Parents
                     resultingvalue = adjustment;
                     assigned = true;
                 }
-                string original = value.ToString();
-                string result = GUILayout.TextField(original, fieldstyle);
+                var original = value.ToString();
+                var result = GUILayout.TextField(original, fieldstyle);
                 if (original != result && float.TryParse(result, out var resultvalue))
                 {
                     resultingvalue = resultvalue - value;
@@ -408,8 +408,8 @@ namespace Accessory_Parents
             dict.Clear();
             childdict.Clear();
 
-            int n = names.Count;
-            for (int i = 0; i < n; i++)
+            var n = names.Count;
+            for (var i = 0; i < n; i++)
             {
                 var item = names[i];
                 if (!dict.TryGetValue(item.ParentSlot, out var itembindings))
@@ -449,8 +449,8 @@ namespace Accessory_Parents
             dict.Clear();
             childdict.Clear();
 
-            int n = names.Count;
-            for (int i = 0; i < n; i++)
+            var n = names.Count;
+            for (var i = 0; i < n; i++)
             {
                 var item = names[i];
                 if (!dict.TryGetValue(item.ParentSlot, out var parentbindings))
@@ -503,8 +503,8 @@ namespace Accessory_Parents
             var pos = Input.mousePosition;
             Vector2 mousepos = pos;
             mouseassigned = true;
-            bool mousebuttonup = false;
-            for (int i = 0; i < 20; i++)
+            var mousebuttonup = false;
+            for (var i = 0; i < 20; i++)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
                 yield return 0;

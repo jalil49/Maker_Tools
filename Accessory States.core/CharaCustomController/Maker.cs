@@ -40,7 +40,7 @@ namespace Accessory_States
             var category = new MakerCategory(null, null);
             //var category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 3, "Accessory Settings");
 
-            string[] ACC_app_Dropdown = Constants.ConstantOutfitNames.Values.ToArray();
+            var ACC_app_Dropdown = Constants.ConstantOutfitNames.Values.ToArray();
             //string[] ACC_app_Dropdown = new string[] { "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
 
             ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing\nBind", ACC_app_Dropdown, category, 0, owner), true);
@@ -78,7 +78,7 @@ namespace Accessory_States
 
         internal void RemoveOutfitEvent()
         {
-            int max = Coordinate.Keys.Max();
+            var max = Coordinate.Keys.Max();
             if (max <= 6)
                 return;
             Removeoutfit(max);
@@ -171,7 +171,7 @@ namespace Accessory_States
                 {
                     if (dest.Names.ContainsKey(binding))
                     {
-                        if (!convertednames.TryGetValue(binding, out int newvalue))
+                        if (!convertednames.TryGetValue(binding, out var newvalue))
                         {
                             newvalue = 9;
                             while (dest.Names.ContainsKey(newvalue))
@@ -203,7 +203,6 @@ namespace Accessory_States
             IEnumerator Wait()
             {
                 yield return null;
-                Controller.Update_More_Accessories();
             }
         }
 
@@ -217,7 +216,7 @@ namespace Accessory_States
 
             Update_Parented_Name();
 
-            if (!GUI_Parent_Dict.TryGetValue(Accessorys_Parts[slot].parentKey, out var show) || !isparented)
+            if (!GUI_Parent_Dict.TryGetValue(Parts[slot].parentKey, out var show) || !isparented)
             {
                 show = true;
             }
@@ -271,7 +270,7 @@ namespace Accessory_States
         private void UpdateAccessoryshow(Slotdata data, int slot)
         {
             int state;
-            int binding = data.Binding;
+            var binding = data.Binding;
             if (binding < 9)
             {
                 state = ChaControl.fileStatus.clothesState[binding];
@@ -281,7 +280,7 @@ namespace Accessory_States
                 state = GUI_Custom_Dict[slot][0];
             }
 
-            bool show = ShowState(state, data.States);
+            var show = ShowState(state, data.States);
             if (data.Shoetype != 2 && ChaControl.fileStatus.shoesType != data.Shoetype)
             {
                 show = false;
@@ -291,8 +290,8 @@ namespace Accessory_States
 
         private void ACC_Appearance_dropdown_ValueChanged(int slot, int newvalue)
         {
-            bool delete = newvalue < 0;
-            int kind = 0;
+            var delete = newvalue < 0;
+            var kind = 0;
             if (!delete)
             {
                 if (newvalue <= Max_Defined_Key)
@@ -342,10 +341,10 @@ namespace Accessory_States
         private void Update_Drop_boxes()
         {
             var ACC_Appearance_dropdown_Controls = ACC_Appearance_dropdown.Control.ControlObjects.ToList();
-            List<TMP_Dropdown.OptionData> Appearance_Options = new List<TMP_Dropdown.OptionData>(ACC_Appearance_dropdown_Controls[0].GetComponentInChildren<TMP_Dropdown>().options);
-            int optioncount = Constants.ConstantOutfitNames.Count;
+            var Appearance_Options = new List<TMP_Dropdown.OptionData>(ACC_Appearance_dropdown_Controls[0].GetComponentInChildren<TMP_Dropdown>().options);
+            var optioncount = Constants.ConstantOutfitNames.Count;
             var namedict = Names;
-            int n = namedict.Count;
+            var n = namedict.Count;
 
             if (Appearance_Options.Count > optioncount)
             {
@@ -372,7 +371,7 @@ namespace Accessory_States
                 }
                 else
                 {
-                    int index = 0;
+                    var index = 0;
                     for (; index < n; index++)
                     {
                         if (namedict.ElementAt(index).Key == item.Value.Binding)
@@ -391,9 +390,8 @@ namespace Accessory_States
             {
                 yield break;
             }
-            Update_More_Accessories();
 
-            var ACCData = Accessorys_Parts.Count;
+            var ACCData = Parts.Length;
             do
             {
                 yield return null;
@@ -405,7 +403,7 @@ namespace Accessory_States
             var slider1 = ACC_Appearance_state.Control.ControlObjects;
             var slider2 = ACC_Appearance_state2.Control.ControlObjects;
             var slotinfo = Slotinfo;
-            for (int i = 0; i < ACCData; i++)
+            for (var i = 0; i < ACCData; i++)
             {
                 if (!slotinfo.TryGetValue(i, out var slotdata))
                 {
@@ -451,7 +449,6 @@ namespace Accessory_States
                 var dropdown = 0;
                 var state1 = 0;
                 var state2 = 3;
-                var parented = false;
                 if (slotinfo.TryGetValue(item.SrcSlot, out var slotdata))
                 {
                     var binding = slotdata.Binding;
@@ -460,7 +457,6 @@ namespace Accessory_States
                     dropdown = (binding > 8) ? 10 + IndexOfName(binding) : binding + 1;
                     state1 = states[0][0];
                     state2 = states[0][1];
-                    parented = slotdata.Parented;
                     slotinfo[item.DstSlot] = new Slotdata(slotdata);
                 }
                 else
@@ -536,11 +532,11 @@ namespace Accessory_States
 
             var key = ChaListDefine.KeyType.Coordinate;
             infoBase.GetInfo(key);
-            bool notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
+            var notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
 
             key = ChaListDefine.KeyType.NotBra;
             infoBase.GetInfo(key);
-            bool notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
+            var notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
 
             clothingnot[0] = clothingnot[0] || notbot;
             clothingnot[1] = clothingnot[1] || notbra;
@@ -559,7 +555,7 @@ namespace Accessory_States
 
             infoBase.GetInfo(key);//kk uses coordinate to hide shorts
 
-            bool notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
+            var notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
 
             clothingnot[2] = clothingnot[2] || notShorts;
         }

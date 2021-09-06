@@ -68,7 +68,6 @@ namespace Accessory_Themes
                         {
                             if (GUILayout.Button("Add Theme", buttonstyle))
                             {
-                                Update_More_Accessories();
                                 AddThemeValueToList(slot, false);
                             }
                         }
@@ -127,7 +126,7 @@ namespace Accessory_Themes
             for (int themenum = 0, n = themelist.Count; themenum < n; themenum++)
             {
                 var theme = themelist[themenum];
-                bool ispart = themenum == bindedtheme;
+                var ispart = themenum == bindedtheme;
                 if (ispart)
                     GUILayout.BeginHorizontal(GUI.skin.box);
                 else
@@ -218,8 +217,8 @@ namespace Accessory_Themes
             var pos = Input.mousePosition;
             Vector2 mousepos = pos;
             mouseassigned = true;
-            bool mousebuttonup = false;
-            for (int i = 0; i < 20; i++)
+            var mousebuttonup = false;
+            for (var i = 0; i < 20; i++)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
                 yield return 0;

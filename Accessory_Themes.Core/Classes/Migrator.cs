@@ -17,7 +17,7 @@ namespace Accessory_Themes
                 {
                     return;
                 }
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     if (temp[i].Count > 0)
                         temp[i].RemoveAt(0);
@@ -32,7 +32,7 @@ namespace Accessory_Themes
             if (MyData.data.TryGetValue("Theme_dic", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     var themes = data.Coordinate[i].Themes;
                     foreach (var item in temp[i])
@@ -45,14 +45,14 @@ namespace Accessory_Themes
             if (MyData.data.TryGetValue("Color_Theme_dic", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<Color[]>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     var list = temp[i];
                     if (list.Count > 0)
                         list.RemoveAt(0);
 
                     var themes = data.Coordinate[i].Themes;
-                    for (int j = 0; j < list.Count; j++)
+                    for (var j = 0; j < list.Count; j++)
                     {
                         themes[j].Colors = list[j];
                     }
@@ -62,12 +62,12 @@ namespace Accessory_Themes
             if (MyData.data.TryGetValue("Relative_Theme_Bools", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<bool>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     if (temp[i].Count > 0)
                         temp[i].RemoveAt(0);
                     var themes = data.Coordinate[i].Themes;
-                    for (int j = 0; j < temp[i].Count; j++)
+                    for (var j = 0; j < temp[i].Count; j++)
                     {
                         themes[j].Isrelative = temp[i][j];
                     }
@@ -77,7 +77,7 @@ namespace Accessory_Themes
             if (MyData.data.TryGetValue("Relative_ACC_Dictionary", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, List<int[]>>[]>((byte[])ByteData);
-                for (int i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length; i++)
                 {
                     data.Coordinate[i].Relative_ACC_Dictionary = temp[i];
                 }
@@ -120,7 +120,7 @@ namespace Accessory_Themes
                 if (temp.Count > 0)
                     temp.RemoveAt(0);
                 var themes = data.Themes;
-                for (int j = 0; j < temp.Count; j++)
+                for (var j = 0; j < temp.Count; j++)
                 {
                     themes[j].Colors = temp[j];
                 }
@@ -132,7 +132,7 @@ namespace Accessory_Themes
                 if (temp.Count > 0)
                     temp.RemoveAt(0);
                 var themes = data.Themes;
-                for (int j = 0; j < temp.Count; j++)
+                for (var j = 0; j < temp.Count; j++)
                 {
                     themes[j].Isrelative = temp[j];
                 }

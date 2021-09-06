@@ -11,10 +11,14 @@ using System.Collections.Generic;
 namespace Accessory_States
 {
     [BepInIncompatibility("madevil.kk.ass")]
+    [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
+    [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
+    [BepInPlugin(GUID, "Accessory States", Version)]
+
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_States";
-        public const string Version = "1.4";
+        public const string Version = "1.5";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         internal static bool showstacktrace = false;
@@ -34,7 +38,7 @@ namespace Accessory_States
             IEnumerator<int> Wait()
             {
                 yield return 0;
-                bool ASS_Exists = CharaEvent.ASS_Exists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
+                var ASS_Exists = CharaEvent.ASS_Exists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
                 if (!ASS_Exists)
                 {
                     CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
@@ -52,7 +56,7 @@ namespace Accessory_States
 
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)
         {
-            BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out PluginInfo target);
+            BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out var target);
             if (null != target)
             {
                 if (target.Metadata.Version >= minimumVersion)

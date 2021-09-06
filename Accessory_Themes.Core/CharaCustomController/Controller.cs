@@ -20,7 +20,7 @@ namespace Accessory_Themes
                 return;
             }
 
-            for (int i = 0; i < ChaFileControl.coordinate.Length; i++)
+            for (var i = 0; i < ChaFileControl.coordinate.Length; i++)
             {
                 if (Coordinate.ContainsKey(i))
                     Clearoutfit(i);
@@ -75,11 +75,11 @@ namespace Accessory_Themes
                 return;
             }
 
-            PluginData MyData = new PluginData() { version = 1 };
+            var MyData = new PluginData() { version = 1 };
 
             data.CleanUp();
 
-            bool nulldata = Coordinate.All(x => x.Value.Themes.Count == 0);
+            var nulldata = Coordinate.All(x => x.Value.Themes.Count == 0);
 
             MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
             SetExtendedData((nulldata) ? null : MyData);
@@ -87,9 +87,9 @@ namespace Accessory_Themes
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            PluginData MyData = new PluginData() { version = 1 };
+            var MyData = new PluginData() { version = 1 };
             NowCoordinate.CleanUp();
-            bool nulldata = Themes.Count == 0;
+            var nulldata = Themes.Count == 0;
             MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(NowCoordinate));
             SetCoordinateExtendedData(coordinate, (nulldata) ? null : MyData);
         }
@@ -158,7 +158,7 @@ namespace Accessory_Themes
                 colordata = theme.Colors;
                 IsThemeRelativeBool.SetValue(theme.Isrelative, false);
             }
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 ACC_GUIsliders[i].SetValue(colordata[i], false);
             }
@@ -168,9 +168,9 @@ namespace Accessory_Themes
         {
             if (!HairAcc.Contains(slot) && theme != 0/* && !RelativeThemeBool[theme]*/)
             {
-                ChaFileAccessory.PartsInfo Partinfo = AccessoriesApi.GetPartsInfo(slot);
+                var Partinfo = AccessoriesApi.GetPartsInfo(slot);
                 var Colors = Themes[theme].Colors;
-                Color[] New_Color = new Color[] { Colors[0], Colors[1], Colors[2], Colors[3] };
+                var New_Color = new Color[] { Colors[0], Colors[1], Colors[2], Colors[3] };
                 Partinfo.color = New_Color;
                 if (slot < 20)
                 {
@@ -184,15 +184,14 @@ namespace Accessory_Themes
 
         private void Copy_ACC_Color(bool IsPersonal = false)
         {
-            if (Int32.TryParse(CopyTextbox.Value, out int slot))
+            if (Int32.TryParse(CopyTextbox.Value, out var slot))
             {
-                Update_More_Accessories();
                 slot--;
-                if (slot >= Accessorys_Parts.Count || slot < 0)
+                if (slot >= Parts.Length || slot < 0)
                 {
                     return;
                 }
-                ChaFileAccessory.PartsInfo info = AccessoriesApi.GetPartsInfo(slot);
+                var info = AccessoriesApi.GetPartsInfo(slot);
 
                 if (IsPersonal)
                 {
@@ -204,7 +203,7 @@ namespace Accessory_Themes
                     //return;
                 }
 
-                for (int i = 0; i < 4; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     ACC_GUIsliders[i].SetValue(info.color[i]);
                 }
@@ -218,7 +217,6 @@ namespace Accessory_Themes
             {
                 return;
             }
-            Update_More_Accessories();
             string[] comparison;
             if (Simple)
             {
@@ -230,7 +228,7 @@ namespace Accessory_Themes
             }
             HairAcc = ACI_Ref.HairAcc;
             var themedslots = Themes[themenum].ThemedSlots;
-            for (int Slot = 0, n = Accessorys_Parts.Count; Slot < n; Slot++)
+            for (int Slot = 0, n = Parts.Length; Slot < n; Slot++)
             {
                 var slotinfo = AccessoriesApi.GetPartsInfo(Slot);
                 if (slotinfo.type == 120 || Theme_Dict.ContainsKey(Slot))
@@ -269,7 +267,7 @@ namespace Accessory_Themes
 
         private bool ColorComparison(Color C1, Color C2)
         {
-            if (float.TryParse(Tolerance, out float value))
+            if (float.TryParse(Tolerance, out var value))
             {
                 return Math.Abs(C1.r - C2.r) <= value && Math.Abs(C1.g - C2.g) <= value && Math.Abs(C1.b - C2.b) <= value && Math.Abs(C1.a - C2.a) <= value;
             }
@@ -278,7 +276,7 @@ namespace Accessory_Themes
 
         private bool ColorComparison(Color[] C1, Color[] C2)
         {
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 if (!ColorComparison(C1[i], C2[i]))
                     return false;
@@ -288,16 +286,16 @@ namespace Accessory_Themes
 
         private void FindRelativeColors()
         {
-            List<Color[]> Check = new List<Color[]>();
-            List<bool> Relative = new List<bool>();
+            var Check = new List<Color[]>();
+            var Relative = new List<bool>();
             foreach (var themeData in Themes)
             {
                 Check.Add(themeData.Colors);
                 Relative.Add(themeData.Isrelative);
             }
-            List<Color> exclude = new List<Color>();
-            List<Color> excludetemp = new List<Color>();
-            List<int[]> input = new List<int[]>();
+            var exclude = new List<Color>();
+            var excludetemp = new List<Color>();
+            var input = new List<int[]>();
             Relative_ACC_Dictionary.Clear();
 
             for (int C1_Theme = 1, n = Check.Count; C1_Theme < n; C1_Theme++)
@@ -306,7 +304,7 @@ namespace Accessory_Themes
                 {
                     continue;
                 }
-                for (int C1_color = 0; C1_color < 4; C1_color++)
+                for (var C1_color = 0; C1_color < 4; C1_color++)
                 {
                     excludetemp.Clear();
                     excludetemp.Add(Check[C1_Theme][C1_color]);
@@ -315,13 +313,13 @@ namespace Accessory_Themes
                         continue;
                     }
                     input.Add(new int[] { C1_Theme, C1_color });
-                    for (int C2_Theme = C1_Theme + 1; C2_Theme < Check.Count; C2_Theme++)
+                    for (var C2_Theme = C1_Theme + 1; C2_Theme < Check.Count; C2_Theme++)
                     {
                         if (Relative[C2_Theme])
                         {
                             continue;
                         }
-                        for (int C2_color = 0; C2_color < 4; C2_color++)
+                        for (var C2_color = 0; C2_color < 4; C2_color++)
                         {
                             if (ColorComparison(Check[C1_Theme][C1_color], Check[C2_Theme][C2_color]))
                             {
@@ -402,7 +400,7 @@ namespace Accessory_Themes
             {
                 return;
             }
-            List<int[]> list = Relative_ACC_Dictionary[RelativeDropdown.Value];
+            var list = Relative_ACC_Dictionary[RelativeDropdown.Value];
             //var clothes = ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].clothes.parts;
             //var clothes2 = ChaControl.nowCoordinate.clothes.parts;
             HairAcc = ACI_Ref.HairAcc;
@@ -452,9 +450,9 @@ namespace Accessory_Themes
             {
                 return;
             }
-            Color input = RelativeSkewColor.Value;
+            var input = RelativeSkewColor.Value;
 
-            Color.RGBToHSV(input, out float In_Hue, out var _, out var _);
+            Color.RGBToHSV(input, out var In_Hue, out var _, out var _);
             var In_S = SaturationSlider.Value;
             var In_V = ValuesSlider.Value;
             var list = Relative_ACC_Dictionary;
@@ -479,7 +477,7 @@ namespace Accessory_Themes
                     var update = theme.ThemedSlots;
                     var color = theme.Colors[colornum];
 
-                    Color.RGBToHSV(color, out float T_Hue, out float T_S, out float T_V);
+                    Color.RGBToHSV(color, out var T_Hue, out var T_S, out var T_V);
 
                     if (undo)
                     {
@@ -503,12 +501,12 @@ namespace Accessory_Themes
             }
             var clothes = ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].clothes.parts;
             var clothes2 = ChaControl.nowCoordinate.clothes.parts;
-            for (int i = 0; i < clothes.Length; i++)
+            for (var i = 0; i < clothes.Length; i++)
             {
-                for (int j = 0; j < clothes[i].colorInfo.Length; j++)
+                for (var j = 0; j < clothes[i].colorInfo.Length; j++)
                 {
-                    Color temp = clothes[i].colorInfo[j].baseColor;
-                    Color.RGBToHSV(temp, out float T_Hue, out float T_S, out float T_V);
+                    var temp = clothes[i].colorInfo[j].baseColor;
+                    Color.RGBToHSV(temp, out var T_Hue, out var T_S, out var T_V);
                     if (undo)
                     {
                         temp = ClothesUndoQueue.Dequeue();

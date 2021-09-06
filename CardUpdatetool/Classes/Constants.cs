@@ -39,6 +39,7 @@ namespace CardUpdateTool
             ["Bulge"] = new ReadableInfo("Bulge", false) { KnownVersion = 1 },
             ["KK_Pregnancy"] = new ReadableInfo("Pregnancy", false) { KnownVersion = 1 },
             ["KK_PregnancyPlus"] = new ReadableInfo("Pregnancy Plus", false) { KnownVersion = 1 },
+            ["com.joan6694.illusionplugins.moreaccessories"] = new ReadableInfo("More Accessories") { KnownVersion = 2 },
         };
 
         public class ReadableInfo

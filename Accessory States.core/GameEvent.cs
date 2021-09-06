@@ -31,7 +31,7 @@ namespace Accessory_States
             Hooks.HcoordChange += Hooks_HcoordChange;
             CharaEvent.Coordloaded += CharaEvent_coordloaded;
             heroines = hFlag.lstHeroine;
-            for (int i = 0; i < heroines.Count; i++)
+            for (var i = 0; i < heroines.Count; i++)
             {
                 var controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
                 controller.Update_Now_Coordinate();
@@ -47,7 +47,7 @@ namespace Accessory_States
             {
                 return;
             }
-            for (int i = 0; i < heroines.Count; i++)
+            for (var i = 0; i < heroines.Count; i++)
             {
                 if (heroines[i].chaCtrl.name == e.Character.name)
                 {
@@ -81,7 +81,7 @@ namespace Accessory_States
             {
                 return;
             }
-            bool Harem = heroines.Count > 1;
+            var Harem = heroines.Count > 1;
             var Heroine_Ctrl = heroines[Female].chaCtrl;
             var controller = Heroine_Ctrl.GetComponent<CharaEvent>();
             if (!ButtonList.TryGetValue(Female, out var list))
@@ -160,23 +160,23 @@ namespace Accessory_States
 
                 parent = hSceneSpriteCategory.transform;
 
-                Transform origin = Sprite.categoryAccessory.lstButton[0].transform;
-                Transform copy = Instantiate(origin.transform, parent, false);
+                var origin = Sprite.categoryAccessory.lstButton[0].transform;
+                var copy = Instantiate(origin.transform, parent, false);
                 copy.name = $"btn_{name}_{kind}";
                 copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
                 var trans = copy.GetComponent<RectTransform>();
                 trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
 
-                Button button = copy.GetComponentInChildren<Button>();
+                var button = copy.GetComponentInChildren<Button>();
                 button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
                 button.onClick.RemoveAllListeners();
                 button.onClick = new Button.ButtonClickedEvent();
                 button.image.raycastTarget = true;
                 if (ButtonKind == 0)
                 {
-                    int state = 0;
+                    var state = 0;
                     var binded = Controller.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
-                    int final = 0;
+                    var final = 0;
                     foreach (var item in binded)
                     {
                         foreach (var item2 in item.Value.States)
@@ -195,7 +195,7 @@ namespace Accessory_States
                 }
                 else
                 {
-                    bool state = true;
+                    var state = true;
                     button.onClick.AddListener(delegate ()
                     {
                         state = !state;

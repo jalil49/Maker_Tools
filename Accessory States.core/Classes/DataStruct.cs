@@ -99,7 +99,7 @@ namespace Accessory_States
                 int priority;
                 bool visible;
 
-                for (int state = 0; state < maxstate; state++) //default conversion
+                for (var state = 0; state < maxstate; state++) //default conversion
                 {
                     visible = ShowState(state, statelist);
 
@@ -111,12 +111,12 @@ namespace Accessory_States
                     TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, binding, state, visible, priority));
                 }
 
-                bool shoebinding = binding == 7 || binding == 8;
+                var shoebinding = binding == 7 || binding == 8;
 
                 if (shoetype != 2 && !shoebinding) //binded to indoor or outdoor state only make false priorty to not show
                 {
                     var othershoe = (shoetype == 0) ? 8 : 7;
-                    for (int state = 0; state < maxstate; state++)
+                    for (var state = 0; state < maxstate; state++)
                     {
                         TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, false, 3));
                     }
@@ -124,8 +124,8 @@ namespace Accessory_States
 
                 if (shoebinding && shoetype == 2) //binded to a shoe, but other shoe needs same work
                 {
-                    int othershoe = (binding == 7) ? 8 : 7;
-                    for (int state = 0; state < maxstate; state++)
+                    var othershoe = (binding == 7) ? 8 : 7;
+                    for (var state = 0; state < maxstate; state++)
                     {
                         visible = ShowState(state, statelist);
 
@@ -210,13 +210,13 @@ namespace Accessory_States
                 var list = triglistbyslot[index];
 
                 var slot = list[0].Slot;
-                bool inner = list.Any(x => x.RefKind == 7 && x.Visible);
-                bool outer = list.Any(x => x.RefKind == 8 && x.Visible);
+                var inner = list.Any(x => x.RefKind == 7 && x.Visible);
+                var outer = list.Any(x => x.RefKind == 8 && x.Visible);
                 var refkindlist = list.Distinct(x => x.RefKind).Select(x => x.RefKind).ToList();
                 var PriorityDict = new Dictionary<int, int>();
                 var statedict = new Dictionary<int, List<int[]>>();
 
-                bool bothshoes = inner && outer || !inner && !outer;
+                var bothshoes = inner && outer || !inner && !outer;
 
                 byte shoetype;
                 if (bothshoes)
@@ -232,7 +232,7 @@ namespace Accessory_States
                     shoetype = 1;
                 }
 
-                for (int shoe = 7; shoe <= 8; shoe++)
+                for (var shoe = 7; shoe <= 8; shoe++)
                 {
                     if (refkindlist.Contains(shoe))
                     {
@@ -277,7 +277,7 @@ namespace Accessory_States
         {
             var TriggerProperty = new List<AccStateSync.TriggerProperty>();
             bool prioritycheck;
-            for (int state = 0; state < 4; state++)
+            for (var state = 0; state < 4; state++)
             {
                 prioritycheck = state % 3 == 0;
                 TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slot, clothingkind, state, (prioritycheck) ? ShowClothNotState(state, statelist) : false, (prioritycheck) ? 2 : 0));
@@ -291,7 +291,7 @@ namespace Accessory_States
             {
                 return 3;
             }
-            int max = 0;
+            var max = 0;
             var bindinglist = Slotinfo.Values.Where(x => x.Binding == binding);
             foreach (var item in bindinglist)
             {
@@ -346,7 +346,7 @@ namespace Accessory_States
 
         public string Print()
         {
-            string print = $"Binding {Binding}\t shoetype {Shoetype} \n States: ";
+            var print = $"Binding {Binding}\t shoetype {Shoetype} \n States: ";
             foreach (var item in States)
             {
                 print += $" {item[0]} {item[1]} ";

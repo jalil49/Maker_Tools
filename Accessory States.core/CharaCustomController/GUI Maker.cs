@@ -83,9 +83,9 @@ namespace Accessory_States
 
         private static void SetupInterface()
         {
-            float Height = 50f + Screen.height / 2;
-            float Margin = 5f;
-            float Width = 130f;
+            var Height = 50f + Screen.height / 2;
+            var Margin = 5f;
+            var Width = 130f;
 
             var distanceFromRightEdge = Screen.width / 10f;
             var x = Screen.width - distanceFromRightEdge - Width - Margin;
@@ -129,10 +129,10 @@ namespace Accessory_States
             var Binding = slotdata.Binding;
             var stateinfo = slotdata.States;
 
-            bool valid = AccessoriesApi.GetPartsInfo(slot).type != 120;
+            var valid = AccessoriesApi.GetPartsInfo(slot).type != 120;
 
-            int statelimits = StateLimitsCheck(Binding, MaxState(stateinfo));
-            bool binded = -1 < Binding;
+            var statelimits = StateLimitsCheck(Binding, MaxState(stateinfo));
+            var binded = -1 < Binding;
             GUILayout.BeginVertical();
             {
                 Topoptions();
@@ -146,12 +146,12 @@ namespace Accessory_States
                         {
                             if (GUILayout.Button("New Custom", buttonstyle))
                             {
-                                int max = 10;
+                                var max = 10;
                                 while (Names.ContainsKey(max))
                                 {
                                     max++;
                                 }
-                                string name = "Custom " + max;
+                                var name = "Custom " + max;
                                 Names[max] = new NameData() { Name = name };
                                 AddGroup(max, name);
                                 Update_Drop_boxes();
@@ -338,7 +338,7 @@ namespace Accessory_States
         {
             if (shoetype != slotdata.Shoetype)
             {
-                bool show = true;
+                var show = true;
                 switch (slotdata.Binding)
                 {
                     case 7:
@@ -404,7 +404,7 @@ namespace Accessory_States
                 else if (0 < clothnum && clothnum < 4)
                 {
                     var notcloth = ClothNotData[clothnum - 1];
-                    bool comparison = notcloth;
+                    var comparison = notcloth;
                     switch (clothnum)
                     {
                         case 1:
@@ -458,7 +458,7 @@ namespace Accessory_States
             var namedict = Names;
             var count = Constants.ConstantOutfitNames.Count;
 
-            for (int i = 0; i < namedict.Count; i++)
+            for (var i = 0; i < namedict.Count; i++)
             {
                 var element = namedict.ElementAt(i);
 
@@ -495,7 +495,7 @@ namespace Accessory_States
                             namedict.Remove(element.Key);
                             DeleteGroup(element.Key);
                             var removelist = Slotinfo.Where(x => x.Value.Binding == element.Key).ToList();
-                            for (int j = 0; j < removelist.Count; j++)
+                            for (var j = 0; j < removelist.Count; j++)
                             {
                                 ACC_Appearance_dropdown.SetValue(removelist.Count, -1);
                                 Slotinfo.Remove(removelist[i].Key);
@@ -526,7 +526,7 @@ namespace Accessory_States
 
             GUILayout.BeginHorizontal();
             {
-                int round = Mathf.RoundToInt(GUILayout.HorizontalSlider(stateref[0], 0, limit, sliderstyle, sliderthumbstyle, GUILayout.ExpandWidth(true)));
+                var round = Mathf.RoundToInt(GUILayout.HorizontalSlider(stateref[0], 0, limit, sliderstyle, sliderthumbstyle, GUILayout.ExpandWidth(true)));
                 if (round != stateref[0] && round <= stateref[1])
                 {
                     stateref[0] = round;
@@ -536,7 +536,7 @@ namespace Accessory_States
                         ChangeTriggerProperty(binding);
                 }
                 var text = GUILayout.TextField(round.ToString(), fieldstyle, GUILayout.ExpandWidth(false));
-                if (int.TryParse(text, out int textvalue) && textvalue != round && textvalue <= stateref[1])
+                if (int.TryParse(text, out var textvalue) && textvalue != round && textvalue <= stateref[1])
                 {
                     stateref[0] = textvalue;
                     if (index == 0)
@@ -549,7 +549,7 @@ namespace Accessory_States
 
             GUILayout.BeginHorizontal();
             {
-                int round = Mathf.RoundToInt(GUILayout.HorizontalSlider(stateref[1], 0, limit, sliderstyle, sliderthumbstyle, GUILayout.ExpandWidth(true)));
+                var round = Mathf.RoundToInt(GUILayout.HorizontalSlider(stateref[1], 0, limit, sliderstyle, sliderthumbstyle, GUILayout.ExpandWidth(true)));
                 if (round != stateref[1] && round >= stateref[0])
                 {
                     stateref[1] = round;
@@ -563,7 +563,7 @@ namespace Accessory_States
                     }
                 }
                 var text = GUILayout.TextField(round.ToString(), fieldstyle, GUILayout.ExpandWidth(false));
-                if (int.TryParse(text, out int textvalue) && textvalue != round && textvalue >= stateref[0] && (autoscale || textvalue <= limit))
+                if (int.TryParse(text, out var textvalue) && textvalue != round && textvalue >= stateref[0] && (autoscale || textvalue <= limit))
                 {
                     stateref[1] = textvalue;
                     if (index == 0)
@@ -706,7 +706,7 @@ namespace Accessory_States
 
         private void DrawCustomButton(int Kind, string Name)
         {
-            if (!GUI_Custom_Dict.TryGetValue(Kind, out int[] State))
+            if (!GUI_Custom_Dict.TryGetValue(Kind, out var State))
             {
                 State = new int[] { 0, 2 };
                 GUI_Custom_Dict[Kind] = State;
@@ -722,7 +722,7 @@ namespace Accessory_States
 
         private void DrawParentButton(string Parent)
         {
-            if (!GUI_Parent_Dict.TryGetValue(Parent, out bool isOn))
+            if (!GUI_Parent_Dict.TryGetValue(Parent, out var isOn))
             {
                 isOn = true;
             }
@@ -737,7 +737,7 @@ namespace Accessory_States
 
         private string StateDescription(int binding, int state)
         {
-            string statename = state.ToString();
+            var statename = state.ToString();
             if (binding > Max_Defined_Key)
             {
                 if (Names[binding].Statenames.TryGetValue(state, out statename))
@@ -791,8 +791,8 @@ namespace Accessory_States
             var pos = Input.mousePosition;
             Vector2 mousepos = pos;
             mouseassigned = true;
-            bool mousebuttonup = false;
-            for (int i = 0; i < 20; i++)
+            var mousebuttonup = false;
+            for (var i = 0; i < 20; i++)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
                 yield return 0;

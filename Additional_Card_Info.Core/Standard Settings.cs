@@ -10,10 +10,12 @@ namespace Additional_Card_Info
 {
     [BepInPlugin(GUID, "Additional Card Info", Version)]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
+    [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
+
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Additional_Card_Info";
-        public const string Version = "1.4";
+        public const string Version = "1.5";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }

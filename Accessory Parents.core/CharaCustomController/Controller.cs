@@ -17,7 +17,7 @@ namespace Accessory_Parents
             {
                 return;
             }
-            for (int i = 0; i < ChaFileControl.coordinate.Length; i++)
+            for (var i = 0; i < ChaFileControl.coordinate.Length; i++)
             {
                 if (Parent_Data.ContainsKey(i))
                     Clearoutfit(i);
@@ -103,9 +103,9 @@ namespace Accessory_Parents
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            PluginData data = new PluginData() { version = 1 };
+            var data = new PluginData() { version = 1 };
             Current_Parent_Data.CleanUp();
-            bool nulldata = Parent_Groups.Count == 0;
+            var nulldata = Parent_Groups.Count == 0;
             data.data.Add("Coordinate_Data", MessagePackSerializer.Serialize(Current_Parent_Data));
             SetCoordinateExtendedData(coordinate, (nulldata) ? null : data);
         }
@@ -123,12 +123,12 @@ namespace Accessory_Parents
             }
 
             Update_Old_Parents();
-            PluginData data = new PluginData() { version = 1 };
+            var data = new PluginData() { version = 1 };
             foreach (var item in Parent_Data)
             {
                 item.Value.CleanUp();
             }
-            bool nulldata = Parent_Data.All(x => x.Value.Parent_Groups.Count == 0);
+            var nulldata = Parent_Data.All(x => x.Value.Parent_Groups.Count == 0);
 
             data.data.Add("Coordinate_Data", MessagePackSerializer.Serialize(Parent_Data));
             SetExtendedData((nulldata) ? null : data);

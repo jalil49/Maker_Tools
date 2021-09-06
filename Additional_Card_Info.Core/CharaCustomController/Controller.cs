@@ -22,7 +22,7 @@ namespace Additional_Card_Info
             var maxkey = MaxKey;
             var coordlength = ChaFileControl.coordinate.Length;
 
-            for (int i = 0; i < coordlength; i++)
+            for (var i = 0; i < coordlength; i++)
             {
                 if (data.CoordinateInfo.ContainsKey(i))
                     data.Clearoutfit(i);
@@ -86,7 +86,7 @@ namespace Additional_Card_Info
                 return;
             }
 
-            PluginData ACI_Data = new PluginData
+            var ACI_Data = new PluginData
             {
                 version = 1
             };
@@ -111,7 +111,7 @@ namespace Additional_Card_Info
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            PluginData ACI_Data = new PluginData
+            var ACI_Data = new PluginData
             {
                 version = 1
             };

@@ -96,7 +96,7 @@ namespace CardUpdateTool
             Plugin_data.Clear();
             foreach (var item in pluginData.Where(x => DataType.GuidList.Contains(x.Key)))
             {
-                string guid = item.Key;
+                var guid = item.Key;
 
                 if (!DataType.StaticMaxVersion.TryGetValue(guid, out var versionData))
                 {
@@ -111,7 +111,7 @@ namespace CardUpdateTool
                     NullList.Add(item.Key);
                 }
 
-                int version = (ContainsNull) ? -1 : item.Value.version;
+                var version = (ContainsNull) ? -1 : item.Value.version;
 
                 Plugin_data[guid] = version;
 

@@ -66,7 +66,7 @@ namespace Accessory_Parents
 
         internal void AddOutfitEvent()
         {
-            for (int i = Parent_Data.Keys.Max(); i < ChaFileControl.coordinate.Length; i++)
+            for (var i = Parent_Data.Keys.Max(); i < ChaFileControl.coordinate.Length; i++)
                 Createoutfit(i);
         }
 
@@ -140,7 +140,7 @@ namespace Accessory_Parents
             {
                 return;
             }
-            string output = "Slot " + (slot + 1).ToString();
+            var output = "Slot " + (slot + 1).ToString();
             var find = Parent_Groups.Where(x => x.ParentSlot == slot).ToArray();
             if (find.Length > 0)
             {
@@ -170,7 +170,7 @@ namespace Accessory_Parents
                 item.GetComponentInChildren<TextMeshProUGUI>().text = output;
             }
             string output2;
-            if (Child.TryGetValue(slot, out int value))
+            if (Child.TryGetValue(slot, out var value))
             {
                 output2 = "Child of " + Parent_Groups.First(x => x.ParentSlot == value).Name;
             }
@@ -566,7 +566,7 @@ namespace Accessory_Parents
             if (!Relative_Data.TryGetValue(slot, out var relative))
             {
                 relative = new Vector3[3];
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     relative[0] = Vector3.zero;
                     relative[1] = Vector3.zero;
@@ -577,8 +577,8 @@ namespace Accessory_Parents
 
             var temp = partsinfo.addMove;
             {
-                int i = 0;
-                for (int j = 0; j < 3; j++)
+                var i = 0;
+                for (var j = 0; j < 3; j++)
                 {
                     relative[j] = new Vector3(temp[i, j].x, temp[i, j].y, temp[i, j].z);
                 }
@@ -612,7 +612,7 @@ namespace Accessory_Parents
 
 
                 var ControlObjects = Parent_DropDown.ControlObjects;
-                List<TMP_Dropdown.OptionData> Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
+                var Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
                 if (Options.Count > 1)
                 {
                     Options.RemoveRange(1, Options.Count - 1);
@@ -654,9 +654,9 @@ namespace Accessory_Parents
         private void Keep_Last_Data(int Slot, int ParentKey)
         {
             var Parent_Name = AccessoriesApi.GetPartsInfo(ParentKey).parentKey;
-            if (!Relative_Data.TryGetValue(Slot, out Vector3[] Original))
+            if (!Relative_Data.TryGetValue(Slot, out var Original))
             {
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     Original[0] = Vector3.zero;
                     Original[1] = Vector3.zero;
@@ -666,7 +666,7 @@ namespace Accessory_Parents
 
             ChaControl.ChangeAccessoryParent(Slot, Parent_Name);
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var flag = (int)Math.Pow(2, i);
                 //set position
@@ -680,11 +680,11 @@ namespace Accessory_Parents
 
         private void Keep_Last_Data(int Slot)
         {
-            Vector3[] Original = Relative_Data[Slot];
-            string Parent_Name = Old_Parent[Slot];
+            var Original = Relative_Data[Slot];
+            var Parent_Name = Old_Parent[Slot];
 
             ChaControl.ChangeAccessoryParent(Slot, Parent_Name);
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var flag = (int)Math.Pow(2, i);
                 //set position
@@ -701,12 +701,12 @@ namespace Accessory_Parents
             Old_Parent.Clear();
             foreach (var item in Parent_Groups)
             {
-                int slot = item.ParentSlot;
+                var slot = item.ParentSlot;
                 if (slot < 0 || Child.ContainsKey(slot))
                 {
                     continue;
                 }
-                string ParentKey = AccessoriesApi.GetPartsInfo(slot).parentKey;
+                var ParentKey = AccessoriesApi.GetPartsInfo(slot).parentKey;
                 Old_Parent[slot] = string.Copy(ParentKey);
             }
         }
@@ -753,11 +753,6 @@ namespace Accessory_Parents
             Update_Text();
         }
 
-        private bool ContainsCustomNameSlot(int slot)
-        {
-            return Parent_Groups.Any(x => x.ParentSlot == slot);
-        }
-
         internal void Update()
         {
             if (Input.anyKeyDown && AccessoriesApi.AccessoryCanvasVisible)
@@ -788,7 +783,7 @@ namespace Accessory_Parents
                 {
                     foreach (var item2 in item.ChildSlots)
                     {
-                        if (TryChildListBySlot(item2, out List<int> temp2list, true))
+                        if (TryChildListBySlot(item2, out var temp2list, true))
                         {
                             childlist.AddRange(temp2list);
                         }
@@ -809,7 +804,7 @@ namespace Accessory_Parents
                 {
                     foreach (var item2 in item.ChildSlots)
                     {
-                        if (TryChildListBySlot(outfitnum, item2, out List<int> temp2list, true))
+                        if (TryChildListBySlot(outfitnum, item2, out var temp2list, true))
                         {
                             temp2list.AddRange(temp2list);
                         }
@@ -843,7 +838,7 @@ namespace Accessory_Parents
 
         private void ChangePosition(int slot, float move, int kind, bool reset, bool fullreset)
         {
-            List<int> childlist = new List<int>();
+            var childlist = new List<int>();
             if (!RecursiveStop)
                 TryChildListBySlot(slot, out childlist, true);
             childlist.Add(slot);
@@ -857,7 +852,7 @@ namespace Accessory_Parents
                 if (!Relative_Data.TryGetValue(slot, out var relativedata))
                 {
                     relativedata = new Vector3[3];
-                    for (int i = 0; i < 2; i++)
+                    for (var i = 0; i < 2; i++)
                     {
                         relativedata[0] = Vector3.zero;
                         relativedata[1] = Vector3.zero;
@@ -875,7 +870,7 @@ namespace Accessory_Parents
                     if (!Relative_Data.TryGetValue(item, out var relativedata))
                     {
                         relativedata = new Vector3[3];
-                        for (int i = 0; i < 2; i++)
+                        for (var i = 0; i < 2; i++)
                         {
                             relativedata[0] = Vector3.zero;
                             relativedata[1] = Vector3.zero;
@@ -899,7 +894,7 @@ namespace Accessory_Parents
         {
             VectorExtraction(slot, out var originalvectors);
 
-            List<int> childlist = new List<int>();
+            var childlist = new List<int>();
             if (!RecursiveStop)
                 TryChildListBySlot(slot, out childlist, true);
 
@@ -907,7 +902,7 @@ namespace Accessory_Parents
 
             childlist = childlist.Distinct().ToList();
 
-            Vector3 rot = Vector3.zero;
+            var rot = Vector3.zero;
             var flag = (int)Math.Pow(2, kind);
 
             if (reset)
@@ -949,7 +944,7 @@ namespace Accessory_Parents
                     New_pos = Quaternion.Euler(rot) * New_pos; //rotate offset
                     New_pos += originalvectors[0]; //Undo offset
 
-                    for (int i = 0; i < 3; i++)
+                    for (var i = 0; i < 3; i++)
                     {
                         ChaControl.SetAccessoryPos(item, 0, New_pos[i], false, (int)Math.Pow(2, i));
                     }
@@ -963,7 +958,7 @@ namespace Accessory_Parents
                 New_pos = Quaternion.Euler(rot) * New_pos; //rotate offset
                 New_pos += originalvectors[0]; //Undo offset
 
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
                     ChaControl.SetAccessoryPos(item, 0, New_pos[i], false, (int)Math.Pow(2, i));
                 }
@@ -975,7 +970,7 @@ namespace Accessory_Parents
 
         private void ChangeScale(int slot, float scale, int kind, bool reset, bool fullreset)
         {
-            List<int> childlist = new List<int>();
+            var childlist = new List<int>();
             if (!RecursiveStop)
                 TryChildListBySlot(slot, out childlist, true);
             childlist.Add(slot);
@@ -988,7 +983,7 @@ namespace Accessory_Parents
                 if (!Relative_Data.TryGetValue(slot, out var relativedata))
                 {
                     relativedata = new Vector3[3];
-                    for (int i = 0; i < 2; i++)
+                    for (var i = 0; i < 2; i++)
                     {
                         relativedata[0] = Vector3.zero;
                         relativedata[1] = Vector3.zero;
@@ -1007,7 +1002,7 @@ namespace Accessory_Parents
                     if (!Relative_Data.TryGetValue(item, out var relativedata))
                     {
                         relativedata = new Vector3[3];
-                        for (int i = 0; i < 2; i++)
+                        for (var i = 0; i < 2; i++)
                         {
                             relativedata[0] = Vector3.zero;
                             relativedata[1] = Vector3.zero;
@@ -1032,7 +1027,7 @@ namespace Accessory_Parents
         {
             var partinfo = AccessoriesApi.GetPartsInfo(slot);
             vectorarray = new Vector3[3];
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var vector = partinfo.addMove[0, i];
                 vectorarray[i] = new Vector3(vector.x, vector.y, vector.z);

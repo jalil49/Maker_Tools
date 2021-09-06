@@ -86,9 +86,9 @@ namespace CardUpdateTool
 
         private void DrawCoordinateWindow()
         {
-            int OutDatedcount = OutfitData.OutDatedcount;
-            int Missingcount = OutfitData.Missingcount;
-            int MigrateCount = OutfitData.Migratedcount;
+            var OutDatedcount = OutfitData.OutDatedcount;
+            var Missingcount = OutfitData.Missingcount;
+            var MigrateCount = OutfitData.Migratedcount;
 
             if (UpdateInProgress)
             {
@@ -209,9 +209,9 @@ namespace CardUpdateTool
 
         private void DrawCharacterWindow()
         {
-            int OutDatedcount = CharacterData.OutDatedcount;
-            int Missingcount = CharacterData.Missingcount;
-            int MigrateCount = CharacterData.Migratedcount;
+            var OutDatedcount = CharacterData.OutDatedcount;
+            var Missingcount = CharacterData.Missingcount;
+            var MigrateCount = CharacterData.Migratedcount;
 
             if (UpdateInProgress)
             {
@@ -485,8 +485,8 @@ namespace CardUpdateTool
             var pos = Input.mousePosition;
             Vector2 mousepos = pos;
             mouseassigned = true;
-            bool mousebuttonup = false;
-            for (int i = 0; i < 20; i++)
+            var mousebuttonup = false;
+            for (var i = 0; i < 20; i++)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
                 yield return 0;

@@ -24,12 +24,12 @@ namespace Accessory_States
 
             internal static OutfitTriggerInfo UpgradeOutfitTriggerInfoV1(OutfitTriggerInfoV1 _oldOutfitTriggerInfo)
             {
-                OutfitTriggerInfo _outfitTriggerInfo = new OutfitTriggerInfo(_oldOutfitTriggerInfo.Index);
+                var _outfitTriggerInfo = new OutfitTriggerInfo(_oldOutfitTriggerInfo.Index);
                 if (_oldOutfitTriggerInfo.Parts.Count() > 0)
                 {
-                    for (int j = 0; j < _oldOutfitTriggerInfo.Parts.Count(); j++)
+                    for (var j = 0; j < _oldOutfitTriggerInfo.Parts.Count(); j++)
                     {
-                        AccTriggerInfo Itrigger = _oldOutfitTriggerInfo.Parts[j];
+                        var Itrigger = _oldOutfitTriggerInfo.Parts[j];
                         if (Itrigger.Kind > -1)
                         {
                             _outfitTriggerInfo.Parts[j] = new AccTriggerInfo(j);
@@ -104,10 +104,10 @@ namespace Accessory_States
 
             internal static Dictionary<string, string> UpgradeVirtualGroupNamesV1(Dictionary<string, string> _oldVirtualGroupNames)
             {
-                Dictionary<string, string> _outfitVirtualGroupInfo = new Dictionary<string, string>();
+                var _outfitVirtualGroupInfo = new Dictionary<string, string>();
                 if (_oldVirtualGroupNames?.Count() > 0)
                 {
-                    foreach (KeyValuePair<string, string> _group in _oldVirtualGroupNames)
+                    foreach (var _group in _oldVirtualGroupNames)
                         _outfitVirtualGroupInfo[_group.Key] = _group.Value;
                 }
                 return _outfitVirtualGroupInfo;
@@ -115,10 +115,10 @@ namespace Accessory_States
 
             internal static Dictionary<string, VirtualGroupInfo> UpgradeVirtualGroupNamesV2(Dictionary<string, string> _oldVirtualGroupNames)
             {
-                Dictionary<string, VirtualGroupInfo> _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
+                var _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
                 if (_oldVirtualGroupNames?.Count() > 0)
                 {
-                    foreach (KeyValuePair<string, string> _group in _oldVirtualGroupNames)
+                    foreach (var _group in _oldVirtualGroupNames)
                     {
                         if (_group.Key.StartsWith("custom_"))
                             _outfitVirtualGroupInfo[_group.Key] = new VirtualGroupInfo(_group.Key, int.Parse(_group.Key.Replace("custom_", "")) + 9, _group.Value);
@@ -129,16 +129,16 @@ namespace Accessory_States
 
             internal static void ConvertCharaPluginData(PluginData _pluginData, ref List<TriggerProperty> _outputTriggerProperty, ref List<TriggerGroup> _outputTriggerGroup)
             {
-                Dictionary<int, OutfitTriggerInfo> _charaTriggerInfo = new Dictionary<int, OutfitTriggerInfo>();
-                Dictionary<int, Dictionary<string, VirtualGroupInfo>> _charaVirtualGroupInfo = new Dictionary<int, Dictionary<string, VirtualGroupInfo>>();
+                var _charaTriggerInfo = new Dictionary<int, OutfitTriggerInfo>();
+                var _charaVirtualGroupInfo = new Dictionary<int, Dictionary<string, VirtualGroupInfo>>();
 
-                _pluginData.data.TryGetValue("CharaTriggerInfo", out object _loadedCharaTriggerInfo);
+                _pluginData.data.TryGetValue("CharaTriggerInfo", out var _loadedCharaTriggerInfo);
                 if (_loadedCharaTriggerInfo == null) return;
 
                 if (_pluginData.version < 2)
                 {
-                    List<OutfitTriggerInfoV1> _oldCharaTriggerInfo = MessagePackSerializer.Deserialize<List<OutfitTriggerInfoV1>>((byte[])_loadedCharaTriggerInfo);
-                    for (int i = 0; i < 7; i++)
+                    var _oldCharaTriggerInfo = MessagePackSerializer.Deserialize<List<OutfitTriggerInfoV1>>((byte[])_loadedCharaTriggerInfo);
+                    for (var i = 0; i < 7; i++)
                         _charaTriggerInfo[i] = UpgradeOutfitTriggerInfoV1(_oldCharaTriggerInfo[i]);
                 }
                 else
@@ -148,31 +148,31 @@ namespace Accessory_States
 
                 if (_pluginData.version < 5)
                 {
-                    if (_pluginData.data.TryGetValue("CharaVirtualGroupNames", out object _loadedCharaVirtualGroupNames) && _loadedCharaVirtualGroupNames != null)
+                    if (_pluginData.data.TryGetValue("CharaVirtualGroupNames", out var _loadedCharaVirtualGroupNames) && _loadedCharaVirtualGroupNames != null)
                     {
                         if (_pluginData.version < 2)
                         {
-                            List<Dictionary<string, string>> _oldCharaVirtualGroupNames = MessagePackSerializer.Deserialize<List<Dictionary<string, string>>>((byte[])_loadedCharaVirtualGroupNames);
+                            var _oldCharaVirtualGroupNames = MessagePackSerializer.Deserialize<List<Dictionary<string, string>>>((byte[])_loadedCharaVirtualGroupNames);
                             if (_oldCharaVirtualGroupNames?.Count == 7)
                             {
-                                for (int i = 0; i < 7; i++)
+                                for (var i = 0; i < 7; i++)
                                 {
-                                    Dictionary<string, string> _outfitVirtualGroupNames = UpgradeVirtualGroupNamesV1(_oldCharaVirtualGroupNames[i]);
+                                    var _outfitVirtualGroupNames = UpgradeVirtualGroupNamesV1(_oldCharaVirtualGroupNames[i]);
                                     _charaVirtualGroupInfo[i] = UpgradeVirtualGroupNamesV2(_outfitVirtualGroupNames);
                                 }
                             }
                         }
                         else
                         {
-                            Dictionary<int, Dictionary<string, string>> _charaVirtualGroupNames = MessagePackSerializer.Deserialize<Dictionary<int, Dictionary<string, string>>>((byte[])_loadedCharaVirtualGroupNames);
-                            for (int i = 0; i < 7; i++)
+                            var _charaVirtualGroupNames = MessagePackSerializer.Deserialize<Dictionary<int, Dictionary<string, string>>>((byte[])_loadedCharaVirtualGroupNames);
+                            for (var i = 0; i < 7; i++)
                                 _charaVirtualGroupInfo[i] = UpgradeVirtualGroupNamesV2(_charaVirtualGroupNames[i]);
                         }
                     }
                 }
                 else
                 {
-                    if (_pluginData.data.TryGetValue("CharaVirtualGroupInfo", out object _loadedCharaVirtualGroupInfo) && _loadedCharaVirtualGroupInfo != null)
+                    if (_pluginData.data.TryGetValue("CharaVirtualGroupInfo", out var _loadedCharaVirtualGroupInfo) && _loadedCharaVirtualGroupInfo != null)
                         _charaVirtualGroupInfo = MessagePackSerializer.Deserialize<Dictionary<int, Dictionary<string, VirtualGroupInfo>>>((byte[])_loadedCharaVirtualGroupInfo);
                 }
 
@@ -182,14 +182,14 @@ namespace Accessory_States
             internal static void ConvertOutfitPluginData(int _coordinate, PluginData _pluginData, ref List<TriggerProperty> _outputTriggerProperty, ref List<TriggerGroup> _outputTriggerGroup)
             {
                 OutfitTriggerInfo _outfitTriggerInfo = null;
-                Dictionary<string, VirtualGroupInfo> _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
+                var _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
 
-                _pluginData.data.TryGetValue("OutfitTriggerInfo", out object _loadedOutfitTriggerInfo);
+                _pluginData.data.TryGetValue("OutfitTriggerInfo", out var _loadedOutfitTriggerInfo);
                 if (_loadedOutfitTriggerInfo == null) return;
 
                 if (_pluginData.version < 2)
                 {
-                    OutfitTriggerInfoV1 _oldCharaTriggerInfo = MessagePackSerializer.Deserialize<OutfitTriggerInfoV1>((byte[])_loadedOutfitTriggerInfo);
+                    var _oldCharaTriggerInfo = MessagePackSerializer.Deserialize<OutfitTriggerInfoV1>((byte[])_loadedOutfitTriggerInfo);
                     _outfitTriggerInfo = UpgradeOutfitTriggerInfoV1(_oldCharaTriggerInfo);
                 }
                 else
@@ -199,15 +199,15 @@ namespace Accessory_States
 
                 if (_pluginData.version < 5)
                 {
-                    if (_pluginData.data.TryGetValue("OutfitVirtualGroupNames", out object _loadedOutfitVirtualGroupNames) && _loadedOutfitVirtualGroupNames != null)
+                    if (_pluginData.data.TryGetValue("OutfitVirtualGroupNames", out var _loadedOutfitVirtualGroupNames) && _loadedOutfitVirtualGroupNames != null)
                     {
-                        Dictionary<string, string> _outfitVirtualGroupNames = MessagePackSerializer.Deserialize<Dictionary<string, string>>((byte[])_loadedOutfitVirtualGroupNames);
+                        var _outfitVirtualGroupNames = MessagePackSerializer.Deserialize<Dictionary<string, string>>((byte[])_loadedOutfitVirtualGroupNames);
                         _outfitVirtualGroupInfo = UpgradeVirtualGroupNamesV2(_outfitVirtualGroupNames);
                     }
                 }
                 else
                 {
-                    if (_pluginData.data.TryGetValue("OutfitVirtualGroupInfo", out object _loadedOutfitVirtualGroupInfo) && _loadedOutfitVirtualGroupInfo != null)
+                    if (_pluginData.data.TryGetValue("OutfitVirtualGroupInfo", out var _loadedOutfitVirtualGroupInfo) && _loadedOutfitVirtualGroupInfo != null)
                         _outfitVirtualGroupInfo = MessagePackSerializer.Deserialize<Dictionary<string, VirtualGroupInfo>>((byte[])_loadedOutfitVirtualGroupInfo);
                 }
 
@@ -216,9 +216,9 @@ namespace Accessory_States
 
             public static void Migrate(Dictionary<int, OutfitTriggerInfo> _charaTriggerInfo, Dictionary<int, Dictionary<string, VirtualGroupInfo>> _charaVirtualGroupInfo, ref List<TriggerProperty> _outputTriggerProperty, ref List<TriggerGroup> _outputTriggerGroup)
             {
-                for (int _coordinate = 0; _coordinate < 7; _coordinate++)
+                for (var _coordinate = 0; _coordinate < 7; _coordinate++)
                 {
-                    OutfitTriggerInfo _outfitTriggerInfo = _charaTriggerInfo.ContainsKey(_coordinate) ? _charaTriggerInfo[_coordinate] : new OutfitTriggerInfo(_coordinate);
+                    var _outfitTriggerInfo = _charaTriggerInfo.ContainsKey(_coordinate) ? _charaTriggerInfo[_coordinate] : new OutfitTriggerInfo(_coordinate);
                     Dictionary<string, VirtualGroupInfo> _outfitVirtualGroupInfo = null;
                     if (!_charaVirtualGroupInfo.ContainsKey(_coordinate) || _charaVirtualGroupInfo[_coordinate]?.Count == 0)
                         _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
@@ -234,15 +234,15 @@ namespace Accessory_States
                 if (_outfitVirtualGroupInfo == null)
                     _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
 
-                Dictionary<string, int> _mapping = new Dictionary<string, int>();
-                int _refBase = 9;
+                var _mapping = new Dictionary<string, int>();
+                var _refBase = 9;
 
-                List<AccTriggerInfo> _parts = _outfitTriggerInfo.Parts.Values.OrderBy(x => x.Kind).ThenBy(x => x.Group).ThenBy(x => x.Slot).ToList();
-                foreach (AccTriggerInfo _part in _parts)
+                var _parts = _outfitTriggerInfo.Parts.Values.OrderBy(x => x.Kind).ThenBy(x => x.Group).ThenBy(x => x.Slot).ToList();
+                foreach (var _part in _parts)
                 {
                     if (MathfEx.RangeEqualOn(0, _part.Kind, 8))
                     {
-                        for (int i = 0; i < 4; i++)
+                        for (var i = 0; i < 4; i++)
                             _outputTriggerProperty.Add(new TriggerProperty(_coordinate, _part.Slot, _part.Kind, i, _part.State[i], 0));
                     }
                     else if (_part.Kind >= 9)
@@ -258,16 +258,16 @@ namespace Accessory_States
                     }
                 }
 
-                foreach (KeyValuePair<string, int> x in _mapping)
+                foreach (var x in _mapping)
                 {
                     if (!_outfitVirtualGroupInfo.ContainsKey(x.Key))
                     {
-                        string _label = _accessoryParentNames.ContainsKey(x.Key) ? _accessoryParentNames[x.Key] : x.Key;
+                        var _label = _accessoryParentNames.ContainsKey(x.Key) ? _accessoryParentNames[x.Key] : x.Key;
                         _outputTriggerGroup.Add(new TriggerGroup(_coordinate, x.Value, _label));
                     }
                     else
                     {
-                        VirtualGroupInfo _group = _outfitVirtualGroupInfo[x.Key];
+                        var _group = _outfitVirtualGroupInfo[x.Key];
                         _outputTriggerGroup.Add(new TriggerGroup(_coordinate, x.Value, _group.Label, (_group.State ? 0 : 1), 0, (_group.Secondary ? 1 : -1)));
                     }
                 }

@@ -57,7 +57,7 @@ namespace Accessory_States
 
         private void RemoveTriggerSlot()
         {
-            int _slot = AccessoriesApi.SelectedMakerAccSlot;
+            var _slot = AccessoriesApi.SelectedMakerAccSlot;
             ASS_Traverse.Method("RemoveSlotTriggerProperty", new object[] { (int)CurrentCoordinate.Value, _slot }).GetValue();
             RefreshCache();
         }
@@ -70,11 +70,11 @@ namespace Accessory_States
 
         private void ChangeTriggerProperty(int _refKind)
         {
-            int _slot = AccessoriesApi.SelectedMakerAccSlot;
+            var _slot = AccessoriesApi.SelectedMakerAccSlot;
 
             var list = Slotinfo[_slot].States;
             var _coord = (int)CurrentCoordinate.Value;
-            bool single = 3 < _refKind && _refKind < 9;
+            var single = 3 < _refKind && _refKind < 9;
             for (int _refState = 0, n = MaxState(_refKind) + 1; _refState < n; _refState++)
             {
                 var test = ASS_Traverse.Method("NewOrGetTriggerProperty", new object[] { _coord, _slot, _refKind, _refState }).GetValue();

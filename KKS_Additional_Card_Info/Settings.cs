@@ -6,14 +6,15 @@ using System.Linq;
 
 namespace Additional_Card_Info
 {
-    [BepInProcess("KoikatsuSunshineTrial")]
+    [BepInProcess("KoikatsuSunshine")]
     public partial class Settings : BaseUnityPlugin
     {
         private void EventRegister()
         {
-            ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported;
+            ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported; ;
         }
-        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData)
+
+        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
             importedExtendedData.TryGetValue(GUID, out var ACI_Data);
             if (ACI_Data != null)

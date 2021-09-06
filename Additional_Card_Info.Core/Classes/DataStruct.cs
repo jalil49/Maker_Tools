@@ -294,7 +294,7 @@ namespace Additional_Card_Info
 
             GenderType = 0;
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 Height_Restriction[i] = Breastsize_Restriction[i] = false;
             }

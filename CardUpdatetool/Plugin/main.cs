@@ -1,5 +1,4 @@
 ﻿using ExtensibleSaveFormat;
-using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI.Sidebar;
@@ -8,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UniRx;
-using UnityEngine;
 
 namespace CardUpdateTool
 {
@@ -68,6 +66,7 @@ namespace CardUpdateTool
         private static void GetAllGuids()
         {
             GuidList = CharacterApi.RegisteredHandlers.Select(x => x.ExtendedDataId).ToList();
+            GuidList.Add("com.joan6694.illusionplugins.moreaccessories");
             UpdateVisibleGuids();
         }
 
@@ -147,7 +146,7 @@ namespace CardUpdateTool
                     Waitforresolver = true;
 
                     testcontrol.LoadFile(card.Path);
-                    int yieldcount = -1;
+                    var yieldcount = -1;
                     while (Resolverinprogress || (Waitforresolver && yieldcount++ < 10))
                     {
                         yield return 0;
@@ -207,7 +206,7 @@ namespace CardUpdateTool
                     Waitforresolver = true;
 
                     testcontrol.LoadFile(card.Path);
-                    int yieldcount = -1;
+                    var yieldcount = -1;
 
                     while (Resolverinprogress || (Waitforresolver && yieldcount++ < 10))
                     {
@@ -271,7 +270,7 @@ namespace CardUpdateTool
                 ChaControl.Reload();
                 sing.updateCustomUI = true;
 
-                int yieldcount = -1;
+                var yieldcount = -1;
 
                 while (Resolverinprogress || (Waitforresolver && yieldcount++ < 10))
                 {
@@ -369,7 +368,7 @@ namespace CardUpdateTool
                 ChaControl.ChangeCoordinateTypeAndReload();
                 sing.updateCustomUI = true;
 
-                int yieldcount = -1;
+                var yieldcount = -1;
 
                 while (Resolverinprogress || (Waitforresolver && yieldcount++ < 10))
                 {
@@ -440,9 +439,9 @@ namespace CardUpdateTool
             {
                 return false;
             }
-            bool containsdata = card.Plugin_data.TryGetValue(GUID, out int version);
+            var containsdata = card.Plugin_data.TryGetValue(GUID, out var version);
 
-            bool updateversion = missingdata && !containsdata || containsdata && version < StaticMaxVersion[GUID].version;
+            var updateversion = missingdata && !containsdata || containsdata && version < StaticMaxVersion[GUID].version;
 
             return updateversion;
         }
@@ -520,7 +519,7 @@ namespace CardUpdateTool
 
         private string CSVLine(CardInfo card, string fullpath)
         {
-            string result = $"=HYPERLINK(\"{fullpath}\",\"{Path.GetFileName(fullpath)}\");";
+            var result = $"=HYPERLINK(\"{fullpath}\",\"{Path.GetFileName(fullpath)}\");";
             result += $"=HYPERLINK(\"{Path.GetDirectoryName(fullpath)}\");";
             result += $"{card.OutdatedList.Count} ;";
             if (card.OutdatedList.Count > 0)

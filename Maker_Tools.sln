@@ -63,57 +63,44 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_CardUpdateTool", "KKS_C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_CardUpdateTool", "KK_CardUpdateTool\KK_CardUpdateTool.csproj", "{3C63226F-BEFB-4162-ACAC-B20902B60F93}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MoreAccessories", "MoreAccessories\MoreAccessories.shproj", "{933C4BF2-6872-4636-827C-F6CFC6BF969C}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Extensions", "Extensions\Extensions.shproj", "{C6D77E52-9BF4-4B2B-B1C3-345218550E10}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Accessory_Shortcuts.Core\Accessory_Shortcuts.Core.projitems*{18733318-da12-4d7f-a8d4-0e320b22693a}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{18733318-da12-4d7f-a8d4-0e320b22693a}*SharedItemsImports = 4
 		CardUpdatetool\CardUpdatetool.projitems*{31363cfc-ebc6-41fb-92f0-c683918c6d05}*SharedItemsImports = 13
 		CardUpdatetool\CardUpdatetool.projitems*{3c63226f-befb-4162-acac-b20902b60f93}*SharedItemsImports = 4
 		Accessory Parents.core\Accessory Parents.core.projitems*{416f0e17-fa0c-4c24-8d5f-58b480075573}*SharedItemsImports = 4
 		Accessory.Hooks\Accessory.Hooks.projitems*{416f0e17-fa0c-4c24-8d5f-58b480075573}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{416f0e17-fa0c-4c24-8d5f-58b480075573}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{416f0e17-fa0c-4c24-8d5f-58b480075573}*SharedItemsImports = 4
 		Accessory States.core\Accessory States.core.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
 		Accessory.Hooks\Accessory.Hooks.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
 		Generic.Core\Generic.Core.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{47f76284-35e0-43de-872d-0b6829cb4a2d}*SharedItemsImports = 4
 		Accessory States.core\Accessory States.core.projitems*{5307dce9-b7a3-4904-98f2-dcfaf9f55a90}*SharedItemsImports = 4
 		Accessory.Hooks\Accessory.Hooks.projitems*{5307dce9-b7a3-4904-98f2-dcfaf9f55a90}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{5307dce9-b7a3-4904-98f2-dcfaf9f55a90}*SharedItemsImports = 4
 		Generic.Core\Generic.Core.projitems*{5307dce9-b7a3-4904-98f2-dcfaf9f55a90}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{5307dce9-b7a3-4904-98f2-dcfaf9f55a90}*SharedItemsImports = 4
 		Generic.Core\Generic.Core.projitems*{70d32956-c432-403a-87bc-a13ba321e24f}*SharedItemsImports = 13
 		Accessory.Hooks\Accessory.Hooks.projitems*{7e1108f2-f0d8-4188-90cc-fd034b820c1e}*SharedItemsImports = 13
 		Accessory.Hooks\Accessory.Hooks.projitems*{86ab6d65-3357-48de-bba2-ed3ea4912bcc}*SharedItemsImports = 4
 		Accessory_Themes.Core\Accessory_Themes.Core.projitems*{86ab6d65-3357-48de-bba2-ed3ea4912bcc}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{86ab6d65-3357-48de-bba2-ed3ea4912bcc}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{933c4bf2-6872-4636-827c-f6cfc6bf969c}*SharedItemsImports = 13
 		Accessory_Themes.Core\Accessory_Themes.Core.projitems*{9ffb362a-e861-48c3-9516-09bcffa262c9}*SharedItemsImports = 13
 		Accessory.Hooks\Accessory.Hooks.projitems*{a1277471-6cd7-4ba8-8313-85e51f2e4603}*SharedItemsImports = 4
 		Accessory_Themes.Core\Accessory_Themes.Core.projitems*{a1277471-6cd7-4ba8-8313-85e51f2e4603}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{a1277471-6cd7-4ba8-8313-85e51f2e4603}*SharedItemsImports = 4
 		Accessory Parents.core\Accessory Parents.core.projitems*{a336900a-bb3f-47e3-93f9-000c6a3184b8}*SharedItemsImports = 13
 		Accessory Parents.core\Accessory Parents.core.projitems*{a806537e-6d4c-4803-b426-42529cf78c3b}*SharedItemsImports = 4
 		Accessory.Hooks\Accessory.Hooks.projitems*{a806537e-6d4c-4803-b426-42529cf78c3b}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{a806537e-6d4c-4803-b426-42529cf78c3b}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{a806537e-6d4c-4803-b426-42529cf78c3b}*SharedItemsImports = 4
 		Accessory_Shortcuts.Core\Accessory_Shortcuts.Core.projitems*{abc8eee9-4ae3-402d-9309-87c5c7c470fa}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{abc8eee9-4ae3-402d-9309-87c5c7c470fa}*SharedItemsImports = 4
 		Accessory.Hooks\Accessory.Hooks.projitems*{b200acf0-4829-47fb-8f12-300f3e3c4294}*SharedItemsImports = 4
 		Additional_Card_Info.Core\Additional_Card_Info.Core.projitems*{b200acf0-4829-47fb-8f12-300f3e3c4294}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{b200acf0-4829-47fb-8f12-300f3e3c4294}*SharedItemsImports = 4
 		Generic.Core\Generic.Core.projitems*{b200acf0-4829-47fb-8f12-300f3e3c4294}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{b200acf0-4829-47fb-8f12-300f3e3c4294}*SharedItemsImports = 4
 		Accessory_Shortcuts.Core\Accessory_Shortcuts.Core.projitems*{b3794564-3f81-4048-8050-e8ed0bf4a4a4}*SharedItemsImports = 13
 		Accessory.Hooks\Accessory.Hooks.projitems*{c524ac66-cabc-4301-8b24-6910c0be07f7}*SharedItemsImports = 4
 		Additional_Card_Info.Core\Additional_Card_Info.Core.projitems*{c524ac66-cabc-4301-8b24-6910c0be07f7}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{c524ac66-cabc-4301-8b24-6910c0be07f7}*SharedItemsImports = 4
-		MoreAccessories\MoreAccessories.projitems*{c524ac66-cabc-4301-8b24-6910c0be07f7}*SharedItemsImports = 4
 		Extensions\Extensions.projitems*{c6d77e52-9bf4-4b2b-b1c3-345218550e10}*SharedItemsImports = 13
 		Additional_Card_Info.Core\Additional_Card_Info.Core.projitems*{c714f336-b117-4e0f-a3ef-585d5c337d12}*SharedItemsImports = 13
 		Accessory States.core\Accessory States.core.projitems*{dde006d7-3af0-423a-8071-1c0012d78f61}*SharedItemsImports = 13

@@ -2,7 +2,7 @@
 
 namespace Accessory_Shortcuts
 {
-    [BepInProcess("KoikatsuSunshineTrial")]
+    [BepInProcess("KoikatsuSunshine")]
     public partial class Settings : BaseUnityPlugin
     { }
 }

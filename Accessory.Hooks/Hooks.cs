@@ -101,7 +101,7 @@ namespace Additional_Card_Info
 
             private static void ClothingNotEvent(ChaListDefine.KeyType keyType, string result)
             {
-                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate || !int.TryParse(result, out int value))
+                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate || !int.TryParse(result, out var value))
                 {
                     return;
                 }
