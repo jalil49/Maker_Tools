@@ -43,7 +43,7 @@ namespace Accessory_Parents
 
             }
             Data.data.Clear();
-            Data.data["Coordinate_Data"] = transfer;
+            Data.data["Coordinate_Data"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

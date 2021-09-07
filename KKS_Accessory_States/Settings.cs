@@ -42,7 +42,7 @@ namespace Accessory_States
             }
 
             Data.data.Clear();
-            Data.data["CoordinateData"] = transfer;
+            Data.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

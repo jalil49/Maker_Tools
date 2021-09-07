@@ -39,9 +39,7 @@ namespace Accessory_Themes
 
             }
             Data.data.Clear();
-            Data.data["CoordinateData"] = transfer;
+            Data.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
         }
     }
-
-
 }
