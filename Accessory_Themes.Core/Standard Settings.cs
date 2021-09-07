@@ -35,6 +35,8 @@ namespace Accessory_Themes
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
             MakerAPI.RegisterCustomSubCategories += CharaEvent.RegisterCustomSubCategories;
+
+            GameUnique();
         }
     }
 }

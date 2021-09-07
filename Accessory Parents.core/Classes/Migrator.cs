@@ -13,6 +13,15 @@ namespace Accessory_Parents
             if (Data.data.TryGetValue("Parenting_Names", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<string, int>[]>((byte[])ByteData);
+
+                for (var i = 0; i < temp.Length; i++)
+                {
+                    if (!data.TryGetValue(i, out var _))
+                    {
+                        data[i] = new CoordinateData();
+                    }
+                }
+
                 for (var i = 0; i < temp.Length; i++)
                 {
                     var Convert = new List<Custom_Name>();

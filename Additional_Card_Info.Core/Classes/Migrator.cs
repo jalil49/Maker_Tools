@@ -8,6 +8,14 @@ namespace Additional_Card_Info
     {
         public static void MigrateV0(PluginData ACI_Data, ref DataStruct data)
         {
+            for (var i = 0; i < 7; i++)
+            {
+                if (!data.CoordinateInfo.TryGetValue(i, out var _))
+                {
+                    data.Createoutfit(i);
+                }
+            }
+
             if (ACI_Data.data.TryGetValue("HairAcc", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<int>[]>((byte[])ByteData);

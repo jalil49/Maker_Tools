@@ -19,6 +19,13 @@ namespace Accessory_Themes
                 }
                 for (var i = 0; i < temp.Length; i++)
                 {
+                    if (!data.Coordinate.TryGetValue(i, out var _))
+                    {
+                        data.Coordinate[i] = new CoordinateData();
+                    }
+                }
+                for (var i = 0; i < temp.Length; i++)
+                {
                     if (temp[i].Count > 0)
                         temp[i].RemoveAt(0);
                     var themes = data.Coordinate[i].Themes;

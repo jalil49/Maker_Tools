@@ -35,6 +35,9 @@ namespace Accessory_Themes
             CurrentCoordinate.Subscribe(x =>
             {
                 ShowCustomGui = false;
+                if (!Coordinate.ContainsKey((int)x))
+                    Createoutfit((int)x);
+
                 UpdateNowCoordinate();
                 StartCoroutine(WaitForSlots());
             });

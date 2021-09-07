@@ -44,14 +44,15 @@ namespace Accessory_States
                     CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
                 }
             }
-#if !KKS
             GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
-#endif
+
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             ASS_SAVE = Config.Bind("Setting", "Accessory State Sync Save", true, "Save ASS format as well.");
             MakerAPI.MakerStartedLoading += (s, e) => CharaEvent.Maker_started();
             MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
+
+            GameUnique();
         }
 
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)

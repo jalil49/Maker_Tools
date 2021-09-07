@@ -44,12 +44,12 @@ namespace Accessory_Shortcuts
 
         public void PrevSlot(int slot)
         {
-            CustomAcs.cvsAccessory[Math.Max(slot - 1, 0)].transform.parent.GetComponent<Toggle>().isOn = true;
+            CustomAcs.items[Math.Max(slot - 1, 0)].tglItem.isOn = true;
         }
 
         public void NextSlot(int slot)
         {
-            CustomAcs.cvsAccessory[Math.Min(slot + 1, Parts.Length - 1)].transform.parent.GetComponent<Toggle>().isOn = true;
+            CustomAcs.items[Math.Min(slot + 1, Parts.Length - 1)].tglItem.isOn = true;
         }
 
         protected override void Update()

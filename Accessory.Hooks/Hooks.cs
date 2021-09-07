@@ -22,8 +22,8 @@ namespace Additional_Card_Info
             Harmony.CreateAndPatchAll(typeof(Hooks));
             if (TryfindPluginInstance("madevil.kk.MovUrAcc"))
                 Harmony.CreateAndPatchAll(typeof(MovUrACC));
-            if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
-                Harmony.CreateAndPatchAll(typeof(MoreOutfits));
+            //if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
+            //    Harmony.CreateAndPatchAll(typeof(MoreOutfits));
 #if ACI || States
             ClothingNotPatch.Init();
 #endif

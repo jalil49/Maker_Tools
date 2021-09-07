@@ -109,6 +109,9 @@ namespace Accessory_States
             CurrentCoordinate.Subscribe(x =>
             {
                 ShowCustomGui = false;
+                if (!Coordinate.ContainsKey((int)x))
+                    Createoutfit((int)x);
+
                 StartCoroutine(ChangeOutfitCoroutine());
             });
 

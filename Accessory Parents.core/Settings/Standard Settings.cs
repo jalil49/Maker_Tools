@@ -36,6 +36,8 @@ namespace Accessory_Parents
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
             MakerAPI.MakerExiting += CharaEvent.MakerAPI_MakerExiting;
             MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
+
+            GameUnique();
         }
 
         private IEnumerator<int> DelayedInit()

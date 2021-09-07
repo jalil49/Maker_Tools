@@ -181,7 +181,7 @@ namespace Accessory_States
 
             internal static void ConvertOutfitPluginData(int _coordinate, PluginData _pluginData, ref List<TriggerProperty> _outputTriggerProperty, ref List<TriggerGroup> _outputTriggerGroup)
             {
-                OutfitTriggerInfo _outfitTriggerInfo = null;
+                OutfitTriggerInfo _outfitTriggerInfo;
                 var _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
 
                 _pluginData.data.TryGetValue("OutfitTriggerInfo", out var _loadedOutfitTriggerInfo);
@@ -219,7 +219,7 @@ namespace Accessory_States
                 for (var _coordinate = 0; _coordinate < 7; _coordinate++)
                 {
                     var _outfitTriggerInfo = _charaTriggerInfo.ContainsKey(_coordinate) ? _charaTriggerInfo[_coordinate] : new OutfitTriggerInfo(_coordinate);
-                    Dictionary<string, VirtualGroupInfo> _outfitVirtualGroupInfo = null;
+                    Dictionary<string, VirtualGroupInfo> _outfitVirtualGroupInfo;
                     if (!_charaVirtualGroupInfo.ContainsKey(_coordinate) || _charaVirtualGroupInfo[_coordinate]?.Count == 0)
                         _outfitVirtualGroupInfo = new Dictionary<string, VirtualGroupInfo>();
                     else

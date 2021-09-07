@@ -34,7 +34,7 @@ namespace Additional_Card_Info
             CreatorName = Config.Bind("User", "Creator", "", "Default Creator name for those who make a lot of coordinates");
             MakerAPI.MakerStartedLoading += CharaEvent.MakerAPI_MakerStartedLoading;
             MakerAPI.RegisterCustomSubCategories += CharaEvent.RegisterCustomSubCategories;
-            EventRegister();
+            GameUnique();
         }
 
         private IEnumerator<int> DelayedInit()

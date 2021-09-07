@@ -1,5 +1,4 @@
-﻿#if !KKS
-using HarmonyLib;
+﻿using HarmonyLib;
 using KKAPI.MainGame;
 using System;
 using System.Collections.Generic;
@@ -17,8 +16,11 @@ namespace Accessory_States
         HSprite[] HSprites;
 
         readonly Dictionary<int, List<int>> ButtonList = new Dictionary<int, List<int>>();
-
+#if KK
         protected override void OnStartH(BaseLoader proc, HFlag hFlag, bool vr)
+#else
+        protected override void OnStartH(MonoBehaviour proc, HFlag hFlag, bool vr)
+#endif
         {
             if (vr)
             {
@@ -56,8 +58,11 @@ namespace Accessory_States
                 }
             }
         }
-
+#if KK
         protected override void OnEndH(BaseLoader proc, HFlag hFlag, bool vr)
+#else
+        protected override void OnEndH(MonoBehaviour proc, HFlag hFlag, bool vr)
+#endif
         {
             Hooks.HcoordChange -= Hooks_HcoordChange;
             ButtonList.Clear();
@@ -220,4 +225,3 @@ namespace Accessory_States
         }
     }
 }
-#endif

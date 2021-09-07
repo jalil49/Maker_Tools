@@ -13,6 +13,13 @@ namespace Accessory_States
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
                 for (var i = 0; i < temp.Length; i++)
                 {
+                    if (!data.TryGetValue(i, out var _))
+                    {
+                        data[i] = new CoordinateData();
+                    }
+                }
+                for (var i = 0; i < temp.Length; i++)
+                {
                     var sub = temp[i];
                     var slotinfo = data[i].Slotinfo;
 
@@ -68,6 +75,15 @@ namespace Accessory_States
             if (plugindata.data.TryGetValue("ACC_Parented_Dictionary", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
+
+                for (var i = 0; i < temp.Length; i++)
+                {
+                    if (!data.TryGetValue(i, out var _))
+                    {
+                        data[i] = new CoordinateData();
+                    }
+                }
+
                 for (var i = 0; i < temp.Length; i++)
                 {
                     var slotinfo = data[i].Slotinfo;
