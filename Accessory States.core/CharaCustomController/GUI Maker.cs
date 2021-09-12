@@ -7,15 +7,16 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
+
 namespace Accessory_States
 {
     partial class CharaEvent : CharaCustomFunctionController
     {
-        static private readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
+        internal readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
 
-        static private readonly Dictionary<int, Slotdata> GUI_int_state_copy_Dict = new Dictionary<int, Slotdata>();
+        static readonly Dictionary<int, Slotdata> GUI_int_state_copy_Dict = new Dictionary<int, Slotdata>();
 
-        static private readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
+        internal readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
 
         static private bool ShowToggleInterface = false;
 
@@ -30,50 +31,33 @@ namespace Accessory_States
         static private bool mouseassigned = false;
         static private bool autoscale = true;
         static private int minilimit = 3;
-        static Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
+        private Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
 
         static bool showdelete = false;
 
-        static GUIStyle labelstyle;
-        static GUIStyle buttonstyle;
-        static GUIStyle fieldstyle;
-        static GUIStyle togglestyle;
-        static GUIStyle sliderstyle;
-        static GUIStyle sliderthumbstyle;
+        static GUIStyle labelstyle => Settings.labelstyle;
+        static GUIStyle buttonstyle => Settings.buttonstyle;
+        static GUIStyle fieldstyle => Settings.fieldstyle;
+        static GUIStyle togglestyle => Settings.togglestyle;
+        static GUIStyle sliderstyle => Settings.sliderstyle;
+        static GUIStyle sliderthumbstyle => Settings.sliderthumbstyle;
 
         static int tabvalue = 0;
         static int Selectedkind = -1;
         static readonly string[] statenameassign = new string[] { "0", "state 0" };
-
 
         private static readonly string[] shoetypetext = new string[] { "Inside", "Outside", "Both" };
         private static readonly string[] TabText = new string[] { "Assign", "Settings" };
 
         private void OnGUI()
         {
-            if (!(ShowToggleInterface || ShowCustomGui) || !MakerAPI.IsInterfaceVisible())
+            if (MakerAPI.IsInterfaceVisible())
             {
-                return;
+                if (ShowToggleInterface)
+                    DrawToggleButtons();
+                if (ShowCustomGui && AccessoriesApi.AccessoryCanvasVisible)
+                    DrawCustomGUI();
             }
-
-            if (labelstyle == null)
-            {
-                labelstyle = new GUIStyle(GUI.skin.label);
-                buttonstyle = new GUIStyle(GUI.skin.button);
-                fieldstyle = new GUIStyle(GUI.skin.textField);
-                togglestyle = new GUIStyle(GUI.skin.toggle);
-                sliderstyle = new GUIStyle(GUI.skin.horizontalSlider);
-                sliderthumbstyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
-                buttonstyle.hover.textColor = Color.red;
-                buttonstyle.onNormal.textColor = Color.red;
-
-                SetFontSize(Screen.height / 108);
-            }
-
-            if (ShowToggleInterface)
-                DrawToggleButtons();
-            if (ShowCustomGui && AccessoriesApi.AccessoryCanvasVisible)
-                DrawCustomGUI();
         }
 
         private static void GUI_Toggle()
@@ -136,7 +120,7 @@ namespace Accessory_States
             GUILayout.BeginVertical();
             {
                 Topoptions();
-
+                MakerSuboptions();
                 GUILayout.BeginHorizontal();
                 {
                     //Groups
@@ -620,7 +604,7 @@ namespace Accessory_States
             GUILayout.BeginHorizontal();
             {
                 GUILayout.FlexibleSpace();
-                DrawFontSize();
+                Settings.DrawFontSize();
                 if (Input.GetMouseButtonDown(0) && !mouseassigned && screenRect.Contains(Input.mousePosition))
                 {
                     StartCoroutine(DragEvent());
@@ -631,7 +615,10 @@ namespace Accessory_States
                 }
             }
             GUILayout.EndHorizontal();
+        }
 
+        public void MakerSuboptions()
+        {
             GUILayout.BeginHorizontal();
             {
                 showdelete = GUILayout.Toggle(showdelete, "Enable Delete", togglestyle, GUILayout.ExpandWidth(false));
@@ -735,7 +722,7 @@ namespace Accessory_States
             GUI_Parent_Dict[Parent] = isOn;
         }
 
-        private string StateDescription(int binding, int state)
+        internal string StateDescription(int binding, int state)
         {
             var statename = state.ToString();
             if (binding > Max_Defined_Key)
@@ -762,28 +749,6 @@ namespace Accessory_States
                     break;
             }
             return statename;
-        }
-
-        private static void DrawFontSize()
-        {
-            if (GUILayout.Button("GUI-", buttonstyle))
-            {
-                SetFontSize(Math.Max(labelstyle.fontSize - 1, 5));
-            }
-            if (GUILayout.Button("GUI+", buttonstyle))
-            {
-                SetFontSize(1 + labelstyle.fontSize);
-            }
-        }
-
-        private static void SetFontSize(int size)
-        {
-            labelstyle.fontSize = size;
-            buttonstyle.fontSize = size;
-            fieldstyle.fontSize = size;
-            togglestyle.fontSize = size;
-            sliderstyle.fontSize = size;
-            sliderthumbstyle.fontSize = size;
         }
 
         private IEnumerator<int> DragEvent()

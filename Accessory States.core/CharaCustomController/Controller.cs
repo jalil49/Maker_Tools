@@ -1,9 +1,6 @@
 ﻿using ExtensibleSaveFormat;
 using KKAPI;
 using KKAPI.Chara;
-#if !KKS
-using KKAPI.MainGame;
-#endif
 using KKAPI.Maker;
 using MessagePack;
 using System;
@@ -423,7 +420,7 @@ namespace Accessory_States
             return max;
         }
 
-        private int MaxState(int binding)
+        internal int MaxState(int binding)
         {
             if (binding < 9)
             {

@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.5.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\lib\net35\0Harmony.dll</HintPath>
@@ -209,6 +212,7 @@
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "F:\Satisfactory\Outfit Selection Expansion\bin" (
 xcopy "$(TargetFileName)" "C:\Sunshine\BepInEx\plugins" /S /Y /D
-)</PostBuildEvent>
+)
+xcopy "$(TargetFileName)" "..\..\..\" /S /Y /D</PostBuildEvent>
   </PropertyGroup>
 </Project>

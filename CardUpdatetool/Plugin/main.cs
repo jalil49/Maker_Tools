@@ -66,7 +66,7 @@ namespace CardUpdateTool
         private static void GetAllGuids()
         {
             GuidList = CharacterApi.RegisteredHandlers.Select(x => x.ExtendedDataId).ToList();
-            GuidList.Add("com.joan6694.illusionplugins.moreaccessories");
+            GuidList.Add("moreAccessories");
             UpdateVisibleGuids();
         }
 

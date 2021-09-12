@@ -3,7 +3,6 @@ using KKAPI.Chara;
 using KKAPI.Maker;
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Accessory_Shortcuts
 {

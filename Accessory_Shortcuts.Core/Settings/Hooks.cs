@@ -43,6 +43,5 @@ namespace Accessory_Shortcuts
                 CharaEvent.CustomAcs = __instance;
             }
         }
-
     }
 }

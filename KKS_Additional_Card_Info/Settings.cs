@@ -2,7 +2,6 @@
 using ExtensibleSaveFormat;
 using MessagePack;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Additional_Card_Info
 {

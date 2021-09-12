@@ -121,25 +121,25 @@ namespace Accessory_States
         //    set { ThisCharactersData.NowCoordinate = value; }
         //}
 
-        private Dictionary<int, Slotdata> Slotinfo
+        internal Dictionary<int, Slotdata> Slotinfo
         {
             get { return NowCoordinate.Slotinfo; }
             set { NowCoordinate.Slotinfo = value; }
         }
 
-        private Dictionary<int, NameData> Names
+        internal Dictionary<int, NameData> Names
         {
             get { return NowCoordinate.Names; }
             set { NowCoordinate.Names = value; }
         }
 
-        private bool[] ClothNotData
+        internal bool[] ClothNotData
         {
             get { return NowCoordinate.ClothNotData; }
             set { NowCoordinate.ClothNotData = value; }
         }
 
-        private bool ForceClothDataUpdate
+        internal bool ForceClothDataUpdate
         {
             get { return NowCoordinate.ForceClothNotUpdate; }
             set { NowCoordinate.ForceClothNotUpdate = value; }

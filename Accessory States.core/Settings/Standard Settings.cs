@@ -5,6 +5,7 @@ using Generic.Core;
 using KKAPI.Chara;
 using KKAPI.MainGame;
 using KKAPI.Maker;
+using KKAPI.Studio;
 using System;
 using System.Collections.Generic;
 
@@ -52,9 +53,13 @@ namespace Accessory_States
             MakerAPI.MakerStartedLoading += (s, e) => CharaEvent.Maker_started();
             MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
 
+            if (StudioAPI.InsideStudio)
+            {
+                CreateStudioControls();
+            }
+
             GameUnique();
         }
-
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)
         {
             BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out var target);
