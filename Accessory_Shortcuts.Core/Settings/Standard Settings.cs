@@ -12,7 +12,7 @@ namespace Accessory_Shortcuts
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_Shortcuts";
-        public const string Version = "1.5";
+        public const string Version = "1.6";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
 
