@@ -11,12 +11,12 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\CharaEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)CharaCustomController\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
   </ItemGroup>
 </Project>

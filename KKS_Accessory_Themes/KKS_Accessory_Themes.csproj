@@ -153,7 +153,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +163,9 @@
       <Project>{b200acf0-4829-47fb-8f12-300f3e3c4294}</Project>
       <Name>KKS_Additional_Card_Info</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="..\Accessory_Themes.Core\Accessory_Themes.Core.projitems" Label="Shared" />
   <Import Project="..\Accessory.Hooks\Accessory.Hooks.projitems" Label="Shared" />

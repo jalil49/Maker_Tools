@@ -153,11 +153,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="..\Generic.Core\Generic.Core.projitems" Label="Shared" />
   <Import Project="..\Additional_Card_Info.Core\Additional_Card_Info.Core.projitems" Label="Shared" />

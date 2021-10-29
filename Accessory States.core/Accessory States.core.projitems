@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\AccStateSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-Sync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\Migration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Studio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
@@ -27,6 +28,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
   </ItemGroup>
 </Project>
