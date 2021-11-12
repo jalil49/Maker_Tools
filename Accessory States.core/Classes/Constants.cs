@@ -17,5 +17,13 @@ namespace Accessory_States
             [7] = "Inner Shoes",
             [8] = "Outer Shoes",
         };
+
+        public const string CoordinateKey = "CoordinateData";
+        public const string AccessoryKey = "SlotData";
+        public const int SaveVersion = 2;
+
+#if KK || KKS
+        public const int ClothingLength = 9;
+#endif
     }
 }

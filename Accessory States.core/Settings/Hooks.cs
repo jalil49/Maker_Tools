@@ -1,13 +1,10 @@
 ﻿using ChaCustom;
 using HarmonyLib;
-using System;
 
 namespace Accessory_States
 {
     internal static partial class Hooks
     {
-        public static event EventHandler<OnClickCoordinateChange> HcoordChange;
-
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetClothesState))]
         public static void Hook_SetClothesState(ChaControl __instance, int clothesKind, byte state)
@@ -19,15 +16,7 @@ namespace Accessory_States
         [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetAccessoryStateCategory))]
         public static void Hook_SetAccessoryStateCategory(ChaControl __instance, int cateNo, bool show)
         {
-            if (cateNo == 1)
-                __instance.GetComponent<CharaEvent>().SubChanged(show);
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSprite), nameof(HSprite.OnClickCoordinateChange), new Type[] { typeof(int) })]
-        public static void Hook_OnClickCoordinateChange(int _coordinate)
-        {
-            OnClickCoordinateChangeEvent(0, _coordinate);
+            __instance.GetComponent<CharaEvent>().AccessoryCategoryChange(cateNo, show);
         }
 
         [HarmonyPrefix]
@@ -35,38 +24,6 @@ namespace Accessory_States
         public static void Hook_ChangeWindowSetting(int no)
         {
             CharaEvent.StopMakerLoop = no == 3;
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSprite), nameof(HSprite.OnClickCoordinateChange), new Type[] { typeof(int), typeof(int) })]
-        public static void Hook_OnClickCoordinateChange2(int _female, int _coordinate)
-        {
-            OnClickCoordinateChangeEvent(_female, _coordinate);
-        }
-
-        private static void OnClickCoordinateChangeEvent(int _female, int _coordinate)
-        {
-            var args = new OnClickCoordinateChange(_female, _coordinate);
-            if (HcoordChange == null || HcoordChange.GetInvocationList().Length == 0)
-            {
-                return;
-            }
-            try
-            {
-                HcoordChange?.Invoke(null, args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(HcoordChange)} - {ex}");
-            }
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSceneProc), nameof(HSceneProc.SetState))]
-        internal static void LoadSethook(HSceneProc __instance)
-        {
-            if (__instance.flags.isFreeH)
-                CharaEvent.FreeHHeroines = __instance.flags.lstHeroine;
         }
     }
 }

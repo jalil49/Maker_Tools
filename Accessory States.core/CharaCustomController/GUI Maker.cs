@@ -14,38 +14,31 @@ namespace Accessory_States
     {
         internal readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
 
-        static readonly Dictionary<int, Slotdata> GUI_int_state_copy_Dict = new Dictionary<int, Slotdata>();
+        static readonly Dictionary<int, SlotData> GUI_int_state_copy_Dict = new Dictionary<int, SlotData>();
 
         internal readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
 
-        static private bool ShowToggleInterface = false;
+        private static bool ShowToggleInterface = false;
 
-        static private bool ShowCustomGui = false;
+        private static bool ShowCustomGui = false;
 
         static Rect _Custom_GroupsRect;
 
-        static private Vector2 _accessorySlotsScrollPos = new Vector2();
+        private static Vector2 _accessorySlotsScrollPos = new Vector2();
 
-        static private Vector2 NameScrolling = new Vector2();
-        static private Vector2 StateScrolling = new Vector2();
-        static private bool mouseassigned = false;
-        static private bool autoscale = true;
-        static private int minilimit = 3;
+        private static Vector2 NameScrolling = new Vector2();
+        private static Vector2 StateScrolling = new Vector2();
+        private static bool mouseassigned = false;
+        private static bool autoscale = true;
+        private static int minilimit = 3;
         private Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
 
         static bool showdelete = false;
 
-        static GUIStyle labelstyle => Settings.labelstyle;
-        static GUIStyle buttonstyle => Settings.buttonstyle;
-        static GUIStyle fieldstyle => Settings.fieldstyle;
-        static GUIStyle togglestyle => Settings.togglestyle;
-        static GUIStyle sliderstyle => Settings.sliderstyle;
-        static GUIStyle sliderthumbstyle => Settings.sliderthumbstyle;
-
         static int tabvalue = 0;
         static int Selectedkind = -1;
         static readonly string[] statenameassign = new string[] { "0", "state 0" };
-
+        static string defaultstatetext = "0";
         private static readonly string[] shoetypetext = new string[] { "Inside", "Outside", "Both" };
         private static readonly string[] TabText = new string[] { "Assign", "Settings" };
 
@@ -60,7 +53,7 @@ namespace Accessory_States
             }
         }
 
-        private static void GUI_Toggle()
+        private static void GUIToggle()
         {
             ShowCustomGui = !ShowCustomGui;
         }
@@ -82,16 +75,17 @@ namespace Accessory_States
             _Custom_GroupsRect.height = 300f;
         }
 
-        private void Update_Toggles_GUI()
+        private void UpdateTogglesGUI()
         {
-            foreach (var Custom in Names)
+            var i = Constants.ClothingLength;
+            foreach (var custom in Names)
             {
-                if (!GUI_Custom_Dict.TryGetValue(Custom.Key, out var States))
+                if (!GUI_Custom_Dict.TryGetValue(i, out var States))
                 {
-                    States = new int[] { 0, 2 };
-                    GUI_Custom_Dict[Custom.Key] = States;
+                    GUI_Custom_Dict[i] = States = new int[] { 0, 2 };
                 }
-                States[1] = MaxState(Custom.Key) + 2;
+                States[1] = MaxState(i) + 2;
+                i++;
             }
         }
 
@@ -104,10 +98,9 @@ namespace Accessory_States
         private void CustomGui(int id)
         {
             var slot = AccessoriesApi.SelectedMakerAccSlot;
-            if (!Slotinfo.TryGetValue(slot, out var slotdata))
+            if (!SlotInfo.TryGetValue(slot, out var slotdata))
             {
-                slotdata = new Slotdata(-1, new List<int[]>() { new int[] { 0, 3 } }, 2, false);
-                Slotinfo[slot] = slotdata;
+                SlotInfo[slot] = slotdata = new SlotData("", -1, new List<int[]>() { new int[] { 0, 3 } }, 2, false);
             }
 
             var Binding = slotdata.Binding;
@@ -128,27 +121,23 @@ namespace Accessory_States
                     {
                         GUILayout.BeginHorizontal();
                         {
-                            if (GUILayout.Button("New Custom", buttonstyle))
+                            if (Button("New Custom", true))
                             {
-                                var max = 10;
-                                while (Names.ContainsKey(max))
-                                {
-                                    max++;
-                                }
+                                var max = 10 + Names.Count;
                                 var name = "Custom " + max;
-                                Names[max] = new NameData() { Name = name };
-                                AddGroup(max, name);
-                                Update_Drop_boxes();
+                                Names.Add(new NameData() { Name = name });
+                                //AddGroup(max, name);
+                                UpdateMakerDropboxes();
                             }
 
-                            if (GUILayout.Button("Update Dropbox", buttonstyle, GUILayout.ExpandWidth(false)))
+                            if (Button("Update Dropbox", false))
                             {
-                                Update_Drop_boxes();
+                                UpdateMakerDropboxes();
                             }
-                            if (binded && GUILayout.Button("Un-Bind", buttonstyle))
+                            if (binded && Button("Un-Bind"))
                             {
                                 slotdata.Binding = -1;
-                                ACC_Appearance_dropdown.SetValue(slot, 0);
+                                GroupSelect.SetValue(slot, 0);
                             }
                             else
                             {
@@ -168,7 +157,7 @@ namespace Accessory_States
 
                     GUILayout.BeginVertical(GUI.skin.box);
                     {
-                        tabvalue = GUILayout.Toolbar(tabvalue, TabText, buttonstyle);
+                        tabvalue = GUILayout.Toolbar(tabvalue, TabText);
                         switch (tabvalue)
                         {
                             case 0:
@@ -192,47 +181,56 @@ namespace Accessory_States
 
         private void DrawSettingsWindow()
         {
-            //if (Selectedkind == -1)
-            //{
-            //    GUILayout.Label("Please select a group", labelstyle);
-            //    return;
-            //}
-            //GUILayout.BeginHorizontal();
-            //{
-            //    GUILayout.Label("Change all subcategory", labelstyle);
-            //    if (GUILayout.Button("Show", buttonstyle))
-            //    {
-            //        ChangeBindingSub(0);
-            //    }
-            //    if (GUILayout.Button("Hide", buttonstyle))
-            //    {
-            //        ChangeBindingSub(1);
-            //    }
-            //}
-            //GUILayout.EndHorizontal();
+            if (Selectedkind == -1)
+            {
+                Label("Please select a group");
+                return;
+            }
+            GUILayout.BeginHorizontal();
+            {
+                Label("Change all category");
+                if (Button("Main"))
+                {
+                    ChangeBindingSub(0);
+                }
+                if (Button("Sub"))
+                {
+                    ChangeBindingSub(1);
+                }
+            }
+            GUILayout.EndHorizontal();
 
             DrawStatesNameWindow();
         }
 
         private void DrawStatesNameWindow()
         {
-            if (!Names.ContainsKey(Selectedkind))
+            if (Names.Count <= Selectedkind - Constants.ClothingLength)
             {
-                GUILayout.Label("Custom group not selected", labelstyle);
+                Label("Custom group not selected");
                 return;
             }
-            var statenamedict = Names[Selectedkind].Statenames;
+            var statenamedict = Names[Selectedkind - Constants.ClothingLength].StateNames;
 
             GUILayout.BeginHorizontal();
             {
-                statenameassign[0] = GUILayout.TextField(statenameassign[0], fieldstyle);
-                statenameassign[1] = GUILayout.TextField(statenameassign[1], fieldstyle);
-                if (GUILayout.Button("Add State Name", buttonstyle))
+                var currentstate = Names[Selectedkind - Constants.ClothingLength].DefaultState;
+                Label($"Default state {currentstate}: {StateDescription(Selectedkind, currentstate)}", false);
+                defaultstatetext = TextField(defaultstatetext);
+                if (int.TryParse(defaultstatetext, out var newdefault) && newdefault > -1 && newdefault != currentstate && newdefault <= GUI_Custom_Dict[Selectedkind][1] && Button("Apply"))
                 {
-                    if (int.TryParse(statenameassign[0], out var key))
-                    {
-                        statenamedict[key] = statenameassign[1];
-                    }
+                    Names[Selectedkind - Constants.ClothingLength].DefaultState = newdefault;
+                    SaveCoordinateData();
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            {
+                statenameassign[0] = TextField(statenameassign[0], true);
+                statenameassign[1] = TextField(statenameassign[1], true);
+                if (int.TryParse(statenameassign[0], out var key) && Button("Add State Name"))
+                {
+                    statenamedict[key] = statenameassign[1];
                 }
             }
             GUILayout.EndHorizontal();
@@ -245,9 +243,9 @@ namespace Accessory_States
                     var key = statenamedict.ElementAt(i).Key;
                     GUILayout.BeginHorizontal();
                     {
-                        GUILayout.Label($"State: {key}", labelstyle);
-                        statenamedict[key] = GUILayout.TextField(statenamedict[key], fieldstyle);
-                        if (GUILayout.Button("Delete", buttonstyle, GUILayout.ExpandWidth(false)))
+                        Label($"State: {key}");
+                        statenamedict[key] = TextField(statenamedict[key], true);
+                        if (Button("Delete", false))
                         {
                             statenamedict.Remove(key);
                             i--;
@@ -260,14 +258,14 @@ namespace Accessory_States
             GUILayout.EndScrollView();
         }
 
-        private void DrawStatesWindow(ref Slotdata slotdata, bool valid, int statelimits, int slot)
+        private void DrawStatesWindow(ref SlotData slotdata, bool valid, int statelimits, int slot)
         {
             var binding = slotdata.Binding;
             var stateinfo = slotdata.States;
             GUILayout.BeginHorizontal(GUI.skin.box);
             {
                 GUILayout.FlexibleSpace();
-                GUILayout.Label((binding <= Max_Defined_Key) ? Constants.ConstantOutfitNames[binding] : Names[binding].Name, labelstyle);
+                Label((binding < Constants.ClothingLength) ? Constants.ConstantOutfitNames[binding] : Names[binding - Constants.ClothingLength].Name, false);
                 GUILayout.FlexibleSpace();
             }
             GUILayout.EndHorizontal();
@@ -278,10 +276,10 @@ namespace Accessory_States
 
                 if (valid)
                 {
-                    slotdata.Parented = GUILayout.Toggle(slotdata.Parented, "Parent Bind", togglestyle, GUILayout.ExpandWidth(false));
+                    slotdata.Parented = Toggle(slotdata.Parented, "Parent Bind");
                     GUILayout.BeginHorizontal(GUI.skin.box);
                     {
-                        GUILayout.Label("Shoe", labelstyle);
+                        Label("Shoe");
                         for (byte i = 0; i < 3; i++)
                         {
                             DrawShoeButton(slot, ref slotdata, i);
@@ -298,11 +296,11 @@ namespace Accessory_States
             if (binding > -1)
             {
                 StateScrolling = GUILayout.BeginScrollView(StateScrolling);
-                if (GUILayout.Button("Add new state", buttonstyle))
+                if (Button("Add new state"))
                 {
-                    stateinfo.Add(new int[] { 0, (binding > Max_Defined_Key) ? statelimits - 1 : statelimits });
+                    stateinfo.Add(new int[] { 0, (binding >= Constants.ClothingLength) ? statelimits - 1 : statelimits });
                 }
-                if (stateinfo.Count > 1 && GUILayout.Button("Remove last state", buttonstyle))
+                if (stateinfo.Count > 1 && Button("Remove last state"))
                 {
                     stateinfo.RemoveAt(stateinfo.Count - 1);
                 }
@@ -314,13 +312,13 @@ namespace Accessory_States
             }
             else
             {
-                GUILayout.Label("Unassigned", labelstyle, GUILayout.ExpandWidth(true));
+                Label("Unassigned", true);
             }
         }
 
-        private void DrawShoeButton(int slot, ref Slotdata slotdata, byte shoetype)
+        private void DrawShoeButton(int slot, ref SlotData slotdata, byte shoetype)
         {
-            if (shoetype != slotdata.Shoetype)
+            if (shoetype != slotdata.ShoeType)
             {
                 var show = true;
                 switch (slotdata.Binding)
@@ -340,30 +338,31 @@ namespace Accessory_States
                     default:
                         break;
                 }
-                if (show && GUILayout.Button(shoetypetext[shoetype], buttonstyle, GUILayout.ExpandWidth(false)))
+                if (show && Button(shoetypetext[shoetype], false))
                 {
-                    slotdata.Shoetype = shoetype;
+                    slotdata.ShoeType = shoetype;
                     if (shoetype < 2 && ChaControl.fileStatus.shoesType != shoetype)
                     {
                         show = false;
                     }
                     ChaControl.SetAccessoryState(slot, show);
+                    SaveSlotData(slot, slotdata);
                 }
                 return;
             }
-            GUILayout.Label(shoetypetext[shoetype], labelstyle);
+            Label(shoetypetext[shoetype], true);
         }
 
         private static void CustomLimit(int binding)
         {
-            if (binding > Max_Defined_Key)
+            if (binding >= Constants.ClothingLength)
             {
-                GUILayout.Label("Limit: " + minilimit, labelstyle);
-                if (GUILayout.Button("-1", buttonstyle))
+                Label("Limit: " + minilimit);
+                if (Button("-1"))
                 {
                     minilimit = Math.Max(1, --minilimit);
                 }
-                if (GUILayout.Button("+1", buttonstyle))
+                if (Button("+1"))
                 {
                     minilimit++;
                 }
@@ -374,7 +373,7 @@ namespace Accessory_States
             }
         }
 
-        private void DefinedGroups(ref Slotdata slotdata, int limit, int slot, bool valid)
+        private void DefinedGroups(ref SlotData slotdata, int limit, int slot, bool valid)
         {
             var currentbinding = slotdata.Binding;
             var cloth = ChaControl.nowCoordinate.clothes.parts;
@@ -415,7 +414,7 @@ namespace Accessory_States
                     else
                         GUILayout.BeginHorizontal();
                     {
-                        GUILayout.Label(item.Value, labelstyle);
+                        Label(item.Value);
                         if (valid)
                             DrawApplyBindingButton(ref slotdata, currentbinding, clothnum, clothnum + 1, slot);
 
@@ -424,11 +423,6 @@ namespace Accessory_States
                             DrawCopyPasteButtons(ref slotdata, currentbinding, slot);
                             DrawResetButton(ref slotdata, limit, slot);
                         }
-
-                        //if (tabvalue == 1 && Selectedkind != clothnum && GUILayout.Button("Select", buttonstyle, GUILayout.ExpandWidth(false)))
-                        //{
-                        //    Selectedkind = clothnum;
-                        //}
                     }
                     GUILayout.EndHorizontal();
                 }
@@ -436,59 +430,62 @@ namespace Accessory_States
             }
         }
 
-        private void CustomGroups(ref Slotdata slotinfo, int limit, int slot, bool valid)
+        private void CustomGroups(ref SlotData slotinfo, int limit, int slot, bool valid)
         {
             var currentbinding = slotinfo.Binding;
-            var namedict = Names;
-            var count = Constants.ConstantOutfitNames.Count;
+            var count = Constants.ClothingLength;
 
-            for (var i = 0; i < namedict.Count; i++)
+            for (var i = 0; i < Names.Count; i++)
             {
-                var element = namedict.ElementAt(i);
-
+                var element = Names[i];
+                var namebinding = i + Constants.ClothingLength;
                 GUILayout.BeginVertical();
                 {
-                    if (element.Key == currentbinding)
+                    if (namebinding == currentbinding)
                         GUILayout.BeginHorizontal(GUI.skin.box);
                     else
                         GUILayout.BeginHorizontal();
                     {
-                        var text = GUILayout.TextField(element.Value.Name, fieldstyle, GUILayout.ExpandWidth(false));
-                        if (text != element.Value.Name)
+                        var text = TextField(element.Name, true);
+                        if (text != element.Name)
                         {
-                            namedict[element.Key].Name = text;
-                            RenameGroup(element.Key, text);
+                            Names[i].Name = text;
+                            foreach (var item in SlotInfo.Where(x => x.Value.Binding == namebinding))
+                            {
+                                item.Value.GroupName = text;
+                                SaveSlotData(item.Key);
+                            }
                         }
 
                         if (valid)
-                            DrawApplyBindingButton(ref slotinfo, currentbinding, element.Key, i + count, slot);
+                            DrawApplyBindingButton(ref slotinfo, currentbinding, i + Constants.ClothingLength, i + count, slot);
 
-                        if (element.Key == currentbinding)
+                        if (namebinding == currentbinding)
                         {
                             DrawCopyPasteButtons(ref slotinfo, currentbinding, slot);
                             DrawResetButton(ref slotinfo, (autoscale) ? limit : limit - 1, slot);
                         }
 
-                        if (tabvalue == 1 && Selectedkind != element.Key && GUILayout.Button("Select", buttonstyle, GUILayout.ExpandWidth(false)))
+                        if (tabvalue == 1 && Selectedkind != namebinding && Button("Select", false))
                         {
-                            Selectedkind = element.Key;
+                            Selectedkind = namebinding;
                         }
 
-                        if (showdelete && GUILayout.Button("Delete", buttonstyle, GUILayout.ExpandWidth(false)))
+                        if (showdelete && Button("Delete", false))
                         {
-                            namedict.Remove(element.Key);
-                            DeleteGroup(element.Key);
-                            var removelist = Slotinfo.Where(x => x.Value.Binding == element.Key).ToList();
+                            Names.Remove(element);
+                            //DeleteGroup(element.Key);
+                            var removelist = SlotInfo.Where(x => x.Value.Binding == namebinding).ToList();
                             for (var j = 0; j < removelist.Count; j++)
                             {
-                                ACC_Appearance_dropdown.SetValue(removelist.Count, -1);
-                                Slotinfo.Remove(removelist[i].Key);
+                                GroupSelect.SetValue(removelist.Count, -1);
+                                SlotInfo.Remove(removelist[i].Key);
                             }
-                            GUI_int_state_copy_Dict.Remove(element.Key);
-                            GUI_Custom_Dict.Remove(element.Key);
+                            GUI_int_state_copy_Dict.Remove(i);
+                            GUI_Custom_Dict.Remove(i);
 
                             i--;
-                            Update_Drop_boxes();
+                            UpdateMakerDropboxes();
                         }
                     }
                     GUILayout.EndHorizontal();
@@ -502,100 +499,106 @@ namespace Accessory_States
             var stateref = states[index];
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label($"Start: {StateDescription(binding, stateref[0])}", labelstyle);
+                Label($"Start: {StateDescription(binding, stateref[0])}", true);
                 GUILayout.FlexibleSpace();
-                GUILayout.Label($"Stop: {StateDescription(binding, stateref[1])}", labelstyle);
+                Label($"Stop: {StateDescription(binding, stateref[1])}", false);
             }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             {
-                var round = Mathf.RoundToInt(GUILayout.HorizontalSlider(stateref[0], 0, limit, sliderstyle, sliderthumbstyle, GUILayout.ExpandWidth(true)));
+                var round = HorizontalSlider(stateref[0], 0, limit, true);
                 if (round != stateref[0] && round <= stateref[1])
                 {
                     stateref[0] = round;
                     if (index == 0)
-                        ACC_Appearance_state.SetValue(slot, round, true);
-                    else
-                        ChangeTriggerProperty(binding);
+                        StartState.SetValue(slot, round, true);
+                    //else
+                    //    ChangeTriggerProperty(binding);
+                    SaveSlotData(slot);
                 }
-                var text = GUILayout.TextField(round.ToString(), fieldstyle, GUILayout.ExpandWidth(false));
+                var text = TextField(round.ToString(), false);
                 if (int.TryParse(text, out var textvalue) && textvalue != round && textvalue <= stateref[1])
                 {
                     stateref[0] = textvalue;
                     if (index == 0)
-                        ACC_Appearance_state.SetValue(slot, textvalue);
-                    else
-                        ChangeTriggerProperty(binding);
+                        StartState.SetValue(slot, textvalue);
+                    //else
+                    //    ChangeTriggerProperty(binding);
+                    SaveSlotData(slot);
                 }
             }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             {
-                var round = Mathf.RoundToInt(GUILayout.HorizontalSlider(stateref[1], 0, limit, sliderstyle, sliderthumbstyle, GUILayout.ExpandWidth(true)));
+                var round = HorizontalSlider(stateref[1], 0, limit, true);
                 if (round != stateref[1] && round >= stateref[0])
                 {
                     stateref[1] = round;
                     if (index == 0)
-                        ACC_Appearance_state2.SetValue(slot, round, true);
+                        EndState.SetValue(slot, round, true);
                     else
                     {
-                        UpdateAccessoryshow(Slotinfo[slot], slot);
-                        ChangeTriggerProperty(binding);
-                        Update_Toggles_GUI();
+                        UpdateAccessoryshow(SlotInfo[slot], slot);
+                        //ChangeTriggerProperty(binding);
+                        UpdateTogglesGUI();
                     }
+                    SaveSlotData(slot);
                 }
-                var text = GUILayout.TextField(round.ToString(), fieldstyle, GUILayout.ExpandWidth(false));
+                var text = TextField(round.ToString(), false);
                 if (int.TryParse(text, out var textvalue) && textvalue != round && textvalue >= stateref[0] && (autoscale || textvalue <= limit))
                 {
                     stateref[1] = textvalue;
                     if (index == 0)
-                        ACC_Appearance_state2.SetValue(slot, textvalue);
+                        EndState.SetValue(slot, textvalue);
                     else
                     {
-                        UpdateAccessoryshow(Slotinfo[slot], slot);
-                        ChangeTriggerProperty(binding);
-                        Update_Toggles_GUI();
+                        UpdateAccessoryshow(SlotInfo[slot], slot);
+                        //ChangeTriggerProperty(binding);
+                        UpdateTogglesGUI();
                     }
+                    SaveSlotData(slot);
                 }
             }
             GUILayout.EndHorizontal();
         }
 
-        private void DrawApplyBindingButton(ref Slotdata slotinfo, int currentbinding, int newbinding, int index, int slot)
+        private void DrawApplyBindingButton(ref SlotData slotinfo, int currentbinding, int newbinding, int index, int slot)
         {
-            if (newbinding != currentbinding && GUILayout.Button("Apply", buttonstyle, GUILayout.ExpandWidth(false)))
+            if (newbinding != currentbinding && Button("Apply", false))
             {
-                var shoetype = slotinfo.Shoetype;
+                var shoetype = slotinfo.ShoeType;
                 if (newbinding == 7 && shoetype == 1) shoetype = 0;
                 if (newbinding == 8 && shoetype == 0) shoetype = 1;
-                slotinfo.Shoetype = shoetype;
-                ACC_Appearance_dropdown.SetValue(slot, index, true);
+                slotinfo.ShoeType = shoetype;
+                GroupSelect.SetValue(slot, index, true);
                 var max = StateLimitsCheck(newbinding);
                 var states = slotinfo.States;
                 states.Clear();
                 states.Add(new int[] { 0, max });
-                ACC_Appearance_state.SetValue(slot, 0, true);
-                ACC_Appearance_state2.SetValue(slot, max, true);
-                Update_Toggles_GUI();
+                StartState.SetValue(slot, 0, true);
+                EndState.SetValue(slot, max, true);
+                UpdateTogglesGUI();
+                SaveSlotData(slot);
             }
         }
 
-        private static void DrawCopyPasteButtons(ref Slotdata currentslotdata, int currentbinding, int slot)
+        private static void DrawCopyPasteButtons(ref SlotData currentslotdata, int currentbinding, int slot)
         {
-            if (GUILayout.Button("Copy", buttonstyle, GUILayout.ExpandWidth(false)))
+            if (Button("Copy", false))
             {
-                GUI_int_state_copy_Dict[currentbinding] = new Slotdata(currentslotdata);
+                GUI_int_state_copy_Dict[currentbinding] = new SlotData(currentslotdata);
             }
-            if (GUI_int_state_copy_Dict.TryGetValue(currentbinding, out var list) && GUILayout.Button("Paste", buttonstyle, GUILayout.ExpandWidth(false)))
+            if (GUI_int_state_copy_Dict.TryGetValue(currentbinding, out var list) && Button("Paste", false))
             {
-                currentslotdata.Shoetype = list.Shoetype;
+                currentslotdata.ShoeType = list.ShoeType;
                 currentslotdata.Parented = list.Parented;
                 currentslotdata.States = list.States;
                 var firststate = list.States[0];
-                ACC_Appearance_state.SetValue(slot, firststate[0]);
-                ACC_Appearance_state2.SetValue(slot, firststate[1]);
+                StartState.SetValue(slot, firststate[0]);
+                EndState.SetValue(slot, firststate[1]);
+                ControllerGet.SaveSlotData(slot);
             }
         }
 
@@ -609,7 +612,7 @@ namespace Accessory_States
                 {
                     StartCoroutine(DragEvent());
                 }
-                if (GUILayout.Button("X", buttonstyle, GUILayout.ExpandWidth(false)))
+                if (Button("X", false))
                 {
                     ShowCustomGui = false;
                 }
@@ -621,9 +624,9 @@ namespace Accessory_States
         {
             GUILayout.BeginHorizontal();
             {
-                showdelete = GUILayout.Toggle(showdelete, "Enable Delete", togglestyle, GUILayout.ExpandWidth(false));
-                autoscale = GUILayout.Toggle(autoscale, "Auto increase custom Limit", togglestyle, GUILayout.ExpandWidth(false));
-                if (GUILayout.Button("Refresh", buttonstyle))
+                showdelete = Toggle(showdelete, "Enable Delete", false);
+                autoscale = Toggle(autoscale, "Auto increase custom Limit", false);
+                if (Button("Refresh"))
                 {
                     Refresh();
                 }
@@ -631,40 +634,21 @@ namespace Accessory_States
             GUILayout.EndHorizontal();
         }
 
-        private static void DrawResetButton(ref Slotdata slotinfo, int limit, int slot)
+        private static void DrawResetButton(ref SlotData slotinfo, int limit, int slot)
         {
-            if (GUILayout.Button("Reset", buttonstyle, GUILayout.ExpandWidth(false)))
+            if (Button("Reset", false))
             {
                 var states = slotinfo.States;
                 states.Clear();
                 states.Add(new int[] { 0, limit });
-                ACC_Appearance_state.SetValue(slot, 0, true);
-                ACC_Appearance_state2.SetValue(slot, limit, true);
+                StartState.SetValue(slot, 0, true);
+                EndState.SetValue(slot, limit, true);
+                ControllerGet.SaveSlotData(slot);
             }
         }
 
-        private static int StateLimitsCheck(int Binding, int currentmax)
-        {
-            if (Binding < 9)
-            {
-                return 3;
-            }
-            if (autoscale)
-            {
-                return Math.Max(1, currentmax + 1);
-            }
-            return Math.Max(minilimit, currentmax);
-        }
 
-        private int StateLimitsCheck(int Binding)
-        {
-            if (!Slotinfo.TryGetValue(AccessoriesApi.SelectedMakerAccSlot, out var stateinfo))
-            {
-                return 3;
-            }
-            return StateLimitsCheck(Binding, MaxState(stateinfo.States));
-        }
-
+        #region ClothingStateMenu LookALike
         private void DrawToggleButtons()
         {
             GUILayout.BeginArea(_Custom_GroupsRect);
@@ -674,12 +658,14 @@ namespace Accessory_States
                     GUILayout.BeginVertical();
                     {
                         //Custom Groups
+                        var i = Constants.ClothingLength;
                         foreach (var item in Names)
                         {
-                            DrawCustomButton(item.Key, item.Value.Name);
+                            DrawCustomButton(i, item.Name);
+                            i++;
                         }
                         //Parent
-                        foreach (var item in Now_Parented_Name_Dictionary.Keys)
+                        foreach (var item in ParentedNameDictionary.Keys)
                         {
                             DrawParentButton(item);
                         }
@@ -691,18 +677,17 @@ namespace Accessory_States
             GUILayout.EndArea();
         }
 
-        private void DrawCustomButton(int Kind, string Name)
+        private void DrawCustomButton(int kind, string name)
         {
-            if (!GUI_Custom_Dict.TryGetValue(Kind, out var State))
+            if (!GUI_Custom_Dict.TryGetValue(kind, out var State))
             {
-                State = new int[] { 0, 2 };
-                GUI_Custom_Dict[Kind] = State;
+                GUI_Custom_Dict[kind] = State = new int[] { 0, 2 };
             }
 
-            if (GUILayout.Button($"{Name}: {State[0]}"))
+            if (Button($"{name}: {State[0]}"))
             {
                 State[0] = (State[0] + 1) % State[1];
-                Custom_Groups(Kind, State[0]);
+                CustomGroups(kind, State[0]);
             }
             GUILayout.Space(-5);
         }
@@ -713,21 +698,28 @@ namespace Accessory_States
             {
                 isOn = true;
             }
-            if (GUILayout.Button($"{Parent}: {(isOn ? "On" : "Off")}"))
+            if (Button($"{Parent}: {(isOn ? "On" : "Off")}"))
             {
                 isOn = !isOn;
-                Parent_toggle(Parent, isOn);
+                ParentToggle(Parent, isOn);
             }
             GUILayout.Space(-5);
             GUI_Parent_Dict[Parent] = isOn;
         }
+        #endregion
 
         internal string StateDescription(int binding, int state)
         {
             var statename = state.ToString();
-            if (binding > Max_Defined_Key)
+
+            if (binding >= Constants.ClothingLength && binding < Constants.ClothingLength + Names.Count)
             {
-                if (Names[binding].Statenames.TryGetValue(state, out statename))
+                var index = binding - Constants.ClothingLength;
+                if (index >= Names.Count)
+                {
+                    return "Error";
+                }
+                if (Names[index].StateNames.TryGetValue(state, out statename))
                 {
                     return statename;
                 }
@@ -751,6 +743,27 @@ namespace Accessory_States
             return statename;
         }
 
+        private static int StateLimitsCheck(int Binding, int currentmax)
+        {
+            if (Binding < 9)
+            {
+                return 3;
+            }
+            if (autoscale)
+            {
+                return Math.Max(1, currentmax + 1);
+            }
+            return Math.Max(minilimit, currentmax);
+        }
+        private int StateLimitsCheck(int Binding)
+        {
+            if (!SlotInfo.TryGetValue(AccessoriesApi.SelectedMakerAccSlot, out var stateinfo))
+            {
+                return 3;
+            }
+            return StateLimitsCheck(Binding, MaxState(stateinfo.States));
+        }
+
         private IEnumerator<int> DragEvent()
         {
             var pos = Input.mousePosition;
@@ -771,6 +784,27 @@ namespace Accessory_States
             }
             yield return 0;
             mouseassigned = false;
+        }
+
+        private static bool Toggle(bool value, string text, bool expandwidth = true)
+        {
+            return GUILayout.Toggle(value, text, Settings.ToggleStyle, GUILayout.ExpandWidth(expandwidth));
+        }
+        private static bool Button(string text, bool expandwidth = true)
+        {
+            return GUILayout.Button(text, Settings.ButtonStyle, GUILayout.ExpandWidth(expandwidth));
+        }
+        private static string TextField(string text, bool expandwidth = true)
+        {
+            return GUILayout.TextField(text, Settings.FieldStyle, GUILayout.ExpandWidth(expandwidth));
+        }
+        private static int HorizontalSlider(int value, int start, int stop, bool expandwidth = true)
+        {
+            return Mathf.RoundToInt(GUILayout.HorizontalSlider(value, start, stop, Settings.SliderStyle, Settings.SliderThumbStyle, GUILayout.ExpandWidth(expandwidth)));
+        }
+        private static void Label(string text, bool expandwidth = true)
+        {
+            GUILayout.Label(text, Settings.LabelStyle, GUILayout.ExpandWidth(expandwidth));
         }
     }
 }

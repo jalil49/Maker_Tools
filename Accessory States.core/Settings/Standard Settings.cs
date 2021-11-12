@@ -39,7 +39,7 @@ namespace Accessory_States
             IEnumerator<int> Wait()
             {
                 yield return 0;
-                var ASS_Exists = CharaEvent.ASS_Exists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
+                var ASS_Exists = CharaEvent.ASSExists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
                 if (!ASS_Exists)
                 {
                     CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
@@ -57,9 +57,10 @@ namespace Accessory_States
             {
                 CreateStudioControls();
             }
-
             GameUnique();
+
         }
+
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)
         {
             BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out var target);
@@ -78,5 +79,6 @@ namespace Accessory_States
             yield return 0;
             Hooks.Init(Logger);
         }
+
     }
 }

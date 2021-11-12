@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿#if false
+using HarmonyLib;
 using KKAPI.Chara;
 using KKAPI.Maker;
 
@@ -72,7 +73,7 @@ namespace Accessory_States
         {
             var _slot = AccessoriesApi.SelectedMakerAccSlot;
 
-            var list = Slotinfo[_slot].States;
+            var list = SlotInfo[_slot].States;
             var _coord = (int)CurrentCoordinate.Value;
             var single = 3 < _refKind && _refKind < 9;
             for (int _refState = 0, n = MaxState(_refKind) + 1; _refState < n; _refState++)
@@ -89,3 +90,4 @@ namespace Accessory_States
         }
     }
 }
+#endif

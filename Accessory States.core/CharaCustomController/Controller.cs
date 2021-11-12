@@ -19,41 +19,14 @@ namespace Accessory_States
 
             GUI_int_state_copy_Dict.Clear();
 
-            for (var i = 0; i < ChaFileControl.coordinate.Length; i++)
-            {
-                if (Coordinate.ContainsKey(i))
-                    Clearoutfit(i);
-                else
-                    Createoutfit(i);
-            }
-            for (int i = ChaFileControl.coordinate.Length, n = Coordinate.Keys.Max() + 1; i < n; i++)
-            {
-                Removeoutfit(i);
-            }
-
             chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
-
-            Clear();
-
-            Clear_Now_Coordinate();
 
             var Extended_Data = GetExtendedData();
             if (Extended_Data != null)
             {
-                if (Extended_Data.version == 1)
+                if (Extended_Data.version < 2)
                 {
-                    if (Extended_Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                    {
-                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
-                    }
-                }
-                else if (Extended_Data.version == 0)
-                {
-                    Migrator.MigrateV0(Extended_Data, ref Coordinate);
-                }
-                else
-                {
-                    Settings.Logger.LogWarning("New plugin version found on card please update");
+                    Migrator.StandardCharaMigrator(ChaControl, Extended_Data);
                 }
             }
 
@@ -96,113 +69,76 @@ namespace Accessory_States
                 if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                foreach (var item in Coordinate)
-                {
-                    item.Value.Accstatesyncconvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
-                }
+                AccStateSyncConvert(TriggerPropertyList, TriggerGroupList);
             }
 
-            Update_Now_Coordinate();
             CurrentCoordinate.Subscribe(x =>
             {
-                ShowCustomGui = false;
-                if (!Coordinate.ContainsKey((int)x))
-                    Createoutfit((int)x);
-
+                GUI_int_state_copy_Dict.Clear();
+                UpdatePluginData();
                 StartCoroutine(ChangeOutfitCoroutine());
             });
-
         }
 
         private IEnumerator<int> ChangeOutfitCoroutine()
         {
-            GUI_int_state_copy_Dict.Clear();
-            yield return 0;
-            Update_Now_Coordinate();
             yield return 0;
             Refresh();
-            StartCoroutine(WaitForSlots());
             if (ForceClothDataUpdate)
             {
                 StartCoroutine(ForceClothNotUpdate());
             }
 
             if (MakerAPI.InsideMaker)
-                Update_Toggles_GUI();
+                UpdateTogglesGUI();
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            foreach (var item in Coordinate)
-            {
-                item.Value.CleanUp();
-            }
-            var nulldata = Coordinate.All(x => x.Value.Slotinfo.Count == 0);
-            var States_Data = new PluginData() { version = 1 };
-            States_Data.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
-            SetExtendedData((nulldata) ? null : States_Data);
+            var States_Data = new PluginData() { version = Constants.SaveVersion };
+            SetExtendedData(States_Data);
 
-            if (!Settings.ASS_SAVE.Value || ASS_Exists)
+            if (!Settings.ASS_SAVE.Value || ASSExists)
             {
                 return;
             }
 
             var _pluginData = new PluginData() { version = 6 };
 
-            var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-            var TriggerGroup = new List<AccStateSync.TriggerGroup>();
-
-            foreach (var item in Coordinate)
-            {
-                item.Value.Accstatesyncconvert(item.Key, out var _tempTriggerProperty, out var _tempTriggerGroup);
-                TriggerPropertyList.AddRange(_tempTriggerProperty);
-                TriggerGroup.AddRange(_tempTriggerGroup);
-            }
+            AccStateSyncConvert(out var TriggerPropertyList, out var TriggerGroup);
 
             _pluginData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(TriggerPropertyList));
             _pluginData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(TriggerGroup));
+            _pluginData.data.Add("ExternalManipulation", MessagePackSerializer.Serialize("Accessory_States"));
 
-            ExtendedSave.SetExtendedDataById(ChaFileControl, "madevil.kk.ass", (nulldata) ? null : _pluginData);
+            ExtendedSave.SetExtendedDataById(ChaFileControl, "madevil.kk.ass", (TriggerPropertyList.Count == 0) ? null : _pluginData);
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            NowCoordinate.CleanUp();
-            var nulldata = Slotinfo.Count == 0;
-            var MyData = new PluginData() { version = 1 };
-            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(NowCoordinate));
-            SetCoordinateExtendedData(coordinate, (nulldata) ? null : MyData);
 
-            if (!Settings.ASS_SAVE.Value || ASS_Exists)
+            if (!Settings.ASS_SAVE.Value || ASSExists)
             {
                 return;
             }
 
-            var SavedData = new PluginData() { version = 6 };
+            //var SavedData = new PluginData() { version = 6 };
 
-            NowCoordinate.Accstatesyncconvert(-1, out var _tempTriggerProperty, out var _tempTriggerGroup);
+            //NowCoordinateData.Accstatesyncconvert(-1, out var _tempTriggerProperty, out var _tempTriggerGroup);
 
-            SavedData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(_tempTriggerProperty));
-            SavedData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(_tempTriggerGroup));
-            ExtendedSave.SetExtendedDataById(coordinate, "madevil.kk.ass", (nulldata) ? null : SavedData);
+            //SavedData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(_tempTriggerProperty));
+            //SavedData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(_tempTriggerGroup));
+            //ExtendedSave.SetExtendedDataById(coordinate, "madevil.kk.ass", (nulldata) ? null : SavedData);
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            Clear_Now_Coordinate();
             var Extended_Data = GetCoordinateExtendedData(coordinate);
             if (Extended_Data != null)
             {
-                if (Extended_Data.version == 1)
+                if (Extended_Data.version < 2)
                 {
-                    if (Extended_Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                    {
-                        NowCoordinate = MessagePackSerializer.Deserialize<CoordinateData>((byte[])ByteData);
-                    }
-                }
-                else if (Extended_Data.version == 0)
-                {
-                    NowCoordinate = Migrator.CoordinateMigrateV0(Extended_Data);
+                    Migrator.StandardCoordMigrator(coordinate, Extended_Data);
                 }
             }
 
@@ -234,33 +170,12 @@ namespace Accessory_States
                 if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                NowCoordinate.Accstatesyncconvert(TriggerPropertyList, TriggerGroupList);
+                AccStateSyncConvertCoordProcess(coordinate, TriggerPropertyList, TriggerGroupList);
             }
 
-            if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
-            {
-                Coordinate[(int)CurrentCoordinate.Value] = NowCoordinate;
-            }
+            UpdatePluginData();
 
             //call event
-            var args = new CoordinateLoadedEventARG(ChaControl/*, coordinate*/);
-            if (!(Coordloaded == null || Coordloaded.GetInvocationList().Length == 0))
-            {
-                try
-                {
-                    Coordloaded?.Invoke(null, args);
-                }
-                catch (Exception ex)
-                {
-                    Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
-                }
-            }
-
-            if (MakerAPI.InsideMaker)
-            {
-                Coordinate[(int)CurrentCoordinate.Value] = NowCoordinate;
-            }
-
             if (ForceClothDataUpdate && !MakerAPI.InsideMaker)
             {
                 StartCoroutine(ForceClothNotUpdate());
@@ -342,22 +257,20 @@ namespace Accessory_States
             }
         }
 
-        private static bool BothShoeCheck(List<AccStateSync.TriggerProperty> triggerPropertyList, AccStateSync.TriggerProperty selectedproperty, int checkvalue)
-        {
-            selectedproperty.RefKind = checkvalue;
-            return triggerPropertyList.Any(x => x == selectedproperty);
-        }
-
         public void Refresh()
         {
+            if (DisableRefresh)
+            {
+                return;
+            }
             lastknownshoetype = ChaControl.fileStatus.shoesType;
-            foreach (var item in Now_Parented_Name_Dictionary)
+            foreach (var item in ParentedNameDictionary)
             {
                 if (!GUI_Parent_Dict.TryGetValue(item.Key, out var show))
                 {
                     show = true;
                 }
-                Parent_toggle(item.Key, show);
+                ParentToggle(item.Key, show);
             }
 
             for (var i = 0; i < 8; i++)
@@ -365,22 +278,16 @@ namespace Accessory_States
                 ChangedOutfit(i, ChaControl.fileStatus.clothesState[i]);
             }
 
-            foreach (var item in Names.Keys)
+            var gui = Constants.ClothingLength;
+            foreach (var item in Names)
             {
-                if (GUI_Custom_Dict.TryGetValue(item, out var state))
+                if (GUI_Custom_Dict.TryGetValue(gui, out var state))
                 {
-                    Custom_Groups(item, state[0]);
+                    CustomGroups(gui, state[0]);
                     continue;
                 }
-                Custom_Groups(item, 0);
-            }
-        }
-
-        public void Reset()
-        {
-            for (int i = 0, n = Enum.GetNames(typeof(ChaFileDefine.CoordinateType)).Length; i < n; i++)
-            {
-                Coordinate.Clear();
+                CustomGroups(gui, item.DefaultState);
+                gui++;
             }
         }
 
@@ -405,21 +312,6 @@ namespace Accessory_States
             return list.Any(x => state >= x[0] && state <= x[1]);
         }
 
-        private int MaxState(int outfitnum, int binding)
-        {
-            if (binding < 9)
-            {
-                return 3;
-            }
-            var max = 1;
-            var bindinglist = Coordinate[outfitnum].Slotinfo.Values.Where(x => x.Binding == binding);
-            foreach (var item in bindinglist)
-            {
-                item.States.ForEach(x => max = Math.Max(x[1], max));
-            }
-            return max;
-        }
-
         internal int MaxState(int binding)
         {
             if (binding < 9)
@@ -427,8 +319,7 @@ namespace Accessory_States
                 return 3;
             }
             var max = 1;
-            var bindinglist = Slotinfo.Values.Where(x => x.Binding == binding);
-            foreach (var item in bindinglist)
+            foreach (var item in SlotInfo.Values.Where(x => x.Binding == binding))
             {
                 item.States.ForEach(x => max = Math.Max(x[1], max));
             }
@@ -445,15 +336,15 @@ namespace Accessory_States
         private void ChangedOutfit(int clothesKind, byte state)
         {
             var shoetype = ChaControl.fileStatus.shoesType;
-            var Accessory_list = Slotinfo.Where(x => x.Value.Binding == clothesKind);
+            var Accessory_list = SlotInfo.Where(x => x.Value.Binding == clothesKind);
             foreach (var item in Accessory_list)
             {
-                if (item.Key >= Parts.Length)
+                if (item.Key >= PartsArray.Length)
                     return;
 
                 var show = false;
-                var issub = Parts[item.Key].hideCategory == 1;
-                if ((!issub || issub && ShowSub) && (item.Value.Shoetype == 2 || item.Value.Shoetype == shoetype))
+                var issub = PartsArray[item.Key].hideCategory == 1;
+                if ((!issub || issub && ShowSub) && (item.Value.ShoeType == 2 || item.Value.ShoeType == shoetype))
                 {
                     show = ShowState(state, item.Value.States);
                 }
@@ -461,19 +352,19 @@ namespace Accessory_States
             }
         }
 
-        public void Custom_Groups(int kind, int state)
+        public void CustomGroups(int kind, int state)
         {
             var shoetype = ChaControl.fileStatus.shoesType;
-            var Accessory_list = Slotinfo.Where(x => x.Value.Binding == kind);
+            var Accessory_list = SlotInfo.Where(x => x.Value.Binding == kind);
             foreach (var item in Accessory_list)
             {
-                if (item.Key >= Parts.Length)
+                if (item.Key >= PartsArray.Length)
                     return;
 
                 var show = false;
 
-                var issub = Parts[item.Key].hideCategory == 1;
-                if ((!issub || issub && ShowSub) && (item.Value.Shoetype == 2 || item.Value.Shoetype == shoetype))
+                var issub = PartsArray[item.Key].hideCategory == 1;
+                if ((!issub && ShowMain || issub && ShowSub) && (item.Value.ShoeType == 2 || item.Value.ShoeType == shoetype))
                 {
                     show = ShowState(state, item.Value.States);
                 }
@@ -481,19 +372,19 @@ namespace Accessory_States
             }
         }
 
-        public void Parent_toggle(string parent, bool toggleshow)
+        public void ParentToggle(string parent, bool toggleshow)
         {
             var shoetype = ChaControl.fileStatus.shoesType;
-            var ParentedList = Now_Parented_Name_Dictionary[parent];
+            var ParentedList = ParentedNameDictionary[parent];
             foreach (var slot in ParentedList)
             {
-                if (slot.Key >= Parts.Length)
+                if (slot.Key >= PartsArray.Length)
                     return;
 
                 var show = false;
 
-                var issub = Parts[slot.Key].hideCategory == 1;
-                if ((!issub || issub && ShowSub) && (slot.Value.Shoetype == 2 || slot.Value.Shoetype == shoetype))
+                var issub = PartsArray[slot.Key].hideCategory == 1;
+                if ((!issub || issub && ShowSub) && (slot.Value.ShoeType == 2 || slot.Value.ShoeType == shoetype))
                 {
                     show = toggleshow;
                 }
@@ -509,9 +400,21 @@ namespace Accessory_States
             Refresh();
         }
 
-        internal void SubChanged(bool show)
+        internal void AccessoryCategoryChange(int category, bool show)
         {
-            ShowSub = show;
+            switch (category)
+            {
+                case 0:
+                    ShowMain = show;
+                    break;
+                case 1:
+                    ShowSub = show;
+                    break;
+                default:
+                    Settings.Logger.LogWarning($"Unknown Accessory Category [{category}] set to {show}");
+                    break;
+            }
+
             Refresh();
         }
 
@@ -519,7 +422,7 @@ namespace Accessory_States
         {
             var coordinateaccessory = ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.parts;
             var nowcoodaccessory = ChaControl.nowCoordinate.accessory.parts;
-            var slotslist = Slotinfo.Where(x => x.Value.Binding == Selectedkind).Select(x => x.Key);
+            var slotslist = SlotInfo.Where(x => x.Value.Binding == Selectedkind).Select(x => x.Key);
             foreach (var slot in slotslist)
             {
                 coordinateaccessory[slot].hideCategory = nowcoodaccessory[slot].hideCategory = hidesetting;

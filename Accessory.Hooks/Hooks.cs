@@ -1,6 +1,5 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
-using KKAPI.Maker;
 using System.Collections.Generic;
 #if Parents
 namespace Accessory_Parents
@@ -20,8 +19,6 @@ namespace Additional_Card_Info
         {
             Logger = Setting_Logger;
             Harmony.CreateAndPatchAll(typeof(Hooks));
-            if (TryfindPluginInstance("madevil.kk.MovUrAcc"))
-                Harmony.CreateAndPatchAll(typeof(MovUrACC));
             //if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
             //    Harmony.CreateAndPatchAll(typeof(MoreOutfits));
 #if ACI || States
@@ -38,31 +35,6 @@ namespace Additional_Card_Info
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
-        }
-
-        internal static class MovUrACC
-        {
-            [HarmonyPostfix]
-            [HarmonyPatch("MovUrAcc.MovUrAcc, KK_MovUrAcc", "ProcessQueue")]
-            internal static void MovPatch(List<QueueItem> Queue)
-            {
-                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
-            }
-        }
-
-        internal static class MoreOutfits
-        {
-            [HarmonyPostfix, HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+AddCoordinateSlot, KK_MoreOutfits")]
-            internal static void AddOutfitHook(ChaControl chaControl)
-            {
-                chaControl.GetComponent<CharaEvent>().AddOutfitEvent();
-            }
-
-            [HarmonyPostfix, HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+RemoveCoordinateSlot, KK_MoreOutfits")]
-            internal static void RemoveOutfitHook(ChaControl chaControl)
-            {
-                chaControl.GetComponent<CharaEvent>().RemoveOutfitEvent();
-            }
         }
 
 #if ACI || States

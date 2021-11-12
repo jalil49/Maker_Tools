@@ -7,346 +7,325 @@ using System.Linq;
 namespace Accessory_States
 {
     [Serializable]
-    [MessagePackObject]
+    [MessagePackObject(true)]
     public class CoordinateData
     {
-        [Key("_slotinfo")]
-        public Dictionary<int, Slotdata> Slotinfo { get; set; }
-
-        [Key("_names")]
-        public Dictionary<int, NameData> Names { get; set; }
-
-        [Key("_clothnotdata")]
+        public List<NameData> Names { get; set; }
         public bool[] ClothNotData { get; set; }
 
-        [Key("_forceclothnotupdate")]
         public bool ForceClothNotUpdate = true;
 
         public CoordinateData() { NullCheck(); }
 
         public CoordinateData(CoordinateData _copy) => CopyData(_copy);
 
-        public void CleanUp()
-        {
-            var removelist = Slotinfo.Where(x => x.Value.Binding == -1 && !x.Value.Parented).Select(x => x.Key).ToList();
-            foreach (var item in removelist)
-            {
-                Slotinfo.Remove(item);
-            }
-            removelist = Names.Where(x => !Slotinfo.Any(y => y.Value.Binding == x.Key)).Select(x => x.Key).ToList();
-            foreach (var item in removelist)
-            {
-                Names.Remove(item);
-            }
+        public CoordinateData(List<NameData> Names, bool[] ClothNotData, bool ForceClothNotUpdate) => CopyData(Names, ClothNotData, ForceClothNotUpdate);
 
-            foreach (var item in Names)
+        public void CleanUp(Dictionary<int, SlotData> slotinfo)
+        {
+            for (var i = Names.Count - 1; i > 0; i--)
             {
-                var max = MaxState(item.Key);
-                var statenames = item.Value.Statenames;
-                removelist = statenames.Keys.Where(x => x > max).ToList();
-                foreach (var key in removelist)
+                if (slotinfo.Any(x => x.Value.GroupName == Names[i].Name))
                 {
-                    statenames.Remove(key);
+                    continue;
                 }
+                Names.RemoveAt(i);
             }
         }
 
         public void Clear()
         {
-            Slotinfo.Clear();
             Names.Clear();
             ClothNotData = new bool[3];
             ForceClothNotUpdate = true;
         }
 
-        private void NullCheck()
+        internal void NullCheck()
         {
-            if (Slotinfo == null) Slotinfo = new Dictionary<int, Slotdata>();
-            if (Names == null) Names = new Dictionary<int, NameData>();
+            if (Names == null) Names = new List<NameData>();
             if (ClothNotData == null) ClothNotData = new bool[3];
         }
 
-        public void CopyData(CoordinateData _copy) => CopyData(_copy.Slotinfo, _copy.Names, _copy.ClothNotData, _copy.ForceClothNotUpdate);
+        public void CopyData(CoordinateData _copy) => CopyData(_copy.Names, _copy.ClothNotData, _copy.ForceClothNotUpdate);
 
-        public void CopyData(Dictionary<int, Slotdata> _slotinfo, Dictionary<int, NameData> _names, bool[] _clothnotdata, bool _forceclothnotupdate)
+        public void CopyData(List<NameData> _names, bool[] _clothnotdata, bool _forceclothnotupdate)
         {
-            Slotinfo = _slotinfo.ToNewDictionary();
-            Names = _names.ToNewDictionary();
+            Names = _names.ToNewList();
             ClothNotData = _clothnotdata.ToNewArray(3);
             ForceClothNotUpdate = _forceclothnotupdate;
             NullCheck();
         }
 
-        public void Accstatesyncconvert(int outfitnum, out List<AccStateSync.TriggerProperty> TriggerProperty, out List<AccStateSync.TriggerGroup> TriggerGroup)
-        {
-            TriggerProperty = new List<AccStateSync.TriggerProperty>();
-            TriggerGroup = new List<AccStateSync.TriggerGroup>();
+        public byte[] Serialize() => MessagePackSerializer.Serialize(this);
 
-            foreach (var slotinfo in Slotinfo)
-            {
-                var statelist = slotinfo.Value.States;
-                var binding = slotinfo.Value.Binding;
-                int shoetype = slotinfo.Value.Shoetype;
+        //public void Accstatesyncconvert(int outfitnum, out List<AccStateSync.TriggerProperty> TriggerProperty, out List<AccStateSync.TriggerGroup> TriggerGroup)
+        //{
+        //    TriggerProperty = new List<AccStateSync.TriggerProperty>();
+        //    TriggerGroup = new List<AccStateSync.TriggerGroup>();
 
-                if (binding < 0)
-                {
-                    continue;
-                }
+        //    foreach (var slotinfo in Slotinfo)
+        //    {
+        //        var statelist = slotinfo.Value.States;
+        //        var binding = slotinfo.Value.Binding;
+        //        int shoetype = slotinfo.Value.Shoetype;
 
-                var maxstate = MaxState(binding) + 1;
+        //        if (binding < 0)
+        //        {
+        //            continue;
+        //        }
 
-                bool prioritycheck;
-                int priority;
-                bool visible;
+        //        var maxstate = MaxState(binding) + 1;
 
-                for (var state = 0; state < maxstate; state++) //default conversion
-                {
-                    visible = ShowState(state, statelist);
+        //        bool prioritycheck;
+        //        int priority;
+        //        bool visible;
 
-                    prioritycheck = binding < 4 && state % 3 == 0;
-                    priority = 1;
+        //        for (var state = 0; state < maxstate; state++) //default conversion
+        //        {
+        //            visible = ShowState(state, statelist);
 
-                    if (prioritycheck) priority = 2;
+        //            prioritycheck = binding < 4 && state % 3 == 0;
+        //            priority = 1;
 
-                    TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, binding, state, visible, priority));
-                }
+        //            if (prioritycheck) priority = 2;
 
-                var shoebinding = binding == 7 || binding == 8;
+        //            TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, binding, state, visible, priority));
+        //        }
 
-                if (shoetype != 2 && !shoebinding) //binded to indoor or outdoor state only make false priorty to not show
-                {
-                    var othershoe = (shoetype == 0) ? 8 : 7;
-                    for (var state = 0; state < maxstate; state++)
-                    {
-                        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, false, 3));
-                    }
-                }
+        //        var shoebinding = binding == 7 || binding == 8;
 
-                if (shoebinding && shoetype == 2) //binded to a shoe, but other shoe needs same work
-                {
-                    var othershoe = (binding == 7) ? 8 : 7;
-                    for (var state = 0; state < maxstate; state++)
-                    {
-                        visible = ShowState(state, statelist);
+        //        if (shoetype != 2 && !shoebinding) //binded to indoor or outdoor state only make false priorty to not show
+        //        {
+        //            var othershoe = (shoetype == 0) ? 8 : 7;
+        //            for (var state = 0; state < maxstate; state++)
+        //            {
+        //                TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, false, 3));
+        //            }
+        //        }
 
-                        prioritycheck = binding < 4 && state % 3 == 0;
+        //        if (shoebinding && shoetype == 2) //binded to a shoe, but other shoe needs same work
+        //        {
+        //            var othershoe = (binding == 7) ? 8 : 7;
+        //            for (var state = 0; state < maxstate; state++)
+        //            {
+        //                visible = ShowState(state, statelist);
 
-                        priority = 1;
+        //                prioritycheck = binding < 4 && state % 3 == 0;
 
-                        if (prioritycheck) priority = 2;
+        //                priority = 1;
 
-                        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, visible, priority));
-                    }
-                }
+        //                if (prioritycheck) priority = 2;
 
-                if (binding > 3)
-                {
-                    continue;
-                }
+        //                TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slotinfo.Key, othershoe, state, visible, priority));
+        //            }
+        //        }
 
-                switch (binding)//using clothing nots to fill in space
-                {
-                    case 0:
-                        if (ClothNotData[0])
-                        {
-                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 1));
-                        }
-                        if (ClothNotData[1])
-                        {
-                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 2));
-                        }
-                        break;
-                    case 1:
-                        if (ClothNotData[0])
-                        {
-                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 0));
-                        }
-                        break;
-                    case 2:
-                        if (ClothNotData[2])
-                        {
-                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 3));
-                        }
-                        if (ClothNotData[1])
-                        {
-                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 0));
-                        }
-                        break;
-                    case 3:
-                        if (ClothNotData[2])
-                        {
-                            TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 2));
-                        }
-                        break;
-                }
-            }
+        //        if (binding > 3)
+        //        {
+        //            continue;
+        //        }
 
-            foreach (var NameData in Names)
-            {
-                var states = NameData.Value.Statenames;
-                for (int i = 0, n = MaxState(NameData.Key) + 1; i < n; i++)
-                {
-                    if (states.ContainsKey(i))
-                    {
-                        continue;
-                    }
-                    states[i] = $"State {i}";
-                }
+        //        switch (binding)//using clothing nots to fill in space
+        //        {
+        //            case 0:
+        //                if (ClothNotData[0])
+        //                {
+        //                    TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 1));
+        //                }
+        //                if (ClothNotData[1])
+        //                {
+        //                    TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 2));
+        //                }
+        //                break;
+        //            case 1:
+        //                if (ClothNotData[0])
+        //                {
+        //                    TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 0));
+        //                }
+        //                break;
+        //            case 2:
+        //                if (ClothNotData[2])
+        //                {
+        //                    TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 3));
+        //                }
+        //                if (ClothNotData[1])
+        //                {
+        //                    TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 0));
+        //                }
+        //                break;
+        //            case 3:
+        //                if (ClothNotData[2])
+        //                {
+        //                    TriggerProperty.AddRange(ClothingNotConversion(outfitnum, slotinfo.Key, statelist, 2));
+        //                }
+        //                break;
+        //        }
+        //    }
 
-                TriggerGroup.Add(new AccStateSync.TriggerGroup(outfitnum, NameData.Key, NameData.Value.Name) { States = states.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value) });
-            }
-        }
+        //    foreach (var NameData in Names)
+        //    {
+        //        var states = NameData.Value.StateNames;
+        //        for (int i = 0, n = MaxState(NameData.Key) + 1; i < n; i++)
+        //        {
+        //            if (states.ContainsKey(i))
+        //            {
+        //                continue;
+        //            }
+        //            states[i] = $"State {i}";
+        //        }
 
-        public void Accstatesyncconvert(List<AccStateSync.TriggerProperty> TriggerProperty, List<AccStateSync.TriggerGroup> TriggerGroup)
-        {
-            var triglistbyslot = new List<List<AccStateSync.TriggerProperty>>();
+        //        TriggerGroup.Add(new AccStateSync.TriggerGroup(outfitnum, NameData.Key, NameData.Value.Name) { States = states.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value) });
+        //    }
+        //}
 
-            foreach (var slot in TriggerProperty.Distinct(x => x.Slot).Select(x => x.Slot))
-            {
-                triglistbyslot.Add(TriggerProperty.Where(x => slot == x.Slot).OrderBy(x => x.RefKind).ThenBy(x => x.RefState).ToList());
-            }
-            for (int index = 0, trigdictcount = triglistbyslot.Count; index < trigdictcount; index++)
-            {
-                var list = triglistbyslot[index];
+        //public void Accstatesyncconvert(List<AccStateSync.TriggerProperty> TriggerProperty, List<AccStateSync.TriggerGroup> TriggerGroup)
+        //{
+        //    var triglistbyslot = new List<List<AccStateSync.TriggerProperty>>();
 
-                var slot = list[0].Slot;
-                var inner = list.Any(x => x.RefKind == 7 && x.Visible);
-                var outer = list.Any(x => x.RefKind == 8 && x.Visible);
-                var refkindlist = list.Distinct(x => x.RefKind).Select(x => x.RefKind).ToList();
-                var PriorityDict = new Dictionary<int, int>();
-                var statedict = new Dictionary<int, List<int[]>>();
+        //    foreach (var slot in TriggerProperty.Distinct(x => x.Slot).Select(x => x.Slot))
+        //    {
+        //        triglistbyslot.Add(TriggerProperty.Where(x => slot == x.Slot).OrderBy(x => x.RefKind).ThenBy(x => x.RefState).ToList());
+        //    }
+        //    for (int index = 0, trigdictcount = triglistbyslot.Count; index < trigdictcount; index++)
+        //    {
+        //        var list = triglistbyslot[index];
 
-                var bothshoes = inner && outer || !inner && !outer;
+        //        var slot = list[0].Slot;
+        //        var inner = list.Any(x => x.RefKind == 7 && x.Visible);
+        //        var outer = list.Any(x => x.RefKind == 8 && x.Visible);
+        //        var refkindlist = list.Distinct(x => x.RefKind).Select(x => x.RefKind).ToList();
+        //        var PriorityDict = new Dictionary<int, int>();
+        //        var statedict = new Dictionary<int, List<int[]>>();
 
-                byte shoetype;
-                if (bothshoes)
-                {
-                    shoetype = 2;
-                }
-                else if (inner)
-                {
-                    shoetype = 0;
-                }
-                else
-                {
-                    shoetype = 1;
-                }
+        //        var bothshoes = inner && outer || !inner && !outer;
 
-                for (var shoe = 7; shoe <= 8; shoe++)
-                {
-                    if (refkindlist.Contains(shoe))
-                    {
-                        if (refkindlist.Any(x => x < shoe))
-                        {
-                            refkindlist.Remove(shoe);
-                        }
-                    }
-                }
+        //        byte shoetype;
+        //        if (bothshoes)
+        //        {
+        //            shoetype = 2;
+        //        }
+        //        else if (inner)
+        //        {
+        //            shoetype = 0;
+        //        }
+        //        else
+        //        {
+        //            shoetype = 1;
+        //        }
 
-                foreach (var kind in refkindlist)
-                {
-                    var visiblelist = list.Where(x => x.Visible && x.RefKind == kind).ToList();
-                    if (visiblelist.Count == 0) continue;
-                    PriorityDict[kind] = visiblelist.Count;
-                    var statelist = statedict[kind] = new List<int[]>();
-                    for (int i = 0, n = visiblelist.Count; i < n; i++)
-                    {
-                        var j = i;
-                        while (j + 1 < n && visiblelist[j + 1].RefState == j + 1)
-                        {
-                            j++;
-                        }
-                        statelist.Add(new int[2] { i, j });
-                        i = j;
-                    }
-                }
+        //        for (var shoe = 7; shoe <= 8; shoe++)
+        //        {
+        //            if (refkindlist.Contains(shoe))
+        //            {
+        //                if (refkindlist.Any(x => x < shoe))
+        //                {
+        //                    refkindlist.Remove(shoe);
+        //                }
+        //            }
+        //        }
 
-                var selectedrefkind = PriorityDict.OrderByDescending(x => x.Value).First().Key;
+        //        foreach (var kind in refkindlist)
+        //        {
+        //            var visiblelist = list.Where(x => x.Visible && x.RefKind == kind).ToList();
+        //            if (visiblelist.Count == 0) continue;
+        //            PriorityDict[kind] = visiblelist.Count;
+        //            var statelist = statedict[kind] = new List<int[]>();
+        //            for (int i = 0, n = visiblelist.Count; i < n; i++)
+        //            {
+        //                var j = i;
+        //                while (j + 1 < n && visiblelist[j + 1].RefState == j + 1)
+        //                {
+        //                    j++;
+        //                }
+        //                statelist.Add(new int[2] { i, j });
+        //                i = j;
+        //            }
+        //        }
 
-                Slotinfo[slot] = new Slotdata(selectedrefkind, statedict[selectedrefkind], shoetype, false);
-            }
+        //        var selectedrefkind = PriorityDict.OrderByDescending(x => x.Value).First().Key;
 
-            foreach (var item in TriggerGroup)
-            {
-                Names[item.Kind] = new NameData(item.Label, item.States);
-            }
-            NullCheck();
-        }
+        //        Slotinfo[slot] = new Slotdata(selectedrefkind, statedict[selectedrefkind], shoetype, false);
+        //    }
 
-        private List<AccStateSync.TriggerProperty> ClothingNotConversion(int outfitnum, int slot, List<int[]> statelist, int clothingkind)
-        {
-            var TriggerProperty = new List<AccStateSync.TriggerProperty>();
-            bool prioritycheck;
-            for (var state = 0; state < 4; state++)
-            {
-                prioritycheck = state % 3 == 0;
-                TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slot, clothingkind, state, (prioritycheck) ? ShowClothNotState(state, statelist) : false, (prioritycheck) ? 2 : 0));
-            }
-            return TriggerProperty;
-        }
+        //    foreach (var item in TriggerGroup)
+        //    {
+        //        Names[item.Kind] = new NameData(item.Label, item.States);
+        //    }
+        //    NullCheck();
+        //}
 
-        private int MaxState(int binding)
-        {
-            if (binding < 9)
-            {
-                return 3;
-            }
-            var max = 0;
-            var bindinglist = Slotinfo.Values.Where(x => x.Binding == binding);
-            foreach (var item in bindinglist)
-            {
-                item.States.ForEach(x => max = Math.Max(x[1], max));
-            }
-            return max;
-        }
+        //private List<AccStateSync.TriggerProperty> ClothingNotConversion(int outfitnum, int slot, List<int[]> statelist, int clothingkind)
+        //{
+        //    var TriggerProperty = new List<AccStateSync.TriggerProperty>();
+        //    bool prioritycheck;
+        //    for (var state = 0; state < 4; state++)
+        //    {
+        //        prioritycheck = state % 3 == 0;
+        //        TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slot, clothingkind, state, (prioritycheck) ? ShowClothNotState(state, statelist) : false, (prioritycheck) ? 2 : 0));
+        //    }
+        //    return TriggerProperty;
+        //}
 
-        private static bool ShowState(int state, List<int[]> list)
-        {
-            return list.Any(x => x[0] <= state && state <= x[1]);
-        }
+        //private int MaxState(int binding)
+        //{
+        //    if (binding < 9)
+        //    {
+        //        return 3;
+        //    }
+        //    var max = 0;
+        //    var bindinglist = Slotinfo.Values.Where(x => x.Binding == binding);
+        //    foreach (var item in bindinglist)
+        //    {
+        //        item.States.ForEach(x => max = Math.Max(x[1], max));
+        //    }
+        //    return max;
+        //}
 
-        private static bool ShowClothNotState(int state, List<int[]> list)
-        {
-            return list.Any(x => x[0] <= state && state <= x[1]);
-        }
+        //private static bool ShowState(int state, List<int[]> list)
+        //{
+        //    return list.Any(x => x[0] <= state && state <= x[1]);
+        //}
+
+        //private static bool ShowClothNotState(int state, List<int[]> list)
+        //{
+        //    return list.Any(x => x[0] <= state && state <= x[1]);
+        //}
     }
 
     [Serializable]
-    [MessagePackObject]
-    public class Slotdata
+    [MessagePackObject(true)]
+    public class SlotData
     {
-        [Key("_binding")]
+        public string GroupName { get; set; }
+
         public int Binding { get; set; } = -1;
 
-        [Key("_state")]
         public List<int[]> States { get; set; }
 
-        [Key("_shoetype")]
-        public byte Shoetype { get; set; } = 2;
+        public byte ShoeType { get; set; } = 2;
 
-        [Key("_parented")]
         public bool Parented;
 
-        public Slotdata() { NullCheck(); }
+        public SlotData() => NullCheck();
 
-        public Slotdata(Slotdata slotdata) => CopyData(slotdata);
+        public SlotData(SlotData slotdata) => CopyData(slotdata);
 
-        public void CopyData(Slotdata slotdata) => CopyData(slotdata.Binding, slotdata.States, slotdata.Shoetype, slotdata.Parented);
+        public void CopyData(SlotData slotdata) => CopyData(slotdata.GroupName, slotdata.Binding, slotdata.States, slotdata.ShoeType, slotdata.Parented);
 
-        public Slotdata(int _binding, List<int[]> _state, byte _shoetype, bool _parented) => CopyData(_binding, _state, _shoetype, _parented);
+        public SlotData(string GroupName, int Binding, List<int[]> States, byte ShoeType, bool Parented) => CopyData(GroupName, Binding, States, ShoeType, Parented);
 
-        public void CopyData(int _binding, List<int[]> _state, byte _shoetype, bool _parented)
+        public void CopyData(string _groupname, int _binding, List<int[]> _state, byte _shoetype, bool _parented)
         {
+            GroupName = _groupname;
             Binding = _binding;
             States = _state.ToNewList(new int[] { 0, 3 });
-            Shoetype = _shoetype;
+            ShoeType = _shoetype;
             Parented = _parented;
-            //if (States == null) States = new List<int[]>() {  };
         }
 
         public string Print()
         {
-            var print = $"Binding {Binding}\t shoetype {Shoetype} \n States: ";
+            var print = $"Binding {Binding}\t shoetype {ShoeType} \n States: ";
             foreach (var item in States)
             {
                 print += $" {item[0]} {item[1]} ";
@@ -354,39 +333,43 @@ namespace Accessory_States
             return print;
         }
 
-        private void NullCheck()
+        internal void NullCheck()
         {
             if (States == null) States = new List<int[]>() { new int[] { 0, 3 } };
+            if (GroupName == null) GroupName = "";
         }
+
+        public byte[] Serialize() => MessagePackSerializer.Serialize(this);
     }
 
     [Serializable]
-    [MessagePackObject]
+    [MessagePackObject(true)]
     public class NameData
     {
-        [Key("_name")]
         public string Name { get; set; }
 
-        [Key("_statenames")]
-        public Dictionary<int, string> Statenames { get; set; }
+        public int DefaultState { get; set; }
+
+        public Dictionary<int, string> StateNames { get; set; }
 
         public NameData() { NullCheck(); }
 
         public NameData(NameData slotdata) => CopyData(slotdata);
 
-        public void CopyData(NameData slotdata) => CopyData(slotdata.Name, slotdata.Statenames);
+        public void CopyData(NameData slotdata) => CopyData(slotdata.Name, slotdata.DefaultState, slotdata.StateNames);
 
-        public NameData(string _name, Dictionary<int, string> _statenames) => CopyData(_name, _statenames);
+        public NameData(string Name, int DefaultState, Dictionary<int, string> StateNames) => CopyData(Name, DefaultState, StateNames);
 
-        public void CopyData(string _name, Dictionary<int, string> _statenames)
+        public void CopyData(string _name, int _defaultstate, Dictionary<int, string> _statenames)
         {
             Name = _name;
-            Statenames = _statenames.ToNewDictionary();
+            StateNames = _statenames.ToNewDictionary();
+            DefaultState = _defaultstate;
         }
 
         private void NullCheck()
         {
-            if (Statenames == null) Statenames = new Dictionary<int, string>();
+            if (StateNames == null) StateNames = new Dictionary<int, string>();
             if (Name == null) Name = "";
         }
     }

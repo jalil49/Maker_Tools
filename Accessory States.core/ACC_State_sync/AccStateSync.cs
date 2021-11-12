@@ -140,6 +140,5 @@ namespace Accessory_States
             foreach (var _key in Enum.GetValues(typeof(ChaAccessoryDefine.AccessoryParentKey)))
                 _accessoryParentNames[_key.ToString()] = ChaAccessoryDefine.dictAccessoryParent[(int)_key];
         }
-
     }
 }

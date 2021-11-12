@@ -23,21 +23,24 @@ namespace Accessory_States
         {
             if (vr)
             {
+#if KK
                 HSprites = Traverse.Create(proc).Field("sprites").GetValue<HSprite[]>();
+#elif KKS
+                HSprites = new HSprite[] { Traverse.Create(proc).Field("sprite").GetValue<HSprite>() };
+#endif
             }
             else
             {
                 HSprites = new HSprite[] { ((HSceneProc)proc).sprite };
             }
-            Hooks.HcoordChange += Hooks_HcoordChange;
             CharaEvent.Coordloaded += CharaEvent_coordloaded;
             heroines = hFlag.lstHeroine;
             for (var i = 0; i < heroines.Count; i++)
             {
+                Settings.Logger.LogError($"heroine {i} refresh");
                 var controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
-                controller.Update_Now_Coordinate();
                 controller.Refresh();
-                Buttonlogic(i, false);
+                Buttonlogic(i);
             }
             base.OnStartH(proc, hFlag, vr);
         }
@@ -52,7 +55,7 @@ namespace Accessory_States
             {
                 if (heroines[i].chaCtrl.name == e.Character.name)
                 {
-                    Buttonlogic(i, true);
+                    Buttonlogic(i);
                     return;
                 }
             }
@@ -63,23 +66,13 @@ namespace Accessory_States
         protected override void OnEndH(MonoBehaviour proc, HFlag hFlag, bool vr)
 #endif
         {
-            Hooks.HcoordChange -= Hooks_HcoordChange;
             ButtonList.Clear();
             heroines = null;
             HSprites = null;
-            if (hFlag.isFreeH)
-            {
-                CharaEvent.FreeHHeroines = new List<SaveData.Heroine>();
-            }
             base.OnEndH(proc, hFlag, vr);
         }
 
-        private void Hooks_HcoordChange(object sender, OnClickCoordinateChange e)
-        {
-            Buttonlogic(e.Female, false, e.Coordinate);
-        }
-
-        private void Buttonlogic(int Female, bool Coordloaded, int Coordchange = -1)
+        private void Buttonlogic(int Female)
         {
             if (HSprites == null)
             {
@@ -93,34 +86,27 @@ namespace Accessory_States
                 list = new List<int>();
             }
             list.Reverse();
-            //Settings.Logger.LogWarning("Enter delete");
             foreach (var item in list)
             {
                 DeleteButton(Female, Harem, item);
             }
-            //Settings.Logger.LogWarning("clear");
 
             ButtonList.Remove(Female);
 
-            if (!Coordloaded && Coordchange == -1)
-            {
-                controller.Update_Now_Coordinate();
-            }
-            if (Coordchange > -1)
-            {
-                controller.Update_Now_Coordinate(Coordchange);
-            }
-            var names = controller.NowCoordinate.Names;
-            var slotinfo = controller.NowCoordinate.Slotinfo;
-            //Settings.Logger.LogWarning("create");
+            var names = controller.Names;
+            var slotinfo = controller.SlotInfo;
             var shoetype = Heroine_Ctrl.fileStatus.shoesType;
+            var i = 0;
             foreach (var item in names)
             {
-                if (slotinfo.Count(x => x.Value.Binding == item.Key && (x.Value.Shoetype == shoetype || x.Value.Shoetype == 2)) > 0)
-                    Createbutton(Female, Harem, item.Value.Name, item.Key, controller, 0);
+                if (slotinfo.Count(x => x.Value.Binding == Constants.ClothingLength + i && (x.Value.ShoeType == shoetype || x.Value.ShoeType == 2)) > 0)
+                {
+                    Createbutton(Female, Harem, item.Name, Constants.ClothingLength + i, controller, 0);
+                }
+                i++;
             }
 
-            foreach (var item in controller.Now_Parented_Name_Dictionary)
+            foreach (var item in controller.ParentedNameDictionary)
             {
                 Createbutton(Female, Harem, item.Key, 0, controller, 1);
             }
@@ -128,8 +114,6 @@ namespace Accessory_States
 
         private void DeleteButton(int Female, bool Harem, int Remove)
         {
-            //Settings.Logger.LogWarning("deleting button");
-            Button ToRemove;
             HSceneSpriteCategory hSceneSpriteCategory;
             foreach (var Sprite in HSprites)
             {
@@ -141,7 +125,7 @@ namespace Accessory_States
                 {
                     hSceneSpriteCategory = Sprite.categoryAccessoryAll;
                 }
-                ToRemove = hSceneSpriteCategory.lstButton[Remove];
+                var ToRemove = hSceneSpriteCategory.lstButton[Remove];
                 Destroy(ToRemove.gameObject);
                 hSceneSpriteCategory.lstButton.RemoveAt(Remove);
             }
@@ -178,8 +162,8 @@ namespace Accessory_States
                 button.image.raycastTarget = true;
                 if (ButtonKind == 0)
                 {
-                    var state = 0;
-                    var binded = Controller.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
+                    var state = Controller.Names[kind - Constants.ClothingLength].DefaultState;
+                    var binded = Controller.SlotInfo.Where(x => x.Value.Binding == kind);
                     var final = 0;
                     foreach (var item in binded)
                     {
@@ -192,8 +176,7 @@ namespace Accessory_States
                     button.onClick.AddListener(delegate ()
                     {
                         state = (state + 1) % (final);
-                        //Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
-                        Controller.Custom_Groups(kind, state);
+                        Controller.CustomGroups(kind, state);
                         Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                     });
                 }
@@ -203,8 +186,7 @@ namespace Accessory_States
                     button.onClick.AddListener(delegate ()
                     {
                         state = !state;
-                        //Settings.Logger.LogWarning($"Setting {name} show to {state} state");
-                        Controller.Parent_toggle(name, state);
+                        Controller.ParentToggle(name, state);
                         Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                     });
                 }

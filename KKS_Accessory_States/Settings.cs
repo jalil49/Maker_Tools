@@ -18,10 +18,10 @@ namespace Accessory_States
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
             var attemptASS = false;
-            var Coordinate = new Dictionary<int, CoordinateData>();
+            var Coordinate = new Dictionary<int, Migrator.CoordinateDataV1>();
             foreach (var item in coordinateMapping)
             {
-                Coordinate[item.Key] = new CoordinateData();
+                Coordinate[item.Key] = new Migrator.CoordinateDataV1();
             }
 
             if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null) attemptASS = true;
@@ -32,12 +32,12 @@ namespace Accessory_States
                 {
                     if (Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
                     {
-                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
+                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, Migrator.CoordinateDataV1>>((byte[])ByteData);
                     }
                 }
                 else if (Data.version == 0)
                 {
-                    Migrator.MigrateV0(Data, ref Coordinate);
+                    Migrator.CharaMigrateV0(Data, ref Coordinate, coordinateMapping.Count);
                 }
                 else
                 {
@@ -87,11 +87,11 @@ namespace Accessory_States
 
                 foreach (var item in Coordinate)
                 {
-                    item.Value.Accstatesyncconvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
+                    item.Value.AccStateSyncConvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
                 }
             }
 
-            var transfer = new Dictionary<int, CoordinateData>();
+            var transfer = new Dictionary<int, Migrator.CoordinateDataV1>();
 
             foreach (var item in coordinateMapping)
             {

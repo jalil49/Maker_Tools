@@ -1,13 +1,18 @@
-﻿using KKAPI.Chara;
+﻿using ExtensibleSaveFormat;
+using KKAPI.Chara;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ExtensibleSaveFormat.Extensions;
 
 namespace Accessory_States
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        internal static bool ASS_Exists;
+        public static bool DisableRefresh;
+
+        internal static bool ASSExists;
 
         private ChaFile chafile;
 
@@ -16,137 +21,157 @@ namespace Accessory_States
         private byte lastknownshoetype = 0;
 
         private bool ShowSub = true;
+        private bool ShowMain = true;
 
-        internal static List<SaveData.Heroine> FreeHHeroines = new List<SaveData.Heroine>();
+        internal CoordinateData NowCoordinateData = new CoordinateData();
 
-        public Dictionary<int, CoordinateData> Coordinate = new Dictionary<int, CoordinateData>();
+        internal Dictionary<int, SlotData> SlotInfo = new Dictionary<int, SlotData>();
 
-        public CoordinateData NowCoordinate = new CoordinateData();
-
-        public Dictionary<string, List<KeyValuePair<int, Slotdata>>> Now_Parented_Name_Dictionary = new Dictionary<string, List<KeyValuePair<int, Slotdata>>>();
-
-        internal ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
-
-        public void Update_Now_Coordinate()
-        {
-            var outfitnum = (int)CurrentCoordinate.Value;
-            if (!Coordinate.TryGetValue(outfitnum, out var coordinateData))
-            {
-                coordinateData = new CoordinateData();
-                Coordinate[outfitnum] = coordinateData;
-            }
-            if (KKAPI.Maker.MakerAPI.InsideMaker)
-            {
-                NowCoordinate = coordinateData;
-            }
-            else
-            {
-                NowCoordinate = new CoordinateData(coordinateData);
-            }
-            Update_Parented_Name();
-        }
-
-        public void Update_Now_Coordinate(int outfitnum)
-        {
-            NowCoordinate = new CoordinateData(Coordinate[outfitnum]);
-            Update_Parented_Name();
-        }
-
-        public void Update_Parented_Name()
-        {
-            Now_Parented_Name_Dictionary.Clear();
-            var shoetype = ChaControl.fileStatus.shoesType;
-            var ParentedList = NowCoordinate.Slotinfo.Where(x => x.Value.Parented && (x.Value.Shoetype == 2 || x.Value.Shoetype == shoetype));
-            foreach (var item in ParentedList)
-            {
-                var parentkey = Parts[item.Key].parentKey;
-                if (!Now_Parented_Name_Dictionary.TryGetValue(parentkey, out var list))
-                {
-                    list = new List<KeyValuePair<int, Slotdata>>();
-                    Now_Parented_Name_Dictionary[parentkey] = list;
-                }
-                list.Add(item);
-            }
-        }
-
-        public void Clear_Now_Coordinate()
-        {
-            NowCoordinate.Clear();
-            Now_Parented_Name_Dictionary.Clear();
-        }
-
-        public void Clear()
-        {
-            for (int i = 0, n = Coordinate.Count; i < n; i++)
-            {
-                Coordinate[i].Clear();
-            }
-            Now_Parented_Name_Dictionary.Clear();
-        }
-
-        public void Clearoutfit(int key)
-        {
-            Coordinate[key].Clear();
-        }
-
-        public void Createoutfit(int key)
-        {
-            if (!Coordinate.ContainsKey(key))
-            {
-                Coordinate[key] = new CoordinateData();
-            }
-        }
-
-        public void Moveoutfit(int dest, int src)
-        {
-            Coordinate[dest] = new CoordinateData(Coordinate[src]);
-        }
-
-        public void Removeoutfit(int key)
-        {
-            Coordinate.Remove(key);
-        }
+        internal Dictionary<string, List<KeyValuePair<int, SlotData>>> ParentedNameDictionary = new Dictionary<string, List<KeyValuePair<int, SlotData>>>();
 
         #region Properties
+        private ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
 
-        //private Dictionary<int, CoordinateData> Coordinate
-        //{
-        //    get { return ThisCharactersData.Coordinate; }
-        //    set { ThisCharactersData.Coordinate = value; }
-        //}
+        private ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
 
-        //private CoordinateData NowCoordinate
-        //{
-        //    get { return ThisCharactersData.NowCoordinate; }
-        //    set { ThisCharactersData.NowCoordinate = value; }
-        //}
-
-        internal Dictionary<int, Slotdata> Slotinfo
+        internal List<NameData> Names
         {
-            get { return NowCoordinate.Slotinfo; }
-            set { NowCoordinate.Slotinfo = value; }
-        }
-
-        internal Dictionary<int, NameData> Names
-        {
-            get { return NowCoordinate.Names; }
-            set { NowCoordinate.Names = value; }
+            get { return NowCoordinateData.Names; }
+            set { NowCoordinateData.Names = value; }
         }
 
         internal bool[] ClothNotData
         {
-            get { return NowCoordinate.ClothNotData; }
-            set { NowCoordinate.ClothNotData = value; }
+            get { return NowCoordinateData.ClothNotData; }
+            set { NowCoordinateData.ClothNotData = value; }
         }
 
         internal bool ForceClothDataUpdate
         {
-            get { return NowCoordinate.ForceClothNotUpdate; }
-            set { NowCoordinate.ForceClothNotUpdate = value; }
+            get { return NowCoordinateData.ForceClothNotUpdate; }
+            set { NowCoordinateData.ForceClothNotUpdate = value; }
         }
 
         public static bool StopMakerLoop { get; internal set; }
 
         #endregion
+
+        internal void UpdatePluginData()
+        {
+            ClearNowCoordinate();
+            NowCoordinate.accessory.TryGetExtendedDataById(Settings.GUID, out var pluginData);
+
+            if (pluginData != null)
+            {
+                if (pluginData.version == 2)
+                {
+                    if (pluginData.data.TryGetValue(Constants.CoordinateKey, out var bytedata) && bytedata != null)
+                    {
+                        NowCoordinateData = MessagePackSerializer.Deserialize<CoordinateData>((byte[])bytedata);
+                    }
+                }
+                else
+                {
+                    Settings.Logger.LogMessage("New version of Accessory States detected, Please Update");
+                }
+            }
+
+            for (var i = 0; i < PartsArray.Length; i++)
+            {
+                LoadSlotData(i);
+            }
+
+            UpdateParentedDict();
+
+            StartCoroutine(WaitForSlots());
+            var args = new CoordinateLoadedEventARG(ChaControl/*, coordinate*/);
+            if (!(Coordloaded == null || Coordloaded.GetInvocationList().Length == 0))
+            {
+                try
+                {
+                    Coordloaded?.Invoke(null, args);
+                }
+                catch (Exception ex)
+                {
+                    Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
+                }
+            }
+        }
+
+        internal void UpdateParentedDict()
+        {
+            ParentedNameDictionary.Clear();
+            var shoetype = ChaControl.fileStatus.shoesType;
+            var ParentedList = SlotInfo.Where(x => x.Value.Parented && (x.Value.ShoeType == 2 || x.Value.ShoeType == shoetype));
+            foreach (var item in ParentedList)
+            {
+                var parentkey = PartsArray[item.Key].parentKey;
+                if (ParentedNameDictionary.TryGetValue(parentkey, out var keyValuePairs))
+                {
+                    keyValuePairs.Add(item);
+                    continue;
+                }
+                ParentedNameDictionary[parentkey] = new List<KeyValuePair<int, SlotData>>() { item };
+            }
+        }
+
+        internal void ClearNowCoordinate()
+        {
+            NowCoordinateData.Clear();
+            ParentedNameDictionary.Clear();
+            SlotInfo.Clear();
+        }
+
+        private void SaveSlotData(int slot)
+        {
+            if (slot >= PartsArray.Length)
+            {
+                return;
+            }
+            if (SlotInfo.TryGetValue(slot, out var slotdata) && !(slotdata.Binding < 0 && !slotdata.Parented))
+            {
+                SaveSlotData(slot, slotdata);
+                return;
+            }
+            PartsArray[slot].SetExtendedDataById(Settings.GUID, null);
+        }
+
+        private void SaveSlotData(int slot, SlotData slotData)
+        {
+            if (slot >= PartsArray.Length || slotData.Binding < 0 && !slotData.Parented)
+            {
+                return;
+            }
+            var savedata = new PluginData() { version = 2 };
+            savedata.data[Constants.AccessoryKey] = slotData.Serialize();
+            PartsArray[slot].SetExtendedDataById(Settings.GUID, savedata);
+        }
+
+        private void SaveCoordinateData()
+        {
+            NowCoordinateData.CleanUp(SlotInfo);
+            var plugin = new PluginData() { version = 2 };
+            plugin.data[Constants.CoordinateKey] = NowCoordinateData.Serialize();
+            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, plugin);
+        }
+
+        private void LoadSlotData(int slot)
+        {
+            if (slot >= PartsArray.Length)
+            {
+                return;
+            }
+            if (PartsArray[slot].TryGetExtendedDataById(Settings.GUID, out var extendeddata) && extendeddata.version == 2 && extendeddata.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
+            {
+                var slotdata = SlotInfo[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
+                if (!Names.Any(x => x.Name == slotdata.GroupName))
+                {
+                    Names.Add(new NameData() { Name = slotdata.GroupName });
+                }
+                //confirm binding with name index
+                if (slotdata.Binding >= Constants.ClothingLength)
+                    slotdata.Binding = Constants.ClothingLength + Names.FindIndex(x => x.Name == slotdata.GroupName);
+            }
+        }
     }
 }
