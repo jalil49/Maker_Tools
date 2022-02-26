@@ -2,6 +2,8 @@
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI.Sidebar;
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +21,22 @@ namespace CardUpdateTool
             GuidList.Clear();
             StaticMaxVersion.Clear();
             ShowGui = false;
+
+            try
+            {
+                //
+                // Save window state
+                //
+                Window.X.Value = (int)screenRect.x;
+                Window.Y.Value = (int)screenRect.y;
+                Window.Width.Value = (int)screenRect.width;
+                Window.Height.Value = (int)screenRect.height;
+                Window.FontSize.Value = labelstyle.fontSize;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug($"Error saving window state={ex}");
+            }
         }
 
         internal void Starting()
@@ -35,6 +53,7 @@ namespace CardUpdateTool
             }
             CharacterPath = Path.GetFullPath(CharacterPath);
             GetAllGuids();
+            RestoreWindowSettings();
         }
 
         internal void Register(object sender, RegisterSubCategoriesEvent e)
