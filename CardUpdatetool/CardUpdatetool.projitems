@@ -9,6 +9,8 @@
     <Import_RootNamespace>CardUpdateTool</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\WidowSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\ConfigEntries.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Datastruct.cs" />
@@ -17,8 +19,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DirectoryFinder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Standard Settings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
   </ItemGroup>
 </Project>
