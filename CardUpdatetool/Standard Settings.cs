@@ -25,6 +25,9 @@ namespace CardUpdateTool
 
             Hooks.Init();
 
+            // Saving state in standard configuration file
+            ConfigEntries();
+
             MakerAPI.MakerStartedLoading += (s, e) => Starting();
             MakerAPI.MakerExiting += (s, e) => Exiting();
             MakerAPI.RegisterCustomSubCategories += Register;
