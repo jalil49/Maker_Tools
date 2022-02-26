@@ -55,7 +55,18 @@ namespace CardUpdateTool
 
                 fieldstyle = new GUIStyle(GUI.skin.textField);
                 togglestyle = new GUIStyle(GUI.skin.toggle);
-                SetFontSize(Screen.height / 108);
+
+                //
+                // Restore font size
+                //
+                if (Window.FontSize.Value < 0)
+                {
+                    SetFontSize(Screen.height / 108);
+                }
+                else
+                {
+                    SetFontSize(Window.FontSize.Value);
+                }
             }
 
             IMGUIUtils.DrawSolidBox(screenRect);
@@ -520,6 +531,42 @@ namespace CardUpdateTool
             buttonstyle.fontSize = size;
             fieldstyle.fontSize = size;
             togglestyle.fontSize = size;
+        }
+
+        /// <summary>
+        /// Restore the GUI window settings
+        /// Start top left corner is not changed easier when changing resolutions
+        /// TODO: Consider adjusting values to resolution changes 
+        /// have to save resolution for current values and adjust if it changes
+        /// </summary>
+        internal void RestoreWindowSettings()
+        {
+            try
+            {
+                if ((Window.X.Value < 0)
+                    || (Window.Y.Value < 0)
+                    || (Window.Width.Value < 0)
+                    || (Window.Height.Value < 0))
+                {
+                    screenRect = new Rect(
+                        Window.Defaults.x,
+                        Window.Defaults.y,
+                        Window.Defaults.width,
+                        Window.Defaults.height);
+                }
+                else
+                {
+                    screenRect = new Rect(
+                        Window.X.Value,
+                        Window.Y.Value,
+                        Window.Width.Value,
+                        Window.Height.Value);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning($"Error: {e}");
+            }
         }
     }
 }
