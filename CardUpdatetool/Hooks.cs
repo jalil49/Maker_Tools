@@ -11,10 +11,11 @@ namespace CardUpdateTool
         internal static void Init()
         {
             Harmony.CreateAndPatchAll(typeof(Hooks));
-            Harmony.CreateAndPatchAll(typeof(ResolveHook));
-            Harmony.CreateAndPatchAll(typeof(CoordinateSaveHook));
-            Harmony.CreateAndPatchAll(typeof(CompatibilityResolve));
-            Harmony.CreateAndPatchAll(typeof(MigrateData));
+            // Every patch is inside Hooks
+            //Harmony.CreateAndPatchAll(typeof(ResolveHook));
+            //Harmony.CreateAndPatchAll(typeof(CoordinateSaveHook));
+            //Harmony.CreateAndPatchAll(typeof(CompatibilityResolve));
+            //Harmony.CreateAndPatchAll(typeof(MigrateData));
         }
 
         internal static bool WaitForSave = false;
