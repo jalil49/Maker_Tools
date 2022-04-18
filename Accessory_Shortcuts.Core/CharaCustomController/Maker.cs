@@ -22,8 +22,12 @@ namespace Accessory_Shortcuts
 
             if (type == partsInfo.type)
             {
-                Constants.Parent[partsInfo.type - 120].Id = id;
-                Constants.Parent[partsInfo.type - 120].ParentKey = parentKey;
+                if(!Constants.Parent.TryGetValue(type, out var parent))
+                {
+                    Constants.Parent[type] = parent = new Data(partsInfo.parentKey);
+                }
+                parent.Id = id;
+                parent.ParentKey = parentKey;
             }
         }
 
@@ -33,7 +37,7 @@ namespace Accessory_Shortcuts
             {
                 return;
             }
-            else if (Constants.Parent.TryGetValue(type - 120, out var data) && (id != data.Id || parentKey != data.ParentKey))
+            else if (Constants.Parent.TryGetValue(type, out var data) && (id != data.Id || parentKey != data.ParentKey))
             {
                 ChaControl.ChangeAccessory(slotNo, type, data.Id, data.ParentKey);
                 CustomBase.Instance.SetUpdateCvsAccessory(slotNo, true);
