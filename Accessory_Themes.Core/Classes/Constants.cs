@@ -4,6 +4,12 @@ namespace Accessory_Themes
 {
     public static class Constants
     {
+        public const int MasterSaveVersion = 2;
+        public const string CoordinateKey = "CoordinateData";
+
+        public const string AccessoryKey = "SlotData";
+        public const int AccessoryKeyVersion = 0;
+
         public static List<string>[] Inclusion = new List<string>[11]
         {
             new List<string> {"None"},

@@ -1,4 +1,5 @@
-﻿using Extensions;
+﻿using ExtensibleSaveFormat;
+using Extensions;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -6,91 +7,41 @@ using System.Linq;
 
 namespace Additional_Card_Info
 {
-    public class DataStruct
-    {
-        public Dictionary<int, CoordinateInfo> CoordinateInfo = new Dictionary<int, CoordinateInfo>();
-
-        public Cardinfo CardInfo = new Cardinfo();
-
-        public CoordinateInfo NowCoordinateInfo = new CoordinateInfo();
-
-        public void CleanUp()
-        {
-            CardInfo.CleanUp();
-            foreach (var item in CoordinateInfo)
-            {
-                item.Value.CleanUp();
-            }
-        }
-
-        public void Clearoutfit(int key)
-        {
-            if (!CoordinateInfo.ContainsKey(key))
-                Createoutfit(key);
-            CoordinateInfo[key].Clear();
-        }
-
-        public void Createoutfit(int key)
-        {
-            if (!CoordinateInfo.ContainsKey(key))
-                CoordinateInfo[key] = new CoordinateInfo();
-        }
-
-        public void Moveoutfit(int dest, int src)
-        {
-            CoordinateInfo[dest] = new CoordinateInfo(CoordinateInfo[src]);
-        }
-
-        public void Removeoutfit(int key)
-        {
-            CoordinateInfo.Remove(key);
-        }
-    }
-
     [Serializable]
-    [MessagePackObject]
-    public class Cardinfo
+    [MessagePackObject(true)]
+    public class CardInfo
     {
-        [Key("_cosplayready")]
         public bool CosplayReady;
 
-        [Key("_advdir")]
         public bool AdvancedDirectory;
 
-        [Key("_personalsavebool")]
         public bool[] PersonalClothingBools;
 
-        [Key("_simpledirectory")]
         public string SimpleFolderDirectory;
 
-        [Key("_advdirectory")]
-        public Dictionary<string, string> AdvancedFolderDirectory;
+        public Dictionary<string, string> AdvancedFolderDirectory;//for folder reference to external card directory not saved on coordinates
 
-        public Cardinfo() { NullCheck(); }
+        public CardInfo() { NullCheck(); }
 
-        public Cardinfo(bool _advdir, bool _cosplayready, bool[] _personalsavebool, string _simpledirectory, Dictionary<string, string> _advdirectory)
+        public CardInfo(bool _advdir, bool _cosplayready, bool[] _personalsavebool, string _simpledirectory)
         {
             CosplayReady = _cosplayready;
             SimpleFolderDirectory = _simpledirectory;
             AdvancedDirectory = _advdir;
             PersonalClothingBools = _personalsavebool.ToNewArray(9);
-
-            AdvancedFolderDirectory = _advdirectory.ToNewDictionary();
             NullCheck();
         }
 
-        internal void CleanUp()
+        internal CardInfo(Migrator.CardInfoV1 oldinfo)
         {
-            var invalidpath = System.IO.Path.GetInvalidPathChars().Select(x => x.ToString());
-            var folderkeys = AdvancedFolderDirectory.Keys.ToList();
-            foreach (var key in folderkeys)
+            CosplayReady = oldinfo.CosplayReady;
+            AdvancedDirectory = oldinfo.AdvancedDirectory;
+            PersonalClothingBools = oldinfo.PersonalClothingBools;
+            SimpleFolderDirectory = oldinfo.SimpleFolderDirectory;
+            AdvancedFolderDirectory = oldinfo.AdvancedFolderDirectory;
+            foreach (var item in Constants.Coordinates)
             {
-                var path = AdvancedFolderDirectory[key] = AdvancedFolderDirectory[key].Trim();
-
-                if (path.Length == 0 || path.ContainsAny(invalidpath))
-                {
-                    AdvancedFolderDirectory.Remove(key);
-                }
+                AdvancedFolderDirectory.Remove(item);
             }
         }
 
@@ -98,47 +49,39 @@ namespace Additional_Card_Info
         {
             CosplayReady = false;
             PersonalClothingBools = new bool[9];
-            AdvancedFolderDirectory.Clear();
         }
 
         private void NullCheck()
         {
             if (SimpleFolderDirectory == null) SimpleFolderDirectory = "";
-            if (AdvancedFolderDirectory == null) AdvancedFolderDirectory = new Dictionary<string, string>();
             if (PersonalClothingBools == null) PersonalClothingBools = new bool[9];
+            if (AdvancedFolderDirectory == null) AdvancedFolderDirectory = new Dictionary<string, string>();
         }
+
+        public PluginData Serialize() => new PluginData { version = Constants.MasterSaveVersion, data = new Dictionary<string, object>() { [Constants.CardKey] = MessagePackSerializer.Serialize(this) } };
+
+        public static CardInfo Deserialize(object bytearray) => MessagePackSerializer.Deserialize<CardInfo>((byte[])bytearray);
     }
 
     [Serializable]
-    [MessagePackObject]
+    [MessagePackObject(true)]
     public class CoordinateInfo
     {
         #region fields
-        [Key("_makeup")]
         public bool MakeUpKeep;
 
-        [Key("_clothnot")]
         public bool[] ClothNotData;
 
-        [Key("_coordsavebool")]
         public bool[] CoordinateSaveBools;
 
-        [Key("_acckeep")]
-        public List<int> AccKeep;
-
-        [Key("_hairkeep")]
-        public List<int> HairAcc;
-
-        [Key("_creatornames")]
         public List<string> CreatorNames;
 
-        [Key("_set")]
         public string SetNames;
 
-        [Key("_subset")]
         public string SubSetNames;
 
-        [Key("_restrictioninfo")]
+        public string AdvancedFolder;
+
         public RestrictionInfo RestrictionInfo;
         #endregion
 
@@ -146,19 +89,17 @@ namespace Additional_Card_Info
 
         public CoordinateInfo(CoordinateInfo _copy) => CopyData(_copy);
 
-        public void CopyData(CoordinateInfo _copy) => CopyData(_copy.ClothNotData, _copy.CoordinateSaveBools, _copy.AccKeep, _copy.HairAcc, _copy.CreatorNames, _copy.SetNames, _copy.SubSetNames, _copy.RestrictionInfo);
+        public void CopyData(CoordinateInfo _copy) => CopyData(_copy.ClothNotData, _copy.CoordinateSaveBools, _copy.CreatorNames, _copy.SetNames, _copy.SubSetNames, _copy.RestrictionInfo, _copy.AdvancedFolder);
 
-        public void CopyData(bool[] _clothnot, bool[] _coordsavebool, List<int> _acckeep, List<int> _hairkeep, List<string> _creatornames, string _set, string _subset, RestrictionInfo _restrictioninfo)
+        public void CopyData(bool[] _clothnot, bool[] _coordsavebool, List<string> _creatornames, string _set, string _subset, RestrictionInfo _restrictioninfo, string _advancedfolder)
         {
             SetNames = _set;
             SubSetNames = _subset;
 
             CoordinateSaveBools = _coordsavebool.ToNewArray(9);
-            AccKeep = _acckeep.ToNewList();
-            HairAcc = _hairkeep.ToNewList();
             CreatorNames = _creatornames.ToNewList();
             ClothNotData = _clothnot.ToNewArray(3);
-
+            AdvancedFolder = _advancedfolder;
             if (_restrictioninfo != null) RestrictionInfo = new RestrictionInfo(_restrictioninfo);
             else RestrictionInfo = null;
             NullCheck();
@@ -168,8 +109,7 @@ namespace Additional_Card_Info
         {
             ClothNotData = new bool[3];
             CoordinateSaveBools = new bool[9];
-            AccKeep.Clear();
-            HairAcc.Clear();
+            AdvancedFolder = "";
             CreatorNames.Clear();
             SetNames = "";
             SubSetNames = "";
@@ -192,20 +132,31 @@ namespace Additional_Card_Info
         {
             if (ClothNotData == null) ClothNotData = new bool[3];
             if (CoordinateSaveBools == null) CoordinateSaveBools = new bool[9];
-            if (AccKeep == null) AccKeep = new List<int>();
-            if (HairAcc == null) HairAcc = new List<int>();
+            if (AdvancedFolder == null) AdvancedFolder = "";
             if (CreatorNames == null) CreatorNames = new List<string>();
             if (SetNames == null) SetNames = "";
             if (SubSetNames == null) SubSetNames = "";
             if (RestrictionInfo == null) RestrictionInfo = new RestrictionInfo();
         }
+
+        public PluginData Serialize(string creatorname = null)
+        {
+            if (!creatorname.IsNullOrEmpty() && (CreatorNames.Count == 0 || CreatorNames.Last() != creatorname))
+            {
+                CreatorNames.Add(creatorname);
+            }
+
+            return new PluginData { version = Constants.MasterSaveVersion, data = new Dictionary<string, object>() { [Constants.CoordinateKey] = MessagePackSerializer.Serialize(this) } };
+        }
+
+        public static CoordinateInfo Deserialize(object bytearray) => MessagePackSerializer.Deserialize<CoordinateInfo>((byte[])bytearray);
     }
 
     [Serializable]
     [MessagePackObject]
     public class RestrictionInfo
     {
-        #region fields
+        #region Fields
         [Key("_personality")]
         public Dictionary<int, int> PersonalityType_Restriction;
 
@@ -257,14 +208,8 @@ namespace Additional_Card_Info
             PersonalityType_Restriction = _personality.ToNewDictionary();
             TraitType_Restriction = _trait.ToNewDictionary();
             Interest_Restriction = _interest.ToNewDictionary();
-            //if (_personality != null) PersonalityType_Restriction = new Dictionary<int, int>(_personality);
-            //else PersonalityType_Restriction = null;
-            //if (_trait != null) TraitType_Restriction = new Dictionary<int, int>(_personality);
-            //else TraitType_Restriction = null;
-            //if (_interest != null) Interest_Restriction = new Dictionary<int, int>(_personality);
-            //else Interest_Restriction = null;
 
-            //NullCheck();
+            NullCheck();
         }
 
         private void NullCheck()
@@ -318,5 +263,38 @@ namespace Additional_Card_Info
                 Interest_Restriction.Remove(item);
             }
         }
+    }
+
+    [Serializable]
+    [MessagePackObject(true)]
+    public class SlotInfo
+    {
+        /// <summary>
+        /// Accessories to suggest keeping when modifying coordinates
+        /// Example: when an appendage is made of accessories like Mecha Chika (granted this card broke at somepoint due to mod updates)
+        /// </summary>
+        public KeepState KeepState = KeepState.DontKeep;
+
+        public void Clear()
+        {
+            KeepState = KeepState.DontKeep;
+        }
+
+        public PluginData Serialize()
+        {
+            if (KeepState != KeepState.DontKeep)
+            {
+                return new PluginData { version = Constants.MasterSaveVersion, data = new Dictionary<string, object>() { [Constants.AccessoryKey] = MessagePackSerializer.Serialize(this) } };
+            }
+            return null;
+        }
+
+        public static SlotInfo Deserialize(object bytearray) => MessagePackSerializer.Deserialize<SlotInfo>((byte[])bytearray);
+    }
+    public enum KeepState
+    {
+        DontKeep = -1,
+        NonHairKeep = 0,
+        HairKeep = 1
     }
 }

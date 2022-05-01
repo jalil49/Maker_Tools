@@ -5,6 +5,18 @@ namespace Additional_Card_Info
 {
     public static class Constants
     {
+        #region ExtendedSave 
+        public const int MasterSaveVersion = 2;
+
+        public const string CardKey = "CardData";
+        public const int CardKeyVersion = 0;
+
+        public const string CoordinateKey = "CoordinateData";
+        public const int CoordinateKeyVersion = 0;
+
+        public const string AccessoryKey = "SlotData";
+        public const int AccessoryKeyVersion = 0;
+        #endregion
         public static int ClothingTypesLength = Enum.GetValues(typeof(ClothingTypes)).Length;
         public static int AdditonalClothingTypesLength = Enum.GetValues(typeof(AdditonalClothingTypes)).Length;
         public static int HStatesLength = Enum.GetValues(typeof(HStates)).Length;
@@ -207,5 +219,12 @@ namespace Additional_Card_Info
             Sightseeing,
             H
         }
+
+        public static List<string> AdditionalCoordinateReferences = new List<string> { "UnderWear" };
+#if KK
+        public static readonly string[] Coordinates = { "School Uniform", "AfterSchool", "Gym", "Swimsuit", "Club", "Casual", "Nightwear" };
+#elif KKS
+        public static readonly string[] Coordinates = { "Casual", "Swimsuit", "Gym", "Bathroom" };
+#endif
     }
 }

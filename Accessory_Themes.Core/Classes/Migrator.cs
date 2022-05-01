@@ -1,5 +1,7 @@
 ﻿using ExtensibleSaveFormat;
+using Extensions;
 using MessagePack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,8 +10,78 @@ namespace Accessory_Themes
 {
     public static class Migrator
     {
-        public static void MigrateV0(PluginData MyData, ref DataStruct data)
+        public static SlotData SlotDataMigrate(PluginData pluginData)
         {
+            switch (pluginData.version)
+            {
+                case 2:
+                    if (pluginData.data.TryGetValue(Constants.AccessoryKey, out var bytearray))
+                    {
+                        return SlotData.Deserialize(bytearray);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return null;
+        }
+
+        public static void StandardCharaMigrate(ChaControl control, PluginData ACI_Data)
+        {
+            if (ACI_Data.version == 2) return;
+
+            if (ACI_Data.version > 2)
+            {
+                PrintOutdated();
+                return;
+            }
+
+            var oldcoordinatedata = new Dictionary<int, CoordinateDataV1>();
+
+            if (ACI_Data.version == 0)
+            {
+                StandardCharaMigrateV0(ACI_Data, ref oldcoordinatedata, control.chaFile.coordinate.Length);
+            }
+
+            if (ACI_Data.version == 1)
+            {
+                if (ACI_Data.data.TryGetValue(Constants.CoordinateKey, out var ByteData) && ByteData != null)
+                {
+                    oldcoordinatedata = CoordinateDataV1.DictDeserialize(ByteData);
+                }
+            }
+
+            foreach (var item in oldcoordinatedata)
+            {
+                if (item.Key >= control.chaFile.coordinate.Length)
+                {
+                    continue;
+                }
+
+                CoordinateProcess(control.chaFile.coordinate[item.Key], item.Value);
+
+                if (item.Key == control.fileStatus.coordinateType)
+                {
+                    var baseparts = control.chaFile.coordinate[item.Key].accessory.parts;
+                    var nowparts = control.nowCoordinate.accessory.parts;
+                    for (var i = 0; i < baseparts.Length; i++)
+                    {
+                        if (baseparts[i].TryGetExtendedDataById(Settings.GUID, out var basedata))
+                        {
+                            nowparts[i].SetExtendedDataById(Settings.GUID, basedata);
+                        }
+                    }
+                }
+            }
+            ExtendedSave.SetExtendedDataById(control.chaFile, Settings.GUID, new PluginData() { version = Constants.MasterSaveVersion });
+        }
+
+        public static void StandardCharaMigrateV0(PluginData MyData, ref Dictionary<int, CoordinateDataV1> Coordinate, int limit)
+        {
+            for (var i = 0; i < limit; i++)
+            {
+                Coordinate[i] = new CoordinateDataV1();
+            }
             if (MyData.data.TryGetValue("Theme_Names", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<string>[]>((byte[])ByteData);
@@ -17,18 +89,11 @@ namespace Accessory_Themes
                 {
                     return;
                 }
-                for (var i = 0; i < temp.Length; i++)
-                {
-                    if (!data.Coordinate.TryGetValue(i, out var _))
-                    {
-                        data.Coordinate[i] = new CoordinateData();
-                    }
-                }
-                for (var i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length && i < limit; i++)
                 {
                     if (temp[i].Count > 0)
                         temp[i].RemoveAt(0);
-                    var themes = data.Coordinate[i].Themes;
+                    var themes = Coordinate[i].Themes;
                     foreach (var item in temp[i])
                     {
                         themes.Add(new ThemeData(item));
@@ -39,9 +104,9 @@ namespace Accessory_Themes
             if (MyData.data.TryGetValue("Theme_dic", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])ByteData);
-                for (var i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length && i < limit; i++)
                 {
-                    var themes = data.Coordinate[i].Themes;
+                    var themes = Coordinate[i].Themes;
                     foreach (var item in temp[i])
                     {
                         themes[item.Value].ThemedSlots.Add(item.Key);
@@ -49,51 +114,25 @@ namespace Accessory_Themes
                 }
             }
 
-            if (MyData.data.TryGetValue("Color_Theme_dic", out ByteData) && ByteData != null)
-            {
-                var temp = MessagePackSerializer.Deserialize<List<Color[]>[]>((byte[])ByteData);
-                for (var i = 0; i < temp.Length; i++)
-                {
-                    var list = temp[i];
-                    if (list.Count > 0)
-                        list.RemoveAt(0);
-
-                    var themes = data.Coordinate[i].Themes;
-                    for (var j = 0; j < list.Count; j++)
-                    {
-                        themes[j].Colors = list[j];
-                    }
-                }
-            }
-
             if (MyData.data.TryGetValue("Relative_Theme_Bools", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<bool>[]>((byte[])ByteData);
-                for (var i = 0; i < temp.Length; i++)
+                for (var i = 0; i < temp.Length && i < limit; i++)
                 {
                     if (temp[i].Count > 0)
                         temp[i].RemoveAt(0);
-                    var themes = data.Coordinate[i].Themes;
+                    var themes = Coordinate[i].Themes;
                     for (var j = 0; j < temp[i].Count; j++)
                     {
                         themes[j].Isrelative = temp[i][j];
                     }
                 }
             }
-
-            if (MyData.data.TryGetValue("Relative_ACC_Dictionary", out ByteData) && ByteData != null)
-            {
-                var temp = MessagePackSerializer.Deserialize<Dictionary<int, List<int[]>>[]>((byte[])ByteData);
-                for (var i = 0; i < temp.Length; i++)
-                {
-                    data.Coordinate[i].Relative_ACC_Dictionary = temp[i];
-                }
-            }
         }
 
-        public static CoordinateData CoordinateMigrateV0(PluginData MyData)
+        public static CoordinateDataV1 CoordinateMigrateV0(PluginData MyData)
         {
-            var data = new CoordinateData();
+            var data = new CoordinateDataV1();
             if (MyData.data.TryGetValue("Theme_Names", out var ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<string>>((byte[])ByteData);
@@ -121,18 +160,6 @@ namespace Accessory_Themes
                 }
             }
 
-            if (MyData.data.TryGetValue("Color_Theme_dic", out ByteData) && ByteData != null)
-            {
-                var temp = MessagePackSerializer.Deserialize<List<Color[]>>((byte[])ByteData);
-                if (temp.Count > 0)
-                    temp.RemoveAt(0);
-                var themes = data.Themes;
-                for (var j = 0; j < temp.Count; j++)
-                {
-                    themes[j].Colors = temp[j];
-                }
-            }
-
             if (MyData.data.TryGetValue("Relative_Theme_Bools", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<List<bool>>((byte[])ByteData);
@@ -145,14 +172,71 @@ namespace Accessory_Themes
                 }
             }
 
-            if (MyData.data.TryGetValue("Relative_ACC_Dictionary", out ByteData) && ByteData != null)
-            {
-                var temp = MessagePackSerializer.Deserialize<Dictionary<int, List<int[]>>>((byte[])ByteData);
-                data.Relative_ACC_Dictionary = temp;
+            return data;
+        }
 
+        public static void StandardCoordMigrator(ChaFileCoordinate file, PluginData importeddata)
+        {
+            if (importeddata.version > 1) return;
+
+            var dict = new CoordinateDataV1();
+
+            if (importeddata.version == 0)
+            {
+                dict = CoordinateMigrateV0(importeddata);
             }
 
-            return data;
+            if (importeddata.version == 1)
+            {
+                if (importeddata.data.TryGetValue(Constants.CoordinateKey, out var ByteData) && ByteData != null)
+                {
+                    dict = CoordinateDataV1.Deserialize(ByteData);
+                }
+            }
+
+            CoordinateProcess(file, dict);
+        }
+
+        private static void CoordinateProcess(ChaFileCoordinate file, CoordinateDataV1 dict)
+        {
+            var parts = file.accessory.parts;
+
+            foreach (var theme in dict.Themes)
+            {
+                foreach (var slot in theme.ThemedSlots)
+                {
+                    if (slot >= parts.Length) continue;
+                    var tempslot = new SlotData() { ThemeName = theme.ThemeName, IsRelative = theme.Isrelative };
+                    parts[slot].SetExtendedDataById(Settings.GUID, tempslot.Serialize());
+                }
+            }
+            ExtendedSave.SetExtendedDataById(file, Settings.GUID, new PluginData { version = Constants.MasterSaveVersion });
+        }
+
+        private static void PrintOutdated() => Settings.Logger.LogWarning("New version of Accessory Themes detected please update");
+
+        [Serializable]
+        [MessagePackObject]
+        public class CoordinateDataV1
+        {
+            [Key("_themes")]
+            public List<ThemeData> Themes;
+
+            public CoordinateDataV1() { NullCheck(); }
+
+            public CoordinateDataV1(List<ThemeData> _themes)
+            {
+                Themes = _themes.ToNewList();
+                NullCheck();
+            }
+
+            private void NullCheck()
+            {
+                if (Themes == null) Themes = new List<ThemeData>();
+            }
+
+            public static CoordinateDataV1 Deserialize(object bytearray) => MessagePackSerializer.Deserialize<CoordinateDataV1>((byte[])bytearray);
+            public static Dictionary<int, CoordinateDataV1> DictDeserialize(object bytearray) => MessagePackSerializer.Deserialize<Dictionary<int, CoordinateDataV1>>((byte[])bytearray);
         }
     }
 }

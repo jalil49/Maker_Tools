@@ -15,130 +15,45 @@ namespace Accessory_Themes
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (!MakerAPI.InsideMaker)
+            var plugindata = GetExtendedData();
+            if (plugindata != null)
             {
-                return;
+                Migrator.StandardCharaMigrate(ChaControl, plugindata);
             }
-
-            for (var i = 0; i < ChaFileControl.coordinate.Length; i++)
-            {
-                if (Coordinate.ContainsKey(i))
-                    Clearoutfit(i);
-                else
-                    Createoutfit(i);
-            }
-            for (int i = ChaFileControl.coordinate.Length, n = Coordinate.Keys.Max() + 1; i < n; i++)
-            {
-                Removeoutfit(i);
-            }
-
+            ACI_Ref = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
+            UpdatePluginData();
             CurrentCoordinate.Subscribe(x =>
             {
                 ShowCustomGui = false;
-                if (!Coordinate.ContainsKey((int)x))
-                    Createoutfit((int)x);
 
-                UpdateNowCoordinate();
-                StartCoroutine(WaitForSlots());
+                UpdatePluginData();
+                WaitForSlots();
             });
-
-            var MyData = GetExtendedData();
-            if (MyData != null)
-            {
-                switch (MyData.version)
-                {
-                    case 0:
-                        Migrator.MigrateV0(MyData, ref data);
-                        break;
-                    case 1:
-                        if (MyData.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                        {
-                            data.Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
-                        }
-                        break;
-                    default:
-                        Settings.Logger.LogWarning("New version of plugin detected please update");
-                        break;
-                }
-                StartCoroutine(WaitForSlots());
-            }
-            ACI_Ref = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
-            UpdateNowCoordinate();
         }
 
-        protected override void OnCardBeingSaved(GameMode currentGameMode)
-        {
-            if (!MakerAPI.InsideMaker)
-            {
-                var Data = GetExtendedData();
-                if (Data != null)
-                {
-                    SetExtendedData(Data);
-                }
-                return;
-            }
+        protected override void OnCardBeingSaved(GameMode currentGameMode) => SetExtendedData(new PluginData() { version = Constants.MasterSaveVersion });
 
-            var MyData = new PluginData() { version = 1 };
-
-            data.CleanUp();
-
-            var nulldata = Coordinate.All(x => x.Value.Themes.Count == 0);
-
-            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
-            SetExtendedData((nulldata) ? null : MyData);
-        }
-
-        protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
-        {
-            var MyData = new PluginData() { version = 1 };
-            NowCoordinate.CleanUp();
-            var nulldata = Themes.Count == 0;
-            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(NowCoordinate));
-            SetCoordinateExtendedData(coordinate, (nulldata) ? null : MyData);
-        }
+        protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate) => SetCoordinateExtendedData(coordinate, new PluginData() { version = Constants.MasterSaveVersion });
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            if (!MakerAPI.InsideMaker)
-            {
-                return;
-            }
-
-            NowCoordinate.Clear();
             var MyData = GetCoordinateExtendedData(coordinate);
             if (MyData != null)
             {
-                switch (MyData.version)
-                {
-                    case 0:
-                        NowCoordinate = Migrator.CoordinateMigrateV0(MyData);
-                        break;
-                    case 1:
-                        if (MyData.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                        {
-                            NowCoordinate = MessagePackSerializer.Deserialize<CoordinateData>((byte[])ByteData);
-                        }
-                        break;
-                    default:
-                        Settings.Logger.LogWarning("New version detected please update");
-                        break;
-                }
+                Migrator.StandardCoordMigrator(coordinate, MyData);
             }
-            if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
-            {
-                Coordinate[(int)CurrentCoordinate.Value] = NowCoordinate;
-            }
-            StartCoroutine(WaitForSlots());
+            UpdatePluginData();
+            WaitForSlots();
         }
 
-        private void UpdateNowCoordinate()
+        private void UpdatePluginData()
         {
-            if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
+            Clear();
+            for (var i = 0; i < Parts.Length; i++)
             {
-                data.NowCoordinate = data.Coordinate[(int)CurrentCoordinate.Value];
-                return;
+                LoadSlot(i);
             }
-            data.NowCoordinate = new CoordinateData(data.Coordinate[(int)CurrentCoordinate.Value]);
+            WaitForSlots();
         }
 
         private void Theme_Changed()
@@ -169,16 +84,12 @@ namespace Accessory_Themes
 
         private bool ChangeACCColor(int slot, int theme)
         {
-            if (!HairAcc.Contains(slot) && theme != 0/* && !RelativeThemeBool[theme]*/)
+            if ((!HairAcc.TryGetValue(slot, out var ACISlotInfo) || ACISlotInfo.KeepState != Additional_Card_Info.KeepState.HairKeep) && theme != 0/* && !RelativeThemeBool[theme]*/)
             {
                 var Partinfo = AccessoriesApi.GetPartsInfo(slot);
                 var Colors = Themes[theme].Colors;
                 var New_Color = new Color[] { Colors[0], Colors[1], Colors[2], Colors[3] };
                 Partinfo.color = New_Color;
-                if (slot < 20)
-                {
-                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].color = New_Color;
-                }
                 ChaControl.ChangeAccessoryColor(slot);
                 return true;
             }
@@ -229,11 +140,10 @@ namespace Accessory_Themes
             {
                 comparison = new string[] { ParentDropdown.Options[ParentDropdown.Value] };
             }
-            HairAcc = ACI_Ref.HairAcc;
             var themedslots = Themes[themenum].ThemedSlots;
             for (int Slot = 0, n = Parts.Length; Slot < n; Slot++)
             {
-                var slotinfo = AccessoriesApi.GetPartsInfo(Slot);
+                var slotinfo = Parts[Slot];
                 if (slotinfo.type == 120 || Theme_Dict.ContainsKey(Slot))
                 {
                     continue;
@@ -260,7 +170,6 @@ namespace Accessory_Themes
 
             var theme = Themes[themenum];
             theme.Colors[ColorNum] = value;
-            HairAcc = ACI_Ref.HairAcc;
 
             foreach (var item in theme.ThemedSlots)
             {
@@ -406,7 +315,6 @@ namespace Accessory_Themes
             var list = Relative_ACC_Dictionary[RelativeDropdown.Value];
             //var clothes = ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].clothes.parts;
             //var clothes2 = ChaControl.nowCoordinate.clothes.parts;
-            HairAcc = ACI_Ref.HairAcc;
             for (int i = 0, listlength = list.Count; i < listlength; i++)
             {
                 var themenum = list[i][0];
@@ -466,7 +374,6 @@ namespace Accessory_Themes
                 UndoACCQueue = UndoACCSkew.Pop();
                 ClothesUndoQueue = ClothsUndoSkew.Pop();
             }
-            HairAcc = ACI_Ref.HairAcc;
 
             for (int i = 0, iN = list.Count; i < iN; i++)
             {
@@ -549,26 +456,6 @@ namespace Accessory_Themes
                 UndoACCSkew.Push(UndoACCQueue);
                 ClothsUndoSkew.Push(ClothesUndoQueue);
             }
-        }
-
-        private void Clearoutfit(int key)
-        {
-            data.Clearoutfit(key);
-        }
-
-        private void Createoutfit(int key)
-        {
-            data.Createoutfit(key);
-        }
-
-        private void Moveoutfit(int dest, int src)
-        {
-            data.Moveoutfit(dest, src);
-        }
-
-        private void Removeoutfit(int key)
-        {
-            data.Removeoutfit(key);
         }
     }
 }

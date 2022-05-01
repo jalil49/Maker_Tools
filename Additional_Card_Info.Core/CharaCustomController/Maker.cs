@@ -2,10 +2,10 @@
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 
 namespace Additional_Card_Info
 {
@@ -18,14 +18,11 @@ namespace Additional_Card_Info
         static readonly MakerRadioButtons[] InterestToggles = new MakerRadioButtons[Constants.InterestLength];
         static readonly MakerToggle[] HeightToggles = new MakerToggle[Constants.HeightLength];
         static readonly MakerToggle[] BreastsizeToggles = new MakerToggle[Constants.BreastsizeLength];
-
         static MakerToggle Character_Cosplay_Ready;
         static MakerToggle MakeUpToggle;
         static MakerToggle Advanced;
 
-        static AccessoryControlWrapper<MakerToggle, bool> AccKeepToggles;
-        static AccessoryControlWrapper<MakerToggle, bool> HairKeepToggles;
-
+        static MakerRadioButtons AccKeepRadio;
         static MakerRadioButtons CoordinateTypeRadio;
         static MakerRadioButtons CoordinateSubTypeRadio;
         static MakerRadioButtons ClubTypeRadio;
@@ -50,7 +47,7 @@ namespace Additional_Card_Info
         {
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
-
+            AccessoriesApi.SelectedMakerAccSlotChanged += AccessoriesApi_SelectedMakerAccSlotChanged;
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
@@ -58,8 +55,7 @@ namespace Additional_Card_Info
 
         private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
-            var Controller = GetController;
-            Controller.StartCoroutine(Controller.UpdateSlots());
+            GetController.UpdateSlots();
         }
 
         private static void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -72,12 +68,25 @@ namespace Additional_Card_Info
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
         }
 
+        private static void AccessoriesApi_SelectedMakerAccSlotChanged(object sender, AccessorySlotEventArgs e) => GetController.SelectedMakerAccSlotChanged(e.SlotIndex);
+
+        private void SelectedMakerAccSlotChanged(int slot)
+        {
+            var acckeep = KeepState.NonHairKeep;
+            if (SlotInfo.TryGetValue(slot, out var slotdata))
+            {
+                acckeep = slotdata.KeepState;
+            }
+            AccKeepRadio.SetValue((int)acckeep, false);
+        }
+
         public static void RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             var owner = Settings.Instance;
 
             #region Personal Settings
             var category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
+
             e.AddSubCategory(category);
 
             //e.AddControl(new MakerText(null, category, owner));
@@ -87,23 +96,22 @@ namespace Additional_Card_Info
             e.AddControl(new MakerButton("Keep All Accessories", category, owner)).OnClick.AddListener(delegate ()
             {
                 var Controller = GetController;
-                var ChaControl = Controller.ChaControl;
-                var ACCKeep = Controller.AccKeep;
-                for (int i = 0, n = AccKeepToggles.Control.ControlObjects.Count(); i < n; i++)
+                AccKeepRadio.SetValue((int)KeepState.NonHairKeep, false);
+                foreach (var item in Controller.SlotInfo)
                 {
-                    if (AccessoriesApi.GetPartsInfo(i).type != 120)
+                    if (Controller.Parts[item.Key].type != 120)
                     {
-                        AccKeepToggles.SetValue(i, true);
-                        if (!ACCKeep.Contains(i))
-                        {
-                            ACCKeep.Add(i);
-                        }
+                        item.Value.KeepState = KeepState.NonHairKeep;
+                        Controller.SaveSlot(item.Key);
                     }
                 }
             });
 
             Character_Cosplay_Ready = e.AddControl(new MakerToggle(category, "Cosplay Academy Ready", false, owner));
-            Character_Cosplay_Ready.ValueChanged.Subscribe(value => GetController.CosplayReady = value);
+            Character_Cosplay_Ready.ValueChanged.Subscribe(value =>
+            {
+                GetController.CosplayReady = value;
+            });
 
             e.AddControl(new MakerSeparator(category, owner));
             e.AddControl(new MakerText("Select data that shouldn't be overwritten by other mods.", category, owner));
@@ -120,56 +128,56 @@ namespace Additional_Card_Info
             MakeUpToggle.ValueChanged.Subscribe(x =>
             {
                 GetController.MakeUpKeep = x;
+                GetController.SaveCoordinate();
             });
 
             e.AddControl(new MakerSeparator(category, owner));
             #endregion
 
             #region Folders
+            var invalidpath = System.IO.Path.GetInvalidPathChars().Select(xval => xval.ToString());
+
             Advanced = e.AddControl(new MakerToggle(category, "Advanced", false, owner));
             Advanced.ValueChanged.Subscribe(x =>
-               {
-                   GetController.AdvancedDirectory = x;
-                   for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
-                   {
-                       var foldertext = AdvancedCharacterOutfitFolders.ElementAt(i).Value;
-                       if (foldertext == null || foldertext.IsDisposed)
-                       {
-                           continue;
-                       }
-                       foldertext.Visible.OnNext(x);
-                   }
-               });
+            {
+                GetController.AdvancedDirectory = x;
+                for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
+                {
+                    var foldertext = AdvancedCharacterOutfitFolders.ElementAt(i).Value;
+                    if (foldertext == null || foldertext.IsDisposed)
+                    {
+                        continue;
+                    }
+                    foldertext.Visible.OnNext(x);
+                }
+            });
             e.AddControl(new MakerText("Custom Character Outfit Folders", category, owner));
             SimpleCharacterOutfitFolders = e.AddControl(new MakerTextbox(category, "Simplified All Folders", "", owner));
+
             SimpleCharacterOutfitFolders.ValueChanged.Subscribe(x =>
             {
+                if (x.ContainsAny(invalidpath))
+                {
+                    SimpleCharacterOutfitFolders.SetValue("Invalid Path", false);
+                    return;
+                }
                 GetController.SimpleFolderDirectory = x;
             });
-            for (int i = 0, n = Constants.SimplifiedCoordinateTypesLength; i < n; i++)
-            {
-                CustomOutfitFoldersControls(i, e);
-            }
-            AdvancedCharacterOutfitFolders["Underwear"] = e.AddControl(new MakerTextbox(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), "Underwear", "", Settings.Instance));
-            AdvancedCharacterOutfitFolders["Underwear"].ValueChanged.Subscribe(x =>
-            {
-                GetController.AdvancedFolderDirectory["Underwear"] = x;
-            });
-            AdvancedCharacterOutfitFolders["Underwear"].Visible.OnNext(false);
 
+            foreach (var item in Constants.AdditionalCoordinateReferences)
+            {
+                CustomOutfitFoldersControls(item, e);
+            }
             #endregion
 
             #endregion
 
             #region Accessory Window Settings
             category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 2, "Accessory Settings");
-            var Keep = new MakerToggle(category, "Keep this Accessory", owner);
-            AccKeepToggles = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(Keep, true);
-            AccKeepToggles.ValueChanged += AccKeep_ValueChanged;
 
-            var HairKeep = new MakerToggle(category, "Is this a hair piece?", owner);
-            HairKeepToggles = MakerAPI.AddEditableAccessoryWindowControl<MakerToggle, bool>(HairKeep, true);
-            HairKeepToggles.ValueChanged += AccHairKeep_ValueChanged;
+            var KeepRadio = new MakerRadioButtons(category, owner, "Accessory Keep", new string[] { "Don't", "Not Hair", "Is Hair" });
+            AccKeepRadio = MakerAPI.AddAccessoryWindowControl(KeepRadio, true);
+            AccKeepRadio.ValueChanged.Subscribe(x => KeepStateChanged(x));
             #endregion
 
             #region Clothing Settings
@@ -187,8 +195,29 @@ namespace Additional_Card_Info
             Set_Name = new MakerTextbox(category, "Set Name", "", owner);
             Sub_Set_Name = new MakerTextbox(category, "Sub Set Name", "", owner);
             e.AddControl(Creator).ValueChanged.Subscribe(x => { Creatorname = x; });
-            e.AddControl(Set_Name).ValueChanged.Subscribe(x => { GetController.SetNames = x; });
-            e.AddControl(Sub_Set_Name).ValueChanged.Subscribe(x => { GetController.SubSetNames = x; });
+            e.AddControl(Set_Name).ValueChanged.Subscribe(x =>
+            {
+                if (x.ContainsAny(invalidpath))
+                {
+                    Set_Name.SetValue("Invalid character", false);
+                    return;
+                }
+
+                GetController.SetNames = x;
+                GetController.SaveCoordinate();
+            });
+            e.AddControl(Sub_Set_Name).ValueChanged.Subscribe(x =>
+            {
+                if (x.ContainsAny(invalidpath))
+                {
+                    Sub_Set_Name.SetValue("Invalid character", false);
+                    return;
+                }
+
+
+                GetController.SubSetNames = x;
+                GetController.SaveCoordinate();
+            });
 
 
             e.AddControl(new MakerSeparator(category, owner));
@@ -204,7 +233,11 @@ namespace Additional_Card_Info
             {
                 ColumnCount = 2
             };
-            e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x => { GetController.CoordinateType = x; });
+            e.AddControl(CoordinateTypeRadio).ValueChanged.Subscribe(x =>
+            {
+                GetController.CoordinateType = x;
+                GetController.SaveCoordinate();
+            });
 
             var buttons = new List<string> { "Unassigned", "General" };
             buttons.AddRange(Enum.GetNames(typeof(Constants.ClothingTypes)));
@@ -221,12 +254,17 @@ namespace Additional_Card_Info
             e.AddControl(CoordinateSubTypeRadio).ValueChanged.Subscribe(x =>
             {
                 GetController.CoordinateSubType = x;
+                GetController.SaveCoordinate();
             });
 
             e.AddControl(new MakerText(null, category, owner));
 
             GenderRadio = new MakerRadioButtons(category, owner, "Gender", new string[] { "Female", "Both", "Male" });
-            e.AddControl(GenderRadio).ValueChanged.Subscribe(x => { GetController.GenderType = x; });
+            e.AddControl(GenderRadio).ValueChanged.Subscribe(x =>
+            {
+                GetController.GenderType = x;
+                GetController.SaveCoordinate();
+            });
 
 
             e.AddControl(new MakerSeparator(category, owner));
@@ -243,6 +281,7 @@ namespace Additional_Card_Info
             e.AddControl(HStateTypeRadio).ValueChanged.Subscribe(x =>
             {
                 GetController.HstateType_Restriction = x;
+                GetController.SaveCoordinate();
             });
 
             //e.AddControl(new MakerText(null, category, owner));
@@ -262,6 +301,7 @@ namespace Additional_Card_Info
             e.AddControl(ClubTypeRadio).ValueChanged.Subscribe(x =>
             {
                 GetController.ClubType_Restriction = x;
+                GetController.SaveCoordinate();
             });
 
             e.AddControl(new MakerSeparator(category, owner));
@@ -312,19 +352,24 @@ namespace Additional_Card_Info
             #endregion
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
-            AccKeepToggles.Control.GroupingID = GroupingID;
-            HairKeepToggles.Control.GroupingID = GroupingID;
+            AccKeepRadio.GroupingID = GroupingID;
         }
 
         #region Control Creation
 
-        private static void CustomOutfitFoldersControls(int ClothingInt, RegisterSubCategoriesEvent e)
+        private static void CustomOutfitFoldersControls(string stringname, RegisterSubCategoriesEvent e)
         {
-            var stringname = ((Constants.SimplifiedCoordinateTypes)ClothingInt).ToString().Replace('_', ' ');
+            var invalidpath = System.IO.Path.GetInvalidPathChars().Select(xval => xval.ToString());
             AdvancedCharacterOutfitFolders[stringname] = e.AddControl(new MakerTextbox(new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings"), stringname, "", Settings.Instance));
             AdvancedCharacterOutfitFolders[stringname].ValueChanged.Subscribe(x =>
             {
-                GetController.AdvancedFolderDirectory[stringname] = x;
+                if (x.ContainsAny(invalidpath))
+                {
+                    SimpleCharacterOutfitFolders.SetValue("Invalid Path", false);
+                    return;
+                }
+                GetController.ReferenceADVDirectory[stringname] = x;
+                GetController.SaveCard();
             });
             AdvancedCharacterOutfitFolders[stringname].Visible.OnNext(false);
         }
@@ -335,6 +380,7 @@ namespace Additional_Card_Info
             PersonalKeepToggles[ClothingInt].ValueChanged.Subscribe(x =>
             {
                 GetController.PersonalClothingBools[ClothingInt] = x;
+                GetController.SaveCard();
             });
         }
 
@@ -344,6 +390,7 @@ namespace Additional_Card_Info
             PersonalityToggles[PersonalityNum].ValueChanged.Subscribe(x =>
             {
                 GetController.PersonalityType_Restriction[PersonalityNum] = --x;
+                GetController.SaveCoordinate();
             });
         }
 
@@ -353,6 +400,7 @@ namespace Additional_Card_Info
             TraitToggles[TraitNum].ValueChanged.Subscribe(x =>
             {
                 GetController.TraitType_Restriction[TraitNum] = --x;
+                GetController.SaveCoordinate();
             });
         }
 
@@ -362,6 +410,7 @@ namespace Additional_Card_Info
             InterestToggles[IntrestNum].ValueChanged.Subscribe(x =>
             {
                 GetController.Interest_Restriction[IntrestNum] = --x;
+                GetController.SaveCoordinate();
             });
         }
 
@@ -371,6 +420,7 @@ namespace Additional_Card_Info
             CoordinateKeepToggles[ClothingInt].ValueChanged.Subscribe(x =>
             {
                 GetController.CoordinateSaveBools[ClothingInt] = x; /*Settings.Logger.LogWarning($"Chaging Outfitnum restriction {(Constants.ClothingTypes)ClothingInt}");*/
+                GetController.SaveCoordinate();
             });
         }
 
@@ -380,6 +430,7 @@ namespace Additional_Card_Info
             BreastsizeToggles[size].ValueChanged.Subscribe(x =>
             {
                 GetController.Breastsize_Restriction[size] = x;
+                GetController.SaveCoordinate();
             });
         }
 
@@ -389,79 +440,50 @@ namespace Additional_Card_Info
             HeightToggles[size].ValueChanged.Subscribe(x =>
             {
                 GetController.Height_Restriction[size] = x;
+                GetController.SaveCoordinate();
             });
         }
 
         #endregion
 
-        private static void AccHairKeep_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
+        private static void KeepStateChanged(int e)
         {
             var Controller = GetController;
-            if (Controller.HairAcc == null)
+            var slotinfo = Controller.SelectedSlotInfo;
+            if (slotinfo != null)
             {
-                return;
+                slotinfo.KeepState = (KeepState)(e - 1);
             }
-            if (e.NewValue)
-            {
-                Controller.HairAcc.Add(e.SlotIndex);
-            }
-            else
-            {
-                Controller.HairAcc.Remove(e.SlotIndex);
-            }
-        }
-
-        private static void AccKeep_ValueChanged(object sender, AccessoryWindowControlValueChangedEventArgs<bool> e)
-        {
-            var Controller = GetController;
-            if (Controller.AccKeep == null)
-            {
-                return;
-            }
-            if (e.NewValue)
-            {
-                Controller.AccKeep.Add(e.SlotIndex);
-            }
-            else
-            {
-                Controller.AccKeep.Remove(e.SlotIndex);
-            }
+            Controller.SaveSlot();
         }
 
         internal void Slot_ACC_Change(int slotNo, int type)
         {
             if (type == 120)
             {
-                AccKeepToggles.SetValue(slotNo, false, false);
-                HairKeepToggles.SetValue(slotNo, false, false);
-                HairAcc.Remove(slotNo);
-                AccKeep.Remove(slotNo);
+                if (SlotInfo.TryGetValue(slotNo, out var slotInfo))
+                {
+                    slotInfo.Clear();
+                    SaveSlot(slotNo);
+                    return;
+                }
+                AccKeepRadio.SetValue((int)KeepState.DontKeep, false);
             }
         }
 
-        private IEnumerator UpdateSlots()
+        private void UpdateSlots()
         {
             if (!MakerAPI.InsideMaker)
             {
-                yield break;
+                return;
             }
-
-            do
-            {
-                yield return null;
-            }
-            while (!MakerAPI.InsideAndLoaded);
 
             for (var i = 0; i < PersonalClothingBools.Length; i++)
             {
                 PersonalKeepToggles[i].SetValue(PersonalClothingBools[i], false);
             }
 
-            for (int i = 0, n = Parts.Length; i < n; i++)
-            {
-                AccKeepToggles.SetValue(i, AccKeep.Contains(i), false);
-                HairKeepToggles.SetValue(i, HairAcc.Contains(i), false);
-            }
+            SelectedMakerAccSlotChanged(AccessoriesApi.SelectedMakerAccSlot);
 
             for (var i = 0; i < CoordinateKeepToggles.Length; i++)
             {
@@ -513,7 +535,6 @@ namespace Additional_Card_Info
 
             CoordinateCreatorNames.Text = creators;
 
-
             Advanced.SetValue(AdvancedDirectory, false);
 
             SimpleCharacterOutfitFolders.SetValue(SimpleFolderDirectory, false);
@@ -521,7 +542,7 @@ namespace Additional_Card_Info
             for (int i = 0, n = AdvancedCharacterOutfitFolders.Count; i < n; i++)
             {
                 var textbox = AdvancedCharacterOutfitFolders.ElementAt(i);
-                if (AdvancedFolderDirectory.TryGetValue(textbox.Key, out var foldername))
+                if (ReferenceADVDirectory.TryGetValue(textbox.Key, out var foldername))
                 {
                     textbox.Value.SetValue(foldername, false);
                     continue;
@@ -538,152 +559,53 @@ namespace Additional_Card_Info
         }
 
         #region external event
-
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
-            GetController.AccessoriesTransfered(e);
-        }
-
-        private void AccessoriesTransfered(AccessoryTransferEventArgs e)
-        {
-            if (HairAcc.Contains(e.SourceSlotIndex))
-            {
-                if (!HairAcc.Contains(e.DestinationSlotIndex))
-                    HairAcc.Add(e.DestinationSlotIndex);
-            }
-            if (AccKeep.Contains(e.SourceSlotIndex))
-            {
-                if (!AccKeep.Contains(e.DestinationSlotIndex))
-                    AccKeep.Add(e.DestinationSlotIndex);
-            }
-            HairKeepToggles.SetValue(e.DestinationSlotIndex, HairKeepToggles.GetValue(e.SourceSlotIndex));
-            AccKeepToggles.SetValue(e.DestinationSlotIndex, AccKeepToggles.GetValue(e.SourceSlotIndex));
-
-        }
-
-        private void AccessoriesCopied(AccessoryCopyEventArgs e)
-        {
-            var CopiedSlots = e.CopiedSlotIndexes.ToArray();
-            var Source = CoordinateInfo[(int)e.CopySource];
-            var Dest = CoordinateInfo[(int)e.CopyDestination];
-
-            for (var i = 0; i < CopiedSlots.Length; i++)
-            {
-                if (Source.AccKeep.Contains(CopiedSlots[i]))
-                {
-                    if (!Dest.HairAcc.Contains(CopiedSlots[i]))
-                        Dest.AccKeep.Add(CopiedSlots[i]);
-                }
-                else
-                {
-                    Dest.AccKeep.Remove(CopiedSlots[i]);
-                }
-                //Settings.Logger.LogWarning($"HairKeep");
-                if (Source.HairAcc.Contains(CopiedSlots[i]))
-                {
-                    if (!Dest.HairAcc.Contains(CopiedSlots[i]))
-                        Dest.HairAcc.Add(CopiedSlots[i]);
-                }
-                else
-                {
-                    Dest.HairAcc.Remove(CopiedSlots[i]);
-                }
-
-            }
+            GetController.LoadSlot(e.DestinationSlotIndex);
         }
 
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
         {
-            GetController.AccessoriesCopied(e);
-        }
-
-        internal void MovIt(List<QueueItem> queue)
-        {
-            var acckeep = AccKeep;
-            var hairkeep = HairAcc;
-            foreach (var item in queue)
+            var controller = GetController;
+            if (e.CopyDestination != controller.CurrentCoordinate.Value) return;
+            foreach (var index in e.CopiedSlotIndexes)
             {
-                if (acckeep.Contains(item.SrcSlot))
+                controller.LoadSlot(index);
+                if (index == AccessoriesApi.SelectedMakerAccSlot)
                 {
-                    acckeep.Add(item.DstSlot);
-                    acckeep.Remove(item.SrcSlot);
-                    AccKeepToggles.SetValue(item.DstSlot, true, false);
-                    AccKeepToggles.SetValue(item.SrcSlot, false, false);
-                }
-                if (hairkeep.Contains(item.SrcSlot))
-                {
-                    hairkeep.Add(item.DstSlot);
-                    hairkeep.Remove(item.SrcSlot);
-                    HairKeepToggles.SetValue(item.DstSlot, true, false);
-                    HairKeepToggles.SetValue(item.SrcSlot, false, false);
+                    controller.SelectedMakerAccSlotChanged(index);
                 }
             }
         }
-
-        internal void RemoveOutfitEvent()
-        {
-            data.Removeoutfit(MaxKey);
-        }
-
-        internal void AddOutfitEvent()
-        {
-            for (var i = MaxKey; i < ChaFileControl.coordinate.Length; i++)
-                data.Createoutfit(i);
-        }
-
         #endregion
 
         internal void UpdateClothingNots()
         {
-            if (!MakerAPI.InsideMaker)
+            for (int i = 0, n = ClothNotData.Length; i < n; i++)
             {
-                return;
-            }
-            var clothingnot = ClothNotData;
-            for (int i = 0, n = clothingnot.Length; i < n; i++)
-            {
-                clothingnot[i] = false;
+                ClothNotData[i] = false;
             }
 
-            var clothinfo = ChaControl.infoClothes;
+            //Top can hide either or both bra or bot(pants) example: idol dress covers both
+            //coordinate is used to hide either NotBot or NotShorts
+            ClothNotData[0] = InfoBaseGetInfoInt(ChaControl.infoClothes[0], ChaListDefine.KeyType.Coordinate) == 2;
+            ClothNotData[1] = InfoBaseGetInfoInt(ChaControl.infoClothes[0], ChaListDefine.KeyType.NotBra) == 1;
 
-            UpdateTopClothingNots(clothinfo[0], ref clothingnot);
-            UpdateBraClothingNots(clothinfo[2], ref clothingnot);
+            //Bra can hide shorts(panties)
+            ClothNotData[2] = InfoBaseGetInfoInt(ChaControl.infoClothes[2], ChaListDefine.KeyType.Coordinate) == 2;
+
+            if (MakerAPI.InsideMaker) SaveCoordinate();
         }
 
-        private void UpdateTopClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
+        private static int InfoBaseGetInfoInt(ListInfoBase listInfo, ChaListDefine.KeyType key)
         {
-            if (infoBase == null)
+            if (listInfo != null && listInfo.dictInfo.TryGetValue((int)key, out var stringresult) && int.TryParse(stringresult, out var intresult))
             {
-                return;
+                return intresult;
             }
-            Hooks.ClothingNotPatch.IsshortsCheck = false;
-            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
-            var key = ChaListDefine.KeyType.Coordinate;
-            infoBase.GetInfo(key);
-            var notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
-            key = ChaListDefine.KeyType.NotBra;
-            infoBase.GetInfo(key);
-            var notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
-            clothingnot[0] = clothingnot[0] || notbot;
-            clothingnot[1] = clothingnot[1] || notbra;
+            return 0;
         }
 
-        private void UpdateBraClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
-        {
-            if (infoBase == null)
-            {
-                return;
-            }
-            Hooks.ClothingNotPatch.IsshortsCheck = true;
-
-            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
-            var key = ChaListDefine.KeyType.Coordinate;
-
-            infoBase.GetInfo(key);
-
-            var notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
-            clothingnot[2] = clothingnot[2] || notShorts;
-        }
+        internal void MovIt(List<QueueItem> _) => UpdatePluginData();
     }
 }

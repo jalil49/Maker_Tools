@@ -114,7 +114,7 @@ namespace Accessory_Themes
                 bulkrange[1] = GUILayout.TextField(bulkrange[1], fieldstyle);
                 if (GUILayout.Button("Bulk", buttonstyle))
                 {
-                    BulkProcess(ThemesDropdownwrapper.GetSelectedValue() - 1);
+                    BulkProcess(ThemesDropdownwrapper.Value - 1);
                 }
             }
             GUILayout.EndHorizontal();
@@ -132,7 +132,19 @@ namespace Accessory_Themes
                 else
                     GUILayout.BeginHorizontal();
                 {
-                    theme.ThemeName = GUILayout.TextField(theme.ThemeName, fieldstyle);
+                    var tempthemename = GUILayout.TextField(theme.ThemeName, fieldstyle);
+                    if (tempthemename != theme.ThemeName)
+                    {
+                        foreach (var item in SlotDataDict)
+                        {
+                            if (item.Value.ThemeName != theme.ThemeName) continue;
+
+                            item.Value.ThemeName = tempthemename;
+                            SaveSlot(item.Key);
+                        }
+                        theme.ThemeName = tempthemename;
+                        Update_ACC_Dropbox();
+                    }
                     if (valid && !ispart && GUILayout.Button("Bind", buttonstyle, GUILayout.ExpandWidth(false)))
                     {
                         if (bindedtheme >= 0)

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static ExtensibleSaveFormat.Extensions;
 
 namespace Accessory_Parents
 {
@@ -23,7 +24,7 @@ namespace Accessory_Parents
         static bool showreplace = false;
         static bool mouseassigned = false;
 
-        static int[] selectedadjustment = new int[3] { 2, 1, 0 };
+        static readonly int[] selectedadjustment = new int[3] { 2, 1, 0 };
 
         static readonly string[] moveadjustment = new string[] { "0.01", "0.1", "1.0", "10.0", "custom" };
         static readonly string[] rotationadjustment = new string[] { "0.1", "1.0", "5.0", "10.0", "custom" };
@@ -74,7 +75,7 @@ namespace Accessory_Parents
         private void CustomGui(int id)
         {
             var slot = AccessoriesApi.SelectedMakerAccSlot;
-            var partinfo = AccessoriesApi.GetPartsInfo(slot);
+            var partinfo = Parts[slot];
             var valid = partinfo.type != 120;
 
             GUILayout.BeginVertical();
@@ -176,8 +177,12 @@ namespace Accessory_Parents
                 else
                     GUILayout.BeginHorizontal();
                 {
-                    item.Name = GUILayout.TextField(item.Name, fieldstyle);
-
+                    var tempname = GUILayout.TextField(item.Name, fieldstyle);
+                    if (tempname != item.Name)
+                    {
+                        item.Name = tempname;
+                        SetPartData(item.ParentSlot, item.Serialize());
+                    }
                     if (!parentof)
                     {
                         if (valid && (showreplace || item.ParentSlot == -1) && (!relatedto || childof) && GUILayout.Button("Make Parent", buttonstyle, GUILayout.ExpandWidth(false)))
@@ -186,14 +191,19 @@ namespace Accessory_Parents
                             {
                                 item.ChildSlots.Remove(slot);
                             }
+                            SetPartData(item.ParentSlot, null);
                             item.ParentSlot = slot;
+                            SetPartData(item.ParentSlot, item.Serialize());
                             UpdateRelations();
                         }
                     }
                     else
                     {
                         if (GUILayout.Button("Remove Parent", buttonstyle, GUILayout.ExpandWidth(false)))
+                        {
+                            SetPartData(item.ParentSlot, null);
                             item.ParentSlot = -1;
+                        }
                     }
                     if (!childof)
                     {
@@ -201,15 +211,20 @@ namespace Accessory_Parents
                         {
                             item.ChildSlots.Add(slot);
                             MakeChild(slot, item.ParentSlot);
+                            SetPartData(item.ParentSlot, item.Serialize());
                         }
                     }
                     else
                     {
                         if (GUILayout.Button("Unbind Child", buttonstyle, GUILayout.ExpandWidth(false)))
+                        {
                             item.ChildSlots.Remove(slot);
+                            SetPartData(item.ParentSlot, item.Serialize());
+                        }
                     }
                     if (showdelete && GUILayout.Button("Delete", buttonstyle))
                     {
+                        SetPartData(item.ParentSlot, null);
                         Parent_Groups.RemoveAt(i);
                         n--;
                         i--;
@@ -324,6 +339,7 @@ namespace Accessory_Parents
                     float.TryParse(customvalues[2], out adjustment);
                     break;
             }
+
             for (var vectortype = 0; vectortype < 3; vectortype++)
             {
                 AdjustmentTool(slot, 2, vectortype, vectornames[vectortype], scale[vectortype], adjustment);
@@ -401,80 +417,32 @@ namespace Accessory_Parents
 
         private void UpdateRelations()
         {
-            var dict = RelatedNames;
-            var names = Parent_Groups;
-            var childdict = Child;
+            RelatedNames.Clear();
+            Child.Clear();
 
-            dict.Clear();
-            childdict.Clear();
-
-            var n = names.Count;
+            var n = Parent_Groups.Count;
             for (var i = 0; i < n; i++)
             {
-                var item = names[i];
-                if (!dict.TryGetValue(item.ParentSlot, out var itembindings))
+                var item = Parent_Groups[i];
+                if (!RelatedNames.TryGetValue(item.ParentSlot, out var itembindings))
                 {
                     itembindings = new List<int>();
-                    dict[item.ParentSlot] = itembindings;
+                    RelatedNames[item.ParentSlot] = itembindings;
                 }
                 TryChildListBySlot(item.ParentSlot, out var allchild, true);
                 allchild = allchild.Distinct().ToList();
 
                 foreach (var child in allchild)
                 {
-                    if (!dict.TryGetValue(child, out var childbindings))
+                    if (!RelatedNames.TryGetValue(child, out var childbindings))
                     {
                         childbindings = new List<int>();
-                        dict[child] = childbindings;
+                        RelatedNames[child] = childbindings;
                     }
                     itembindings.Add(child);
                     childbindings.Add(item.ParentSlot);
-                    childdict[child] = item.ParentSlot;
+                    Child[child] = item.ParentSlot;
                 }
-            }
-        }
-
-        private void UpdateRelations(int outfitnum)
-        {
-            if (!Parent_Data.TryGetValue(outfitnum, out var data))
-            {
-                data = new CoordinateData();
-                Parent_Data[outfitnum] = data;
-            }
-
-            var names = data.Parent_Groups;
-            var dict = data.RelatedNames;
-            var childdict = data.Child;
-
-            dict.Clear();
-            childdict.Clear();
-
-            var n = names.Count;
-            for (var i = 0; i < n; i++)
-            {
-                var item = names[i];
-                if (!dict.TryGetValue(item.ParentSlot, out var parentbindings))
-                {
-                    parentbindings = new List<int>();
-                }
-                TryChildListBySlot(item.ParentSlot, out var allchild, true);
-
-                allchild = allchild.Distinct().ToList();
-
-                foreach (var child in allchild)
-                {
-                    if (!dict.TryGetValue(child, out var childbindings))
-                    {
-                        childbindings = new List<int>();
-                    }
-                    parentbindings.Add(child);
-                    childbindings.Add(item.ParentSlot);
-                    childdict[child] = item.ParentSlot;
-                    dict[child] = childbindings.Distinct().ToList();
-
-                }
-
-                dict[item.ParentSlot] = parentbindings.Distinct().ToList();
             }
         }
 
@@ -518,6 +486,14 @@ namespace Accessory_Parents
             }
             yield return 0;
             mouseassigned = false;
+        }
+
+        private void SetPartData(int slot, ExtensibleSaveFormat.PluginData plugin)
+        {
+            if (slot > 0 && slot < Parts.Length)
+            {
+                Parts[slot].SetExtendedDataById(Settings.GUID, plugin);
+            }
         }
     }
 }

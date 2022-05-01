@@ -9,13 +9,12 @@ namespace Accessory_Themes
 {
     [BepInPlugin(GUID, "Accessory Themes", Version)]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
-    [BepInDependency("Additional_Card_Info", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency(Additional_Card_Info.Settings.GUID, Additional_Card_Info.Settings.Version)]
     [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
-
     public partial class Settings : BaseUnityPlugin
     {
         public const string GUID = "Accessory_Themes";
-        public const string Version = "1.6";
+        public const string Version = "2.0";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }

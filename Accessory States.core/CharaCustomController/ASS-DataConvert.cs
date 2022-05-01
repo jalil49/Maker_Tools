@@ -10,8 +10,109 @@ namespace Accessory_States
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
+        /*
+        //Save/Load ASS Data
+        private void ASSCharaSave()
+        {
+            var _pluginData = new PluginData() { version = 6 };
+
+            AccStateSyncConvert(out var TriggerPropertyList, out var TriggerGroup);
+
+            _pluginData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(TriggerPropertyList));
+            _pluginData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(TriggerGroup));
+            _pluginData.data.Add("ExternalManipulation", MessagePackSerializer.Serialize("Accessory_States"));
+
+            ExtendedSave.SetExtendedDataById(ChaFileControl, "madevil.kk.ass", (TriggerPropertyList.Count == 0) ? null : _pluginData);
+        }
+
+        private void ASSCharaLoad(PluginData pluginData)
+        {
+            var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+            var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+            if (pluginData.version > 6)
+                Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
+            else if (pluginData.version < 6)
+            {
+                AccStateSync.Migration.ConvertCharaPluginData(pluginData, ref TriggerPropertyList, ref TriggerGroupList);
+            }
+            else
+            {
+                if (pluginData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                {
+                    var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+                    if (_tempTriggerProperty?.Count > 0)
+                        TriggerPropertyList.AddRange(_tempTriggerProperty);
+
+                    if (pluginData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                    {
+                        var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                        if (_tempTriggerGroup?.Count > 0)
+                        {
+                            foreach (var _group in _tempTriggerGroup)
+                            {
+                                if (_group.GUID.IsNullOrEmpty())
+                                    _group.GUID = Guid.NewGuid().ToString("D").ToUpper();
+                            }
+                            TriggerGroupList.AddRange(_tempTriggerGroup);
+                        }
+                    }
+                }
+            }
+
+            if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+            if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+            AccStateSyncConvert(TriggerPropertyList, TriggerGroupList);
+        }
+
+        private void ASSCoordSave(ChaFileCoordinate coordinate)
+        {
+            var _pluginData = new PluginData() { version = 6 };
+            var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+            var TriggerGroup = new List<AccStateSync.TriggerGroup>();
+
+            AccStateSyncConvertCoordProcess(coordinate, ref TriggerPropertyList, ref TriggerGroup, -1);
+
+            _pluginData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(TriggerPropertyList));
+            _pluginData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(TriggerGroup));
+            _pluginData.data.Add("ExternalManipulation", MessagePackSerializer.Serialize("Accessory_States"));
+
+            ExtendedSave.SetExtendedDataById(coordinate, "madevil.kk.ass", (TriggerPropertyList.Count == 0) ? null : _pluginData);
+        }
+
+        private void ASSCoordLoad(ChaFileCoordinate coordinate, PluginData pluginData)
+        {
+            var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+            var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+            if (pluginData.version > 6)
+            {
+                Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
+            }
+            else if (pluginData.version < 6)
+            {
+                AccStateSync.Migration.ConvertOutfitPluginData((int)CurrentCoordinate.Value, pluginData, ref TriggerPropertyList, ref TriggerGroupList);
+            }
+            else
+            {
+                if (pluginData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                {
+                    TriggerPropertyList = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+
+                    if (pluginData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                    {
+                        TriggerGroupList = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                    }
+                }
+            }
+
+            if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+            if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+            AccStateSyncConvertCoordProcess(coordinate, TriggerPropertyList, TriggerGroupList);
+        }
         //convert from ASS
-        internal void AccStateSyncConvert(List<AccStateSync.TriggerProperty> TriggerPropertyList, List<AccStateSync.TriggerGroup> TriggerGroupList)
+        private void AccStateSyncConvert(List<AccStateSync.TriggerProperty> TriggerPropertyList, List<AccStateSync.TriggerGroup> TriggerGroupList)
         {
             for (var coordnum = 0; coordnum < chafile.coordinate.Length; coordnum++)
             {
@@ -44,12 +145,9 @@ namespace Accessory_States
             {
                 coordinatedata.Names.Add(new NameData() { StateNames = item.States, DefaultState = item.State, Name = item.Label });
             }
-            var savedata = new PluginData() { version = 2 };
-            savedata.data[Constants.CoordinateKey] = coordinatedata.Serialize();
-            file.accessory.SetExtendedDataById(Settings.GUID, savedata);
-            savedata.data.Clear();
 
             var triglistbyslot = new List<List<AccStateSync.TriggerProperty>>();
+            var slotdict = new Dictionary<int, SlotData>();
 
             foreach (var slot in triggers.Distinct(x => x.Slot).Select(x => x.Slot))
             {
@@ -120,13 +218,15 @@ namespace Accessory_States
                     name = kindgroup.Label;
                 }
                 var slotdata = new SlotData() { Binding = selectedrefkind, States = statedict[selectedrefkind], ShoeType = shoetype, Parented = false, GroupName = name };
-                savedata.data[Constants.AccessoryKey] = slotdata.Serialize();
-                file.accessory.parts[slot].SetExtendedDataById(Settings.GUID, savedata);
+                file.accessory.parts[slot].SetExtendedDataById(Settings.GUID, slotdata.Serialize());
+                slotdict[slot] = slotdata;
             }
+
+            file.accessory.SetExtendedDataById(Settings.GUID, coordinatedata.Serialize(slotdict));
         }
 
         //convert to ASS
-        internal void AccStateSyncConvert(out List<AccStateSync.TriggerProperty> TriggerPropertyList, out List<AccStateSync.TriggerGroup> TriggerGroupList)
+        private void AccStateSyncConvert(out List<AccStateSync.TriggerProperty> TriggerPropertyList, out List<AccStateSync.TriggerGroup> TriggerGroupList)
         {
             TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
             TriggerGroupList = new List<AccStateSync.TriggerGroup>();
@@ -146,12 +246,13 @@ namespace Accessory_States
                 {
                     if (pluginData.data.TryGetValue(Constants.CoordinateKey, out var bytearray) && bytearray != null)
                     {
-                        coordinatedata = MessagePackSerializer.Deserialize<CoordinateData>((byte[])bytearray);
+                        coordinatedata = CoordinateData.Deserialize(bytearray);
                     }
                 }
                 else
                 {
                     Settings.Logger.LogMessage("New version of Accessory_States Detected, Please Update");
+                    return;
                 }
             }
             var partsarray = file.accessory.parts;
@@ -281,7 +382,7 @@ namespace Accessory_States
             for (var state = 0; state < 4; state++)
             {
                 prioritycheck = state % 3 == 0;
-                TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slot, clothingkind, state, (prioritycheck) ? ShowClothNotState(state, statelist) : false, (prioritycheck) ? 2 : 0));
+                TriggerProperty.Add(new AccStateSync.TriggerProperty(outfitnum, slot, clothingkind, state, (prioritycheck) && ShowClothNotState(state, statelist), (prioritycheck) ? 2 : 0));
             }
             return TriggerProperty;
         }
@@ -291,7 +392,7 @@ namespace Accessory_States
             return list.Any(x => x[0] <= state && state <= x[1]);
         }
 
-        internal int MaxState(int binding, Dictionary<int, SlotData> slotinfo)
+        private int MaxState(int binding, Dictionary<int, SlotData> slotinfo)
         {
             if (binding < 9)
             {
@@ -304,5 +405,6 @@ namespace Accessory_States
             }
             return max;
         }
+        */
     }
 }

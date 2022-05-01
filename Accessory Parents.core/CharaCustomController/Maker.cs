@@ -58,18 +58,6 @@ namespace Accessory_Parents
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
         }
-
-        internal void RemoveOutfitEvent()
-        {
-            Removeoutfit(Parent_Data.Keys.Max());
-        }
-
-        internal void AddOutfitEvent()
-        {
-            for (var i = Parent_Data.Keys.Max(); i < ChaFileControl.coordinate.Length; i++)
-                Createoutfit(i);
-        }
-
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             MakerEnabled = Settings.Enable.Value;
@@ -786,27 +774,6 @@ namespace Accessory_Parents
                         if (TryChildListBySlot(item2, out var temp2list, true))
                         {
                             childlist.AddRange(temp2list);
-                        }
-                    }
-                }
-            }
-            return childlist.Count > 0;
-        }
-
-        private bool TryChildListBySlot(int outfitnum, int slot, out List<int> childlist, bool recursive = false)
-        {
-            childlist = new List<int>();
-
-            foreach (var item in Parent_Data[outfitnum].Parent_Groups.Where(x => x.ParentSlot == slot))
-            {
-                childlist.AddRange(item.ChildSlots);
-                if (recursive)
-                {
-                    foreach (var item2 in item.ChildSlots)
-                    {
-                        if (TryChildListBySlot(outfitnum, item2, out var temp2list, true))
-                        {
-                            temp2list.AddRange(temp2list);
                         }
                     }
                 }

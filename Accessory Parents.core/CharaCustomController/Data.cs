@@ -5,42 +5,22 @@ namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        private Dictionary<int, CoordinateData> Parent_Data = new Dictionary<int, CoordinateData>();
+        private readonly List<Custom_Name> Parent_Groups = new List<Custom_Name>();
 
-        private CoordinateData Current_Parent_Data = new CoordinateData();
+        private readonly Dictionary<int, UnityEngine.Vector3[]> Relative_Data = new Dictionary<int, UnityEngine.Vector3[]>();
+
+        private readonly Dictionary<int, int> Child = new Dictionary<int, int>();
+
+        private readonly Dictionary<int, List<int>> RelatedNames = new Dictionary<int, List<int>>();
+
+        private readonly Dictionary<int, string> Old_Parent = new Dictionary<int, string>();
 
         #region Properties
-
-        private List<Custom_Name> Parent_Groups
+        private ChaFileAccessory.PartsInfo[] Parts
         {
-            get { return Current_Parent_Data.Parent_Groups; }
-            set { Current_Parent_Data.Parent_Groups = value; }
+            get { return ChaControl.nowCoordinate.accessory.parts; }
+            set { ChaControl.nowCoordinate.accessory.parts = value; }
         }
-
-        private Dictionary<int, UnityEngine.Vector3[]> Relative_Data
-        {
-            get { return Current_Parent_Data.Relative_Data; }
-            set { Current_Parent_Data.Relative_Data = value; }
-        }
-
-        private Dictionary<int, int> Child
-        {
-            get { return Current_Parent_Data.Child; }
-            set { Current_Parent_Data.Child = value; }
-        }
-
-        private Dictionary<int, List<int>> RelatedNames
-        {
-            get { return Current_Parent_Data.RelatedNames; }
-            set { Current_Parent_Data.RelatedNames = value; }
-        }
-
-        private Dictionary<int, string> Old_Parent
-        {
-            get { return Current_Parent_Data.Old_Parent; }
-            set { Current_Parent_Data.Old_Parent = value; }
-        }
-
         #endregion
     }
 }

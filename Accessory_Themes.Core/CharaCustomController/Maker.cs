@@ -47,7 +47,7 @@ namespace Accessory_Themes
 
         static bool MakerEnabled = false;
 
-        static AccessoryControlWrapper<MakerDropdown, int> ThemesDropdownwrapper;
+        static MakerDropdown ThemesDropdownwrapper;
 
         private ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
         static CharaEvent ControllerGet => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
@@ -60,27 +60,30 @@ namespace Accessory_Themes
                 return;
             }
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
-
+            AccessoriesApi.SelectedMakerAccSlotChanged += AccessoriesApi_SelectedMakerAccSlotChanged;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
             MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
         }
 
+        private static void AccessoriesApi_SelectedMakerAccSlotChanged(object sender, AccessorySlotEventArgs e)
+        {
+            ControllerGet.SelectedMakerAccSlotChanged(e.SlotIndex);
+        }
+        private void SelectedMakerAccSlotChanged(int slot)
+        {
+            if (Theme_Dict.TryGetValue(slot, out var themenum))
+            {
+                ThemesDropDown_ACC.SetValue(themenum, false);
+                return;
+            }
+            ThemesDropDown_ACC.SetValue(0, false);
+        }
+
         private static void MakerAPI_MakerFinishedLoading(object sender, EventArgs e)
         {
             AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
-        }
-
-        internal void RemoveOutfitEvent()
-        {
-            Removeoutfit(data.MaxKey);
-        }
-
-        internal void AddOutfitEvent()
-        {
-            for (var i = data.MaxKey; i < ChaFileControl.coordinate.Length; i++)
-                Createoutfit(i);
         }
 
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
@@ -103,6 +106,7 @@ namespace Accessory_Themes
             }
 
             var owner = Settings.Instance;
+
             #region Personal Settings
             //MakerCategory category = new MakerCategory("03_ClothesTop", "tglSettings", MakerConstants.Clothes.Copy.Position + 3, "Settings");
 
@@ -149,6 +153,7 @@ namespace Accessory_Themes
             #endregion
 
             #endregion
+
             #region Accessory Window Settings
 
             var category = new MakerCategory(null, null);
@@ -157,8 +162,9 @@ namespace Accessory_Themes
             var emptyarray = new string[] { "None" };
 
             ThemesDropDown_ACC = new MakerDropdown("Theme: ", emptyarray, category, 0, owner);
-            ThemesDropdownwrapper = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(ThemesDropDown_ACC, true);
-            ThemesDropdownwrapper.ValueChanged += (s, e) => ControllerGet.Themes_ValueChanged(e.SlotIndex, e.NewValue - 1);
+            ThemesDropdownwrapper = MakerAPI.AddAccessoryWindowControl(ThemesDropDown_ACC, true);
+            //ThemesDropdownwrapper.ValueChanged += (s, e) => ControllerGet.Themes_ValueChanged(e.SlotIndex, e.NewValue - 1);
+            ThemesDropdownwrapper.ValueChanged.Subscribe(x => ControllerGet.Themes_ValueChanged(AccessoriesApi.SelectedMakerAccSlot, x - 1));
 
             Guibutton = new MakerButton("Accessory Themes GUI", category, owner);
             MakerAPI.AddAccessoryWindowControl(Guibutton, true);
@@ -192,13 +198,20 @@ namespace Accessory_Themes
             IsThemeRelativeBool = new MakerToggle(category, "Fixed Color Theme", owner);
             registerevent.AddControl(IsThemeRelativeBool).ValueChanged.Subscribe(b =>
             {
-                var themenum = CharaEvent.ThemesDropDown_Setting.Value - 1;
+                var themenum = ThemesDropDown_Setting.Value - 1;
 
                 if (themenum < 0)
                 {
+                    IsThemeRelativeBool.SetValue(false, false);
                     return;
                 }
-                ControllerGet.Themes[themenum].Isrelative = b;
+                var theme = ControllerGet.Themes[themenum];
+                foreach (var item in ControllerGet.SlotDataDict)
+                {
+                    if (item.Value.ThemeName != theme.ThemeName) continue;
+                    item.Value.IsRelative = b;
+                }
+                theme.Isrelative = b;
             });
 
             #region Sliders
@@ -302,7 +315,7 @@ namespace Accessory_Themes
             #endregion
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
-            ThemesDropdownwrapper.Control.GroupingID = GroupingID;
+            ThemesDropdownwrapper.GroupingID = GroupingID;
             Guibutton.GroupingID = GroupingID;
         }
 
@@ -336,7 +349,7 @@ namespace Accessory_Themes
                     if (!themeslots.Contains(slot))
                         themeslots.Add(slot);
                     ChangeACCColor(slot, themenum);
-                    ThemesDropdownwrapper.SetValue(slot, themenum, false);
+                    ThemesDropdownwrapper.SetValue(themenum, false);
                 }
             }
 
@@ -367,47 +380,44 @@ namespace Accessory_Themes
             {
                 Themes[bind].ThemedSlots.Remove(slot);
             }
+            if (!SlotDataDict.TryGetValue(slot, out var slotData) && !delete)
+            {
+                SlotDataDict[slot] = slotData = new SlotData();
+            }
 
             if (!delete)
             {
-                HairAcc = ACI_Ref.HairAcc;
                 Theme_Dict[slot] = value;
                 Themes[value].ThemedSlots.Add(slot);
+                slotData.ThemeName = Themes[value].ThemeName;
                 ChangeACCColor(slot, value);
+                SaveSlot();
                 return;
             }
 
             Theme_Dict.Remove(slot);
+            SaveSlot();
         }
 
+        #region Maker Events
         private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
         {
-            var Controller = ControllerGet;
-            Controller.StartCoroutine(Controller.WaitForSlots());
+            ControllerGet.WaitForSlots();
         }
 
         private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
-            var Controller = ControllerGet;
-            Controller.StartCoroutine(Controller.WaitForSlots());
+            ControllerGet.WaitForSlots();
         }
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
             ControllerGet.AccessoryTransferred(e);
         }
+
         private void AccessoryTransferred(AccessoryTransferEventArgs e)
         {
-            if (Theme_Dict.TryGetValue(e.SourceSlotIndex, out var ACC_Dict))
-            {
-                Theme_Dict[e.DestinationSlotIndex] = ACC_Dict;
-                ThemesDropdownwrapper.SetValue(e.DestinationSlotIndex, ACC_Dict, false);
-            }
-            else
-            {
-                Theme_Dict.Remove(e.DestinationSlotIndex);
-                ThemesDropdownwrapper.SetValue(e.DestinationSlotIndex, 0, false);
-            }
+            LoadSlot(e.DestinationSlotIndex);
         }
 
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
@@ -417,39 +427,15 @@ namespace Accessory_Themes
 
         private void AccessoriesCopied(AccessoryCopyEventArgs e)
         {
-            var Source = Coordinate[(int)e.CopySource];
-            var Dest = Coordinate[(int)e.CopyDestination];
-
-            for (int i = 0, n = e.CopiedSlotIndexes.Count(); i < n; i++)
+            if (CurrentCoordinate.Value == e.CopyDestination)
             {
-                var slot = e.CopiedSlotIndexes.ElementAt(i);
-
-                if (!Source.Theme_Dict.TryGetValue(slot, out var themenum))
+                foreach (var item in e.CopiedSlotIndexes)
                 {
-                    if (Dest.Theme_Dict.TryGetValue(slot, out var destthemenum))
-                    {
-                        Dest.Themes[destthemenum].ThemedSlots.Remove(slot);
-                    }
-                    Dest.Theme_Dict.Remove(slot);
-                    continue;
+                    LoadSlot(item);
                 }
-
-                var sourcetheme = Source.Themes.ElementAt(themenum);
-                var destinationtheme = Dest.Themes.FirstOrDefault(x => x.Colors == sourcetheme.Colors && x.Isrelative == sourcetheme.Isrelative && x.ThemeName == sourcetheme.ThemeName);
-                if (destinationtheme == null)
-                {
-                    destinationtheme = new ThemeData(sourcetheme, true);
-                    Dest.Themes.Add(destinationtheme);
-                }
-
-                if (!destinationtheme.ThemedSlots.Contains(slot))
-                    destinationtheme.ThemedSlots.Add(slot);
-
-                Dest.Theme_Dict[slot] = Dest.Themes.IndexOf(sourcetheme);
             }
-            PopulateThemeDict((int)e.CopyDestination);
         }
-
+        #endregion
         private void Update_ACC_Dropbox()
         {
             var list = Themes.Select(x => new TMP_Dropdown.OptionData(x.ThemeName));
@@ -468,7 +454,6 @@ namespace Accessory_Themes
             ThemesDropDown_Setting.ControlObject.GetComponentInChildren<TMP_Dropdown>().options = options;
         }
 
-
         private void Update_RelativeColor_Dropbox()
         {
             var options = RelativeDropdown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options;
@@ -478,50 +463,23 @@ namespace Accessory_Themes
                 options.RemoveRange(1, options.Count - 1);
             }
 
-            var dict = Relative_ACC_Dictionary;
-
-            var names = Themes;
-
-            for (var i = 0; i < dict.Count; i++)
+            for (var i = 0; i < Relative_ACC_Dictionary.Count; i++)
             {
-                var array = dict[i][0];
-                options.Add(new TMP_Dropdown.OptionData($"{names[array[0]].ThemeName}_{array[1] + 1}"));
+                var array = Relative_ACC_Dictionary[i][0];
+                options.Add(new TMP_Dropdown.OptionData($"{Themes[array[0]].ThemeName}_{array[1] + 1}"));
             }
-
-            //var acc_slots = SimilarDropdown.ControlObject;
-            //    acc_slots.GetComponentInChildren<TMP_Dropdown>().options = options;
         }
 
-        private IEnumerator WaitForSlots()
+        private void WaitForSlots()
         {
             if (!MakerAPI.InsideMaker || !MakerEnabled)
             {
-                yield break;
+                return;
             }
-
-
-            do
-            {
-                yield return null;
-            } while (!MakerAPI.InsideAndLoaded);
             makerColorSimilar.SetValue(new Color(), false);
 
-            var set = Theme_Dict;
             Update_ACC_Dropbox();
             Update_RelativeColor_Dropbox();
-            for (int SlotIndex = 0, ACC_Count = Parts.Length; SlotIndex < ACC_Count; SlotIndex++)
-            {
-                if (set.ContainsKey(SlotIndex))
-                {
-                    ThemesDropdownwrapper.SetValue(SlotIndex, set[SlotIndex], false);
-                }
-                else
-                {
-                    ThemesDropdownwrapper.SetValue(SlotIndex, 0, false);
-                }
-            }
-            ThemesDropDown_Setting.SetValue(0, false);
-            IsThemeRelativeBool.SetValue(false, false);
         }
 
         private void AutoTheme()
@@ -532,7 +490,6 @@ namespace Accessory_Themes
                 Theme_Dict.Clear();
             }
 
-
             for (int slot = 0, n = Parts.Length; slot < n; slot++)
             {
                 AddThemeValueToList(slot);
@@ -541,26 +498,22 @@ namespace Accessory_Themes
 
         private void AddThemeValueToList(int slot, bool generated = true)
         {
-
-            var themed = Theme_Dict;
-            var slotinfo = AccessoriesApi.GetPartsInfo(slot);
-
-            if (themed.ContainsKey(slot) || slotinfo.type < 121)
+            if (Theme_Dict.ContainsKey(slot) || Parts[slot].type < 121)
             {
                 return;
             }
 
-            var current = slotinfo.color;
+            var BaseColor = Parts[slot].color;
 
-            var theme = new ThemeData($"Gen_Slot {(slot + 1):000}", current);
+            var theme = new ThemeData($"Gen_Slot {(slot + 1):000}", BaseColor);
             theme.ThemedSlots.Add(slot);
             Themes.Add(theme);
 
             Update_ACC_Dropbox();
 
             var themecount = Themes.Count;
-            themed[slot] = themecount;
-            ThemesDropdownwrapper.SetValue(slot, themecount, false);
+            Theme_Dict[slot] = themecount;
+            ThemesDropdownwrapper.SetValue(themecount, false);
 
             if (!generated)
             {
@@ -569,64 +522,32 @@ namespace Accessory_Themes
 
             for (var n = Parts.Length; slot < n; slot++)
             {
-                var SlotInfo2 = AccessoriesApi.GetPartsInfo(slot);
-
-                if (themed.ContainsKey(slot) || SlotInfo2.type == 120)
+                if (Theme_Dict.ContainsKey(slot) || Parts[slot].type == 120)
                 {
                     continue;
                 }
 
-                if (ColorComparison(current, SlotInfo2.color))
+                if (ColorComparison(BaseColor, Parts[slot].color))
                 {
                     theme.ThemedSlots.Add(slot);
-                    themed[slot] = themecount;
-                    ThemesDropdownwrapper.SetValue(slot, themecount, false);
+                    Theme_Dict[slot] = themecount;
+                    ThemesDropdownwrapper.SetValue(themecount, false);
                 }
             }
         }
 
-        internal void MovIt(List<QueueItem> queue)
-        {
-            var themes = Themes;
-            var themedict = Theme_Dict;
-            foreach (var item in queue)
-            {
-                if (themedict.TryGetValue(item.SrcSlot, out var themenum))
-                {
-                    themes[themenum].ThemedSlots.Remove(item.SrcSlot);
-                    themes[themenum].ThemedSlots.Add(item.DstSlot);
-                    ThemesDropdownwrapper.SetValue(item.DstSlot, themenum + 1, false);
-                    ThemesDropdownwrapper.SetValue(item.SrcSlot, 0, false);
-                }
-            }
-            PopulateThemeDict();
-        }
-
-        private void PopulateThemeDict(int coordnum)
-        {
-            var coord = Coordinate[coordnum];
-            coord.Theme_Dict = PopulateThemeDict(coord);
-        }
+        internal void MovIt(List<QueueItem> _) => UpdatePluginData();
 
         private void PopulateThemeDict()
         {
-            NowCoordinate.Theme_Dict = PopulateThemeDict(NowCoordinate);
-        }
-
-        private Dictionary<int, int> PopulateThemeDict(CoordinateData coordinateData)
-        {
-            var dict = coordinateData.Theme_Dict;
-            var themes = coordinateData.Themes;
-            dict.Clear();
-            for (int i = 0, n = themes.Count; i < n; i++)
+            Theme_Dict.Clear();
+            for (int i = 0, n = Themes.Count; i < n; i++)
             {
-                var theme = themes[i];
-                foreach (var slot in theme.ThemedSlots)
+                foreach (var slot in Themes[i].ThemedSlots)
                 {
-                    dict[slot] = i;
+                    Theme_Dict[slot] = i;
                 }
             }
-            return dict;
         }
     }
 }
