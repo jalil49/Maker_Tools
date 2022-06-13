@@ -19,12 +19,46 @@ namespace Accessory_States
         static AccessoryControlWrapper<MakerDropdown, int> GroupSelect;
         static AccessoryControlWrapper<MakerSlider, float> StartState;
         static AccessoryControlWrapper<MakerSlider, float> EndState;
-
+        static MakerWindow makerWindow;
+        static MakerButton makerButton;
         static MakerButton gui_button;
 
         static bool MakerEnabled = false;
 
         static CharaEvent ControllerGet => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+
+        public void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                if (makerWindow == null || makerWindow.IsDestroyed())
+                {
+                    Settings.Logger.LogWarning($"attempted to create window");
+
+                    makerWindow = MakerWindow.CreateMakerWindow("Test window", false, "04_AccessoryTop", Settings.Instance);
+                    //Settings.Logger.LogWarning($"attempted to create window\n{makerWindow.transform.name}");
+                }
+                if (makerButton == null && (makerWindow != null || makerWindow.IsDestroyed()))
+                {
+                    for (var i = 0; i < 20; i++)
+                    {
+                        makerButton = new MakerButton("test button " + i, new MakerCategory(null, null), Settings.Instance);
+                        MakerAPI.AddCustomWindowControl(makerWindow, makerButton);
+                    }
+                }
+                if (makerWindow != null)
+                {
+                    MakerAPI.CreateCustomWindowControls(makerWindow);
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.N))
+            {
+                Settings.Logger.LogWarning("Test warning");
+                if (makerWindow != null)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)makerWindow.transform);
+            }
+        }
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {

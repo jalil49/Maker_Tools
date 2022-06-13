@@ -58,9 +58,8 @@
       <HintPath>..\packages\BepInEx.ConfigurationManager.16.4.0\lib\net35\ConfigurationManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKSAPI, Version=1.30.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\IllusionModdingAPI.KKSAPI.1.30.0\lib\net46\KKSAPI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="KKSAPI">
+      <HintPath>..\..\IllusionModdingAPI\bin\KKSAPI.dll</HintPath>
     </Reference>
     <Reference Include="KKS_ExtensibleSaveFormat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ExtensibleSaveFormat.KoikatsuSunshine.16.9.2\lib\net46\KKS_ExtensibleSaveFormat.dll</HintPath>

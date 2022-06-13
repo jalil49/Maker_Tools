@@ -54,9 +54,9 @@
       <HintPath>..\packages\IllusionLibs.BepInEx.5.4.15\lib\net35\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKSAPI, Version=1.30.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\IllusionModdingAPI.KKSAPI.1.30.0\lib\net46\KKSAPI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="KKSAPI, Version=1.32.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\IllusionModdingAPI\bin\KKSAPI.dll</HintPath>
     </Reference>
     <Reference Include="KKS_ExtensibleSaveFormat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ExtensibleSaveFormat.KoikatsuSunshine.16.9.2\lib\net46\KKS_ExtensibleSaveFormat.dll</HintPath>
@@ -219,7 +219,7 @@
     <PostBuildEvent>IF EXIST "F:\Satisfactory\Outfit Selection Expansion\bin" (
 xcopy "$(TargetFileName)" "C:\Sunshine\BepInEx\plugins" /S /Y /D
 )
-xcopy "$(TargetFileName)" "..\..\..\" /S /Y /D</PostBuildEvent>
+xcopy "KKSAPI.dll" "C:\Sunshine\BepInEx\plugins" /S /Y /D</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\IllusionLibs.KoikatsuSunshine.Assembly-CSharp-firstpass.2021.9.17\build\IllusionLibs.KoikatsuSunshine.Assembly-CSharp-firstpass.targets" Condition="Exists('..\packages\IllusionLibs.KoikatsuSunshine.Assembly-CSharp-firstpass.2021.9.17\build\IllusionLibs.KoikatsuSunshine.Assembly-CSharp-firstpass.targets')" />
   <Import Project="..\packages\IllusionLibs.KoikatsuSunshine.UniRx.2021.9.17\build\IllusionLibs.KoikatsuSunshine.UniRx.targets" Condition="Exists('..\packages\IllusionLibs.KoikatsuSunshine.UniRx.2021.9.17\build\IllusionLibs.KoikatsuSunshine.UniRx.targets')" />

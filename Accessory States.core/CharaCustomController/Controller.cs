@@ -69,7 +69,7 @@ namespace Accessory_States
                 if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                AccStateSyncConvert(TriggerPropertyList, TriggerGroupList);
+                //AccStateSyncConvert(TriggerPropertyList, TriggerGroupList);
             }
 
             CurrentCoordinate.Subscribe(x =>
@@ -105,13 +105,13 @@ namespace Accessory_States
 
             var _pluginData = new PluginData() { version = 6 };
 
-            AccStateSyncConvert(out var TriggerPropertyList, out var TriggerGroup);
+            //AccStateSyncConvert(out var TriggerPropertyList, out var TriggerGroup);
 
-            _pluginData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(TriggerPropertyList));
-            _pluginData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(TriggerGroup));
-            _pluginData.data.Add("ExternalManipulation", MessagePackSerializer.Serialize("Accessory_States"));
+            //_pluginData.data.Add("TriggerPropertyList", MessagePackSerializer.Serialize(TriggerPropertyList));
+            //_pluginData.data.Add("TriggerGroupList", MessagePackSerializer.Serialize(TriggerGroup));
+            //_pluginData.data.Add("ExternalManipulation", MessagePackSerializer.Serialize("Accessory_States"));
 
-            ExtendedSave.SetExtendedDataById(ChaFileControl, "madevil.kk.ass", (TriggerPropertyList.Count == 0) ? null : _pluginData);
+            //ExtendedSave.SetExtendedDataById(ChaFileControl, "madevil.kk.ass", (TriggerPropertyList.Count == 0) ? null : _pluginData);
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
@@ -170,7 +170,7 @@ namespace Accessory_States
                 if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                AccStateSyncConvertCoordProcess(coordinate, TriggerPropertyList, TriggerGroupList);
+                //AccStateSyncConvertCoordProcess(coordinate, TriggerPropertyList, TriggerGroupList);
             }
 
             UpdatePluginData();

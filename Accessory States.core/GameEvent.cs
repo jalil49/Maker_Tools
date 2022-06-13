@@ -7,6 +7,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 namespace Accessory_States
 {
     public class GameEvent : GameCustomFunctionController

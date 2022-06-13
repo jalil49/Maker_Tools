@@ -17,7 +17,7 @@ namespace Accessory_Shortcuts
             {
                 return;
             }
-            Constants.Default_Dict();
+            Constants.Parent.Clear();
         }
     }
 }
