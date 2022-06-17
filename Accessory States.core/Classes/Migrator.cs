@@ -90,11 +90,10 @@ namespace Accessory_States
             }
             savedata.data.Clear();
 
-            var coord = new CoordinateData() { ForceClothNotUpdate = dict.ForceClothNotUpdate, ClothNotData = dict.ClothNotData };
+            var coord = new CoordinateData();
             foreach (var item in dict.Names.Values)
             {
                 var tempname = new NameData() { Name = item.Name, StateNames = item.Statenames, DefaultState = 0 };
-                coord.Names.Add(tempname);
             }
 
             coord.NullCheck();

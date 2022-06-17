@@ -79,6 +79,5 @@ namespace Accessory_States
             yield return 0;
             Hooks.Init(Logger);
         }
-
     }
 }

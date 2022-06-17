@@ -4,7 +4,6 @@ using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ExtensibleSaveFormat.Extensions;
 
 namespace Accessory_States
 {
@@ -13,8 +12,6 @@ namespace Accessory_States
         public static bool DisableRefresh;
 
         internal static bool ASSExists;
-
-        private ChaFile chafile;
 
         public static event EventHandler<CoordinateLoadedEventARG> Coordloaded;
 
@@ -34,23 +31,19 @@ namespace Accessory_States
 
         private ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
 
-        internal List<NameData> Names
-        {
-            get { return NowCoordinateData.Names; }
-            set { NowCoordinateData.Names = value; }
-        }
+        internal readonly List<NameData> Names = new List<NameData>();
 
-        internal bool[] ClothNotData
-        {
-            get { return NowCoordinateData.ClothNotData; }
-            set { NowCoordinateData.ClothNotData = value; }
-        }
+        //internal bool[] ClothNotData
+        //{
+        //    get { return NowCoordinateData.ClothNotData; }
+        //    set { NowCoordinateData.ClothNotData = value; }
+        //}
 
-        internal bool ForceClothDataUpdate
-        {
-            get { return NowCoordinateData.ForceClothNotUpdate; }
-            set { NowCoordinateData.ForceClothNotUpdate = value; }
-        }
+        //internal bool ForceClothDataUpdate
+        //{
+        //    get { return NowCoordinateData.ForceClothNotUpdate; }
+        //    set { NowCoordinateData.ForceClothNotUpdate = value; }
+        //}
 
         public static bool StopMakerLoop { get; internal set; }
 
@@ -83,7 +76,6 @@ namespace Accessory_States
 
             UpdateParentedDict();
 
-            StartCoroutine(WaitForSlots());
             var args = new CoordinateLoadedEventARG(ChaControl/*, coordinate*/);
             if (!(Coordloaded == null || Coordloaded.GetInvocationList().Length == 0))
             {
@@ -128,28 +120,28 @@ namespace Accessory_States
             {
                 return;
             }
-            if (SlotInfo.TryGetValue(slot, out var slotdata) && !(slotdata.Binding < 0 && !slotdata.Parented))
+            if (SlotInfo.TryGetValue(slot, out var slotdata))
             {
                 SaveSlotData(slot, slotdata);
                 return;
             }
-            PartsArray[slot].SetExtendedDataById(Settings.GUID, null);
+            SetAccessoryExtData(null, slot);
         }
 
         private void SaveSlotData(int slot, SlotData slotData)
         {
-            if (slot >= PartsArray.Length || slotData.Binding < 0 && !slotData.Parented)
+            if (slot >= PartsArray.Length || slotData.ShouldSave())
             {
                 return;
             }
             var savedata = new PluginData() { version = 2 };
             savedata.data[Constants.AccessoryKey] = slotData.Serialize();
             PartsArray[slot].SetExtendedDataById(Settings.GUID, savedata);
+            SetAccessoryExtData(savedata, slot);
         }
 
         private void SaveCoordinateData()
         {
-            NowCoordinateData.CleanUp(SlotInfo);
             var plugin = new PluginData() { version = 2 };
             plugin.data[Constants.CoordinateKey] = NowCoordinateData.Serialize();
             ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, plugin);
@@ -161,17 +153,53 @@ namespace Accessory_States
             {
                 return;
             }
-            if (PartsArray[slot].TryGetExtendedDataById(Settings.GUID, out var extendeddata) && extendeddata.version == 2 && extendeddata.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
+            var extendedData = GetAccessoryExtData(slot);
+            if (extendedData != null)
             {
-                var slotdata = SlotInfo[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
-                if (!Names.Any(x => x.Name == slotdata.GroupName))
+                if (extendedData.version > 2)
                 {
-                    Names.Add(new NameData() { Name = slotdata.GroupName });
+                    Settings.Logger.LogMessage($"{ChaControl.fileParam.fullname}: New version of Accessory States detected");
                 }
-                //confirm binding with name index
-                if (slotdata.Binding >= Constants.ClothingLength)
-                    slotdata.Binding = Constants.ClothingLength + Names.FindIndex(x => x.Name == slotdata.GroupName);
+
+                if (extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
+                {
+                    var slotdata = SlotInfo[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
+                    foreach (var item in slotdata.bindingDatas)
+                    {
+                        var binding = item.GetBinding();
+                        if (binding < 0)
+                        {
+                            //re-value binding reference
+                            var nameDataReference = Names.FirstOrDefault(x => x.Equals(item.NameData));
+
+                            if (nameDataReference == null)
+                            {
+                                Names.Add(item.NameData);
+                            }
+                            else
+                            {
+                                nameDataReference.MergeStatesWith(item.NameData);
+                                item.NameData = nameDataReference;
+                            }
+                            item.SetBinding(Constants.ClothingLength + Names.IndexOf(nameDataReference));
+                            continue;
+                        }
+
+                        //use constant 
+
+                    }
+                }
             }
+        }
+
+        private List<StateInfo> GetMasterList()
+        {
+            var masterList = new List<StateInfo>();
+            foreach (var item in SlotInfo)
+            {
+
+            }
+            return masterList;
         }
     }
 }
