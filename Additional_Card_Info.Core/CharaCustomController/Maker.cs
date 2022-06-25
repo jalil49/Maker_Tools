@@ -606,6 +606,6 @@ namespace Additional_Card_Info
             return 0;
         }
 
-        internal void MovIt(List<QueueItem> _) => UpdatePluginData();
+        internal void MovIt() => UpdatePluginData();
     }
 }

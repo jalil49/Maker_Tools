@@ -15,7 +15,7 @@ namespace Accessory_States
         List<SaveData.Heroine> heroines;
         HSprite[] HSprites;
 
-        readonly Dictionary<int, List<int>> ButtonList = new Dictionary<int, List<int>>();
+        readonly Dictionary<int, List<Button>> ButtonList = new Dictionary<int, List<Button>>();
 #if KK
         protected override void OnStartH(BaseLoader proc, HFlag hFlag, bool vr)
 #else
@@ -40,7 +40,6 @@ namespace Accessory_States
             {
                 Settings.Logger.LogError($"heroine {i} refresh");
                 var controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
-                controller.Refresh();
                 Buttonlogic(i);
             }
             base.OnStartH(proc, hFlag, vr);
@@ -84,7 +83,7 @@ namespace Accessory_States
             var controller = Heroine_Ctrl.GetComponent<CharaEvent>();
             if (!ButtonList.TryGetValue(Female, out var list))
             {
-                list = new List<int>();
+                list = new List<Button>();
             }
             list.Reverse();
             foreach (var item in list)
@@ -94,111 +93,79 @@ namespace Accessory_States
 
             ButtonList.Remove(Female);
 
-            var names = controller.Names;
-            var slotinfo = controller.SlotInfo;
+            var nameDataList = controller.Names;
+            var slotinfo = controller.SlotBindingData;
             var shoetype = Heroine_Ctrl.fileStatus.shoesType;
-            var i = 0;
-            foreach (var item in names)
+            foreach (var nameData in nameDataList)
             {
-                if (slotinfo.Count(x => x.Value.Binding == Constants.ClothingLength + i && (x.Value.ShoeType == shoetype || x.Value.ShoeType == 2)) > 0)
-                {
-                    Createbutton(Female, Harem, item.Name, Constants.ClothingLength + i, controller, 0);
-                }
-                i++;
-            }
+                if (nameData.Binding < Constants.ClothingLength) continue; // skip default clothing buttons.
 
-            foreach (var item in controller.ParentedNameDictionary)
-            {
-                Createbutton(Female, Harem, item.Key, 0, controller, 1);
-            }
-        }
-
-        private void DeleteButton(int Female, bool Harem, int Remove)
-        {
-            HSceneSpriteCategory hSceneSpriteCategory;
-            foreach (var Sprite in HSprites)
-            {
-                if (Harem)
+                if (slotinfo.Any(x => x.Value.BindingExists(nameData.Binding, shoetype))) //hide binding in-case its outdoor/indoor specific
                 {
-                    hSceneSpriteCategory = Sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
-                }
-                else
-                {
-                    hSceneSpriteCategory = Sprite.categoryAccessoryAll;
-                }
-                var ToRemove = hSceneSpriteCategory.lstButton[Remove];
-                Destroy(ToRemove.gameObject);
-                hSceneSpriteCategory.lstButton.RemoveAt(Remove);
-            }
-        }
-
-        private void Createbutton(int Female, bool Harem, string name, int kind, CharaEvent Controller, int ButtonKind)
-        {
-            Transform parent;
-            HSceneSpriteCategory hSceneSpriteCategory;
-            foreach (var Sprite in HSprites)
-            {
-                if (Harem)
-                {
-                    hSceneSpriteCategory = Sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
-                }
-                else
-                {
-                    hSceneSpriteCategory = Sprite.categoryAccessoryAll;
-                }
-
-                parent = hSceneSpriteCategory.transform;
-
-                var origin = Sprite.categoryAccessory.lstButton[0].transform;
-                var copy = Instantiate(origin.transform, parent, false);
-                copy.name = $"btn_{name}_{kind}";
-                copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
-                var trans = copy.GetComponent<RectTransform>();
-                trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
-
-                var button = copy.GetComponentInChildren<Button>();
-                button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
-                button.onClick.RemoveAllListeners();
-                button.onClick = new Button.ButtonClickedEvent();
-                button.image.raycastTarget = true;
-                if (ButtonKind == 0)
-                {
-                    var state = Controller.Names[kind - Constants.ClothingLength].DefaultState;
-                    var binded = Controller.SlotInfo.Where(x => x.Value.Binding == kind);
-                    var final = 0;
-                    foreach (var item in binded)
+                    foreach (var sprite in HSprites)
                     {
-                        foreach (var item2 in item.Value.States)
+                        var button = Createbutton(Female, Harem, nameData.Name, nameData.Binding, sprite);
+                        button.onClick.AddListener(delegate ()
                         {
-                            final = Mathf.Max(final, item2[1]);
-                        }
+                            nameData.IncrementCurrentState();
+                            controller.RefreshSlots();
+                            Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
+                        });
                     }
-                    final += 2;
-                    button.onClick.AddListener(delegate ()
-                    {
-                        state = (state + 1) % (final);
-                        Controller.CustomGroups(kind, state);
-                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
-                    });
                 }
-                else
-                {
-                    var state = true;
-                    button.onClick.AddListener(delegate ()
-                    {
-                        state = !state;
-                        Controller.ParentToggle(name, state);
-                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
-                    });
-                }
-                if (!ButtonList.TryGetValue(Female, out var list))
-                {
-                    list = new List<int>();
-                    ButtonList.Add(Female, list);
-                }
-                list.Add(hSceneSpriteCategory.lstButton.Count);
-                hSceneSpriteCategory.lstButton.Add(button);
             }
+
+            foreach (var item in controller.ParentedNameDictionary.Keys)
+            {
+                foreach (var sprite in HSprites)
+                {
+                    var button = Createbutton(Female, Harem, item, 0, sprite);
+
+                    button.onClick.AddListener(delegate ()
+                    {
+                        controller.ParentedNameDictionary[item] = !controller.ParentedNameDictionary[item];
+                        controller.RefreshSlots();
+                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
+                    });
+                }
+            }
+        }
+
+        private void DeleteButton(int Female, bool Harem, Button Remove)
+        {
+            foreach (var Sprite in HSprites)
+            {
+                var hSceneSpriteCategory = Harem ? Sprite.lstMultipleFemaleDressButton[Female].accessoryAll : Sprite.categoryAccessoryAll;
+                hSceneSpriteCategory.lstButton.Remove(Remove);
+            }
+            Destroy(Remove);
+        }
+        private Button Createbutton(int Female, bool Harem, string name, int kind, HSprite Sprite)
+        {
+            var hSceneSpriteCategory = Harem ? Sprite.lstMultipleFemaleDressButton[Female].accessoryAll : Sprite.categoryAccessoryAll;
+
+            var parent = hSceneSpriteCategory.transform;
+
+            var origin = Sprite.categoryAccessory.lstButton[0].transform;
+            var copy = Instantiate(origin.transform, parent, false);
+            copy.name = $"btn_{name}_{kind}";
+            copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
+            var trans = copy.GetComponent<RectTransform>();
+            trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
+
+            var button = copy.GetComponentInChildren<Button>();
+            button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
+            button.onClick.RemoveAllListeners();
+            button.onClick = new Button.ButtonClickedEvent();
+            button.image.raycastTarget = true;
+            if (!ButtonList.TryGetValue(Female, out var list))
+            {
+                list = new List<Button>();
+                ButtonList.Add(Female, list);
+            }
+            list.Add(button);
+            hSceneSpriteCategory.lstButton.Add(button);
+            return button;
         }
 
         protected override void OnGameLoad(GameSaveLoadEventArgs args)

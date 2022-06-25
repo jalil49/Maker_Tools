@@ -12,22 +12,27 @@
     <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\AccStateSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-Sync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\Migration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-DataConvert.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\StateData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\NameData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\SlotDataV1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\CoordinateDataV1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Studio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordianteData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GameEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\GUI Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
   </ItemGroup>
 </Project>

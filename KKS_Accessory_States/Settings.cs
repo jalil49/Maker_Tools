@@ -1,9 +1,12 @@
-﻿using BepInEx;
+﻿using Accessory_States.Migration;
+using Accessory_States.Migration.Version1;
+using BepInEx;
 using ExtensibleSaveFormat;
 using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 
 namespace Accessory_States
 {
@@ -18,10 +21,10 @@ namespace Accessory_States
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
             var attemptASS = false;
-            var Coordinate = new Dictionary<int, Migrator.CoordinateDataV1>();
+            var Coordinate = new Dictionary<int, CoordinateDataV1>();
             foreach (var item in coordinateMapping)
             {
-                Coordinate[item.Key] = new Migrator.CoordinateDataV1();
+                Coordinate[item.Key] = new CoordinateDataV1();
             }
 
             if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null) attemptASS = true;
@@ -32,12 +35,12 @@ namespace Accessory_States
                 {
                     if (Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
                     {
-                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, Migrator.CoordinateDataV1>>((byte[])ByteData);
+                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateDataV1>>((byte[])ByteData);
                     }
                 }
                 else if (Data.version == 0)
                 {
-                    Migrator.CharaMigrateV0(Data, ref Coordinate, coordinateMapping.Count);
+                    Migrator.CharaMigrateV0(Data, Coordinate, coordinateMapping.Count);
                 }
                 else
                 {
@@ -47,6 +50,7 @@ namespace Accessory_States
             }
             else
             {
+                //TODO: Reimplement ASS
                 if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null) return;
 
                 var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
@@ -87,11 +91,11 @@ namespace Accessory_States
 
                 foreach (var item in Coordinate)
                 {
-                    item.Value.AccStateSyncConvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
+                    //item.Value.AccStateSyncConvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
                 }
             }
 
-            var transfer = new Dictionary<int, Migrator.CoordinateDataV1>();
+            var transfer = new Dictionary<int, CoordinateDataV1>();
 
             foreach (var item in coordinateMapping)
             {

@@ -33,13 +33,10 @@ namespace Accessory_States
             var owner = Settings.Instance;
             var category = new MakerCategory(null, null);
 
-            var ACC_app_Dropdown = Constants.ConstantOutfitNames.Values.ToArray();
-
             gui_button = new MakerButton("States GUI", category, owner);
             MakerAPI.AddAccessoryWindowControl(gui_button, true);
-            gui_button.OnClick.AddListener(delegate () { GUIToggle(); });
+            gui_button.OnClick.AddListener(delegate () { });
 
-            SetupInterface();
 
             var interfacebutton = e.AddSidebarControl(new SidebarToggle("ACC States", true, owner));
             interfacebutton.ValueChanged.Subscribe(x => ShowToggleInterface = x);
@@ -57,7 +54,6 @@ namespace Accessory_States
             }
             MakerAPI.MakerExiting += (s, e) => Maker_Ended();
 
-            AccessoriesApi.MakerAccSlotAdded += AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
         }
@@ -66,7 +62,6 @@ namespace Accessory_States
         {
             MakerAPI.MakerExiting -= (s, e) => Maker_Ended();
 
-            AccessoriesApi.MakerAccSlotAdded -= AccessoriesApi_MakerAccSlotAdded;
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
 
@@ -87,6 +82,7 @@ namespace Accessory_States
 
         private void AccessoriesTransferred(AccessoryTransferEventArgs e)
         {
+            SlotBindingData.Remove(e.DestinationSlotIndex);
             LoadSlotData(e.DestinationSlotIndex);
             UpdateParentedDict();
         }
@@ -97,28 +93,16 @@ namespace Accessory_States
             {
                 foreach (var item in e.CopiedSlotIndexes)
                 {
+                    SlotBindingData.Remove(item);
                     LoadSlotData(item);
                 }
-                Refresh();
             }
         }
-
-        private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
-        {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
-
-            Controller.StartCoroutine(Wait());
-            IEnumerator Wait()
-            {
-                yield return null;
-            }
-        }
-
         private void ACC_Is_Parented_ValueChanged(int slot, bool isparented)
         {
-            if (!SlotInfo.TryGetValue(slot, out var slotdata))
+            if (!SlotBindingData.TryGetValue(slot, out var slotdata))
             {
-                slotdata = SlotInfo[slot] = new SlotData();
+                slotdata = SlotBindingData[slot] = new SlotData();
             }
             slotdata.Parented = isparented;
 
@@ -131,26 +115,6 @@ namespace Accessory_States
             ChaControl.SetAccessoryState(slot, show);
         }
 
-        private void UpdateAccessoryshow(SlotData data, int slot, int binding)
-        {
-            int state;
-            if (binding < 9)
-            {
-                state = ChaControl.fileStatus.clothesState[binding];
-            }
-            else
-            {
-                state = GUI_Custom_Dict[binding][0];
-            }
-
-            var show = ShowState(state, binding, data);
-            if (data.ShoeType != 2 && ChaControl.fileStatus.shoesType != data.ShoeType)
-            {
-                show = false;
-            }
-            ChaControl.SetAccessoryState(slot, show);
-        }
-
         internal void Slot_ACC_Change(int slotNo, int type)
         {
             if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
@@ -159,103 +123,73 @@ namespace Accessory_States
             }
             if (type == 120)
             {
-                SlotInfo.Remove(slotNo);
+                SlotBindingData.Remove(slotNo);
                 SaveSlotData(slotNo);
             }
-        }
-
-        //internal void UpdateClothingNots()
-        //{
-        //    var clothingnot = ClothNotData;
-        //    for (int i = 0, n = clothingnot.Length; i < n; i++)
-        //    {
-        //        clothingnot[i] = false;
-        //    }
-
-        //    var clothinfo = ChaControl.infoClothes;
-
-        //    UpdateTopClothingNots(clothinfo[0], ref clothingnot);
-        //    UpdateBraClothingNots(clothinfo[2], ref clothingnot);
-
-        //    ForceClothDataUpdate = false;
-        //}
-
-        private void UpdateTopClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
-        {
-            if (infoBase == null)
-            {
-                return;
-            }
-            Hooks.ClothingNotPatch.IsshortsCheck = false;
-            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
-
-            var key = ChaListDefine.KeyType.Coordinate;
-            infoBase.GetInfo(key);
-            var notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
-
-            key = ChaListDefine.KeyType.NotBra;
-            infoBase.GetInfo(key);
-            var notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
-
-            clothingnot[0] = clothingnot[0] || notbot;
-            clothingnot[1] = clothingnot[1] || notbra;
-        }
-
-        private void UpdateBraClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
-        {
-            if (infoBase == null)
-            {
-                return;
-            }
-            Hooks.ClothingNotPatch.IsshortsCheck = true;
-
-            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
-            var key = ChaListDefine.KeyType.Coordinate;
-
-            infoBase.GetInfo(key);//kk uses coordinate to hide shorts
-
-            var notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
-
-            clothingnot[2] = clothingnot[2] || notShorts;
         }
 
         internal void ClothingTypeChange(int kind, int index)
         {
             if (index != 0)
                 return;
-            //switch (kind)
-            //{
-            //    case 1:
-            //        if (ClothNotData[0])
-            //            return;
-            //        break;
-            //    case 2:
-            //        if (ClothNotData[1])
-            //            return;
-            //        break;
-            //    case 3:
-            //        if (ClothNotData[2])
-            //            return;
-            //        break;
-            //    case 7:
-            //        if (ChaControl.nowCoordinate.clothes.parts[8].id == 0)
-            //        {
-            //            RemoveClothingBinding(9);
-            //        }
-            //        break;
-            //    case 8:
-            //        if (ChaControl.nowCoordinate.clothes.parts[7].id == 0)
-            //        {
-            //            RemoveClothingBinding(9);
-            //        }
-            //        break;
-            //    default:
-            //        break;
-            //}
+
+            UpdateClothNots();
+
+            switch (kind)
+            {
+                case 1:
+                    if (ClothNotData[0])
+                        return;
+                    break;
+                case 2:
+                    if (ClothNotData[1])
+                        return;
+                    break;
+                case 3:
+                    if (ClothNotData[2])
+                        return;
+                    break;
+                default:
+                    break;
+            }
             RemoveClothingBinding(kind);
-            SaveCoordinateData();
         }
 
+        private void UpdateClothNots()
+        {
+            ClothNotData = new bool[3] { false, false, false };
+            ClothNotData[0] = ChaControl.notBot || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 2;
+            ClothNotData[1] = ChaControl.notBra || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 1;
+            ClothNotData[2] = ChaControl.notShorts || GetClothingNot(2, ChaListDefine.KeyType.Coordinate) == 2;
+        }
+
+        public bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
+        {
+            var listInfoBase = GetListInfoBase(kind);
+            if (listInfoBase == null) return false;
+            var intValue = GetClothingNot(listInfoBase, value);
+            if (intValue == listInfoBase.GetInfoInt(value)) return false;
+
+            return true;
+        }
+
+        public int GetClothingNot(int kind, ChaListDefine.KeyType key)
+        {
+            return GetClothingNot(GetListInfoBase(kind), key);
+        }
+        public int GetClothingNot(ListInfoBase listInfo, ChaListDefine.KeyType key)
+        {
+            if (listInfo == null) return 0;
+            if (!(listInfo.dictInfo.TryGetValue((int)key, out var stringValue) && int.TryParse(stringValue, out var intValue))) return 0;
+
+            return intValue;
+        }
+        public ListInfoBase GetListInfoBase(int kind)
+        {
+            var lists = ChaControl.infoClothes;
+            if (kind >= lists.Length || kind < 0) return null;
+            return lists[kind];
+        }
         private void RemoveClothingBinding(int kind)
         {
             var slotinfo = SlotInfo;

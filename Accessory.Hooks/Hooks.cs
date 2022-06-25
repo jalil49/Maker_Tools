@@ -47,22 +47,18 @@ namespace Additional_Card_Info
             {
                 Harmony.CreateAndPatchAll(typeof(ClothingNotPatch));
             }
+            //TODO: Check That this doesn't break anything
+#if States
 
             [HarmonyPostfix]
             [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
             public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
             {
-                var clothingnum = __instance.clothesType;
                 var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
-                if (clothingnum < 4)
-                {
-                    charaevent.UpdateClothingNots();
-                }
-#if States
-                charaevent.ClothingTypeChange(clothingnum, index);
-#endif
-            }
+                charaevent.ClothingTypeChange(__instance.clothesType, index);
 
+            }
+#endif
             [HarmonyPostfix]
             [HarmonyPriority(Priority.HigherThanNormal)]
             [HarmonyPatch(typeof(ListInfoBase), nameof(ListInfoBase.GetInfo))]

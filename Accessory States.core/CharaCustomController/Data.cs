@@ -22,9 +22,10 @@ namespace Accessory_States
 
         internal CoordinateData NowCoordinateData = new CoordinateData();
 
-        internal Dictionary<int, SlotData> SlotInfo = new Dictionary<int, SlotData>();
+        internal Dictionary<int, SlotData> SlotBindingData = new Dictionary<int, SlotData>();
 
-        internal Dictionary<string, List<KeyValuePair<int, SlotData>>> ParentedNameDictionary = new Dictionary<string, List<KeyValuePair<int, SlotData>>>();
+        internal Dictionary<string, bool> ParentedNameDictionary = new Dictionary<string, bool>();
+
 
         #region Properties
         private ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
@@ -33,17 +34,11 @@ namespace Accessory_States
 
         internal readonly List<NameData> Names = new List<NameData>();
 
-        //internal bool[] ClothNotData
-        //{
-        //    get { return NowCoordinateData.ClothNotData; }
-        //    set { NowCoordinateData.ClothNotData = value; }
-        //}
-
-        //internal bool ForceClothDataUpdate
-        //{
-        //    get { return NowCoordinateData.ForceClothNotUpdate; }
-        //    set { NowCoordinateData.ForceClothNotUpdate = value; }
-        //}
+        internal bool[] ClothNotData
+        {
+            get { return NowCoordinateData.ClothingNotData; }
+            set { NowCoordinateData.ClothingNotData = value; }
+        }
 
         public static bool StopMakerLoop { get; internal set; }
 
@@ -89,21 +84,13 @@ namespace Accessory_States
                 }
             }
         }
-
         internal void UpdateParentedDict()
         {
             ParentedNameDictionary.Clear();
-            var shoetype = ChaControl.fileStatus.shoesType;
-            var ParentedList = SlotInfo.Where(x => x.Value.Parented && (x.Value.ShoeType == 2 || x.Value.ShoeType == shoetype));
-            foreach (var item in ParentedList)
+            foreach (var item in SlotBindingData)
             {
-                var parentkey = PartsArray[item.Key].parentKey;
-                if (ParentedNameDictionary.TryGetValue(parentkey, out var keyValuePairs))
-                {
-                    keyValuePairs.Add(item);
-                    continue;
-                }
-                ParentedNameDictionary[parentkey] = new List<KeyValuePair<int, SlotData>>() { item };
+                if (!item.Value.Parented) continue;
+                ParentedNameDictionary[PartsArray[item.Key].parentKey] = true;
             }
         }
 
@@ -111,7 +98,9 @@ namespace Accessory_States
         {
             NowCoordinateData.Clear();
             ParentedNameDictionary.Clear();
-            SlotInfo.Clear();
+            SlotBindingData.Clear();
+            Names.Clear();
+            Names.AddRange(Constants.GetNameDataList());
         }
 
         private void SaveSlotData(int slot)
@@ -120,7 +109,7 @@ namespace Accessory_States
             {
                 return;
             }
-            if (SlotInfo.TryGetValue(slot, out var slotdata))
+            if (SlotBindingData.TryGetValue(slot, out var slotdata))
             {
                 SaveSlotData(slot, slotdata);
                 return;
@@ -130,21 +119,16 @@ namespace Accessory_States
 
         private void SaveSlotData(int slot, SlotData slotData)
         {
-            if (slot >= PartsArray.Length || slotData.ShouldSave())
+            if (slot >= PartsArray.Length)
             {
                 return;
             }
-            var savedata = new PluginData() { version = 2 };
-            savedata.data[Constants.AccessoryKey] = slotData.Serialize();
-            PartsArray[slot].SetExtendedDataById(Settings.GUID, savedata);
-            SetAccessoryExtData(savedata, slot);
+            SetAccessoryExtData(slotData.Serialize(), slot);
         }
 
         private void SaveCoordinateData()
         {
-            var plugin = new PluginData() { version = 2 };
-            plugin.data[Constants.CoordinateKey] = NowCoordinateData.Serialize();
-            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, plugin);
+            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, NowCoordinateData.Serialize());
         }
 
         private void LoadSlotData(int slot)
@@ -153,53 +137,51 @@ namespace Accessory_States
             {
                 return;
             }
+
             var extendedData = GetAccessoryExtData(slot);
-            if (extendedData != null)
+            if (extendedData == null) return;
+
+            if (extendedData.version > 2)
             {
-                if (extendedData.version > 2)
-                {
-                    Settings.Logger.LogMessage($"{ChaControl.fileParam.fullname}: New version of Accessory States detected");
-                }
+                Settings.Logger.LogMessage($"{ChaControl.fileParam.fullname}: New version of Accessory States detected");
+            }
 
-                if (extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
+            if (extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
+            {
+                var slotdata = SlotBindingData[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
+                foreach (var item in slotdata.bindingDatas)
                 {
-                    var slotdata = SlotInfo[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
-                    foreach (var item in slotdata.bindingDatas)
+                    item.SetSlot(slot);
+                    var binding = item.GetBinding();
+                    if (binding < 0)
                     {
-                        var binding = item.GetBinding();
-                        if (binding < 0)
-                        {
-                            //re-value binding reference
-                            var nameDataReference = Names.FirstOrDefault(x => x.Equals(item.NameData));
+                        if (item.NameData == null) continue;
+                        //re-value binding reference
+                        var nameDataReference = Names.FirstOrDefault(x => x.Equals(item.NameData));
 
-                            if (nameDataReference == null)
-                            {
-                                Names.Add(item.NameData);
-                            }
-                            else
-                            {
-                                nameDataReference.MergeStatesWith(item.NameData);
-                                item.NameData = nameDataReference;
-                            }
-                            item.SetBinding(Constants.ClothingLength + Names.IndexOf(nameDataReference));
-                            continue;
+                        if (nameDataReference == null)
+                        {
+                            Names.Add(item.NameData);
+                            item.NameData.Binding = Constants.ClothingLength + Names.IndexOf(nameDataReference);
+                        }
+                        else
+                        {
+                            nameDataReference.MergeStatesWith(item.NameData);
+                            item.NameData = nameDataReference;
                         }
 
-                        //use constant 
+                        item.SetBinding();
+                        //nameDataReference.AssociatedSlots.Add(slot);
+                        continue;
+                    }
 
+                    if (binding < Constants.ClothingLength)
+                    {
+                        item.NameData = Names.First(x => x.Binding == binding);
+                        //item.NameData.AssociatedSlots.Add(slot);
                     }
                 }
             }
-        }
-
-        private List<StateInfo> GetMasterList()
-        {
-            var masterList = new List<StateInfo>();
-            foreach (var item in SlotInfo)
-            {
-
-            }
-            return masterList;
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Accessory_States
 
             if (StudioAPI.InsideStudio)
             {
-                CreateStudioControls();
+                //CreateStudioControls();
             }
             GameUnique();
 

@@ -9,6 +9,8 @@
     <Import_RootNamespace>Extensions</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToggleGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OnGuiExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
   </ItemGroup>
 </Project>

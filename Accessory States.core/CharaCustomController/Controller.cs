@@ -27,7 +27,7 @@ namespace Accessory_States
             {
                 if (Extended_Data.version < 2)
                 {
-                    Migrator.StandardCharaMigrator(ChaControl, Extended_Data);
+                    Migration.Migrator.StandardCharaMigrator(ChaControl, Extended_Data);
                 }
             }
 
@@ -69,7 +69,7 @@ namespace Accessory_States
             {
                 if (Extended_Data.version < 2)
                 {
-                    Migrator.StandardCoordMigrator(coordinate, Extended_Data);
+                    Migration.Migrator.StandardCoordMigrator(coordinate, Extended_Data);
                 }
             }
 
@@ -169,16 +169,77 @@ namespace Accessory_States
                     break;
             }
         }
-
+        // TODO: do a selective hide
         private void ChangeBindingSub(int hidesetting)
         {
             var coordinateaccessory = ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.parts;
             var nowcoodaccessory = ChaControl.nowCoordinate.accessory.parts;
-            var slotslist = SlotInfo.Where(x => x.Value.bindingDatas.Any(y => y.Binding == Selectedkind)).Select(x => x.Key);
+            var slotslist = SlotBindingData.Where(x => x.Value.bindingDatas.Any(y => y.GetBinding() == Selectedkind)).Select(x => x.Key);
             foreach (var slot in slotslist)
             {
                 coordinateaccessory[slot].hideCategory = nowcoodaccessory[slot].hideCategory = hidesetting;
             }
+        }
+
+        /// <summary>
+        /// Iterrate over whole list to deal with potentially cascading effects of one state affecting another which affects another
+        /// </summary>
+        public void RefreshSlots()
+        {
+            foreach (var slotData in SlotBindingData)
+            {
+                if (slotData.Key >= PartsArray.Length)
+                    return;
+
+                var show = ShouldShow(slotData.Value);
+                var partsInfo = PartsArray[slotData.Key];
+                if (slotData.Value.Parented && ParentedNameDictionary.TryGetValue(partsInfo.parentKey, out var parentingState))
+                {
+                    show &= parentingState;
+                }
+                var isSub = partsInfo.hideCategory == 1;
+                show &= !isSub && ShowMain || isSub && ShowSub; //respect the hide/show main and sub buttons
+                ChaControl.SetAccessoryState(slotData.Key, show);
+            }
+        }
+
+        /// <summary>
+        /// Check bindings of slotdata, respect 
+        /// 
+        /// </summary>
+        /// <param name="slotdata"></param>
+        /// <returns></returns>
+        public bool ShouldShow(SlotData slotdata)
+        {
+            var shoeType = ChaControl.fileStatus.shoesType;
+            var result = true;
+            var priority = 0;
+
+            foreach (var item in slotdata.bindingDatas)
+            {
+                if (item.NameData == null) continue;
+
+                var stateInfo = item.GetStateInfo(item.NameData.CurrentState, shoeType);
+                if (stateInfo == null || stateInfo.Binding < 0 || priority < stateInfo.Priority) continue;
+
+
+                if (stateInfo.Priority == priority)
+                {
+                    result &= stateInfo.Show;
+                    continue;
+                }
+
+                priority = stateInfo.Priority;
+                result = stateInfo.Show;
+            }
+            return result;
+        }
+
+        internal void SetClothesState(int clothesKind, byte state)
+        {
+            var nameData = Names.First(x => x.Binding == clothesKind);
+            nameData.CurrentState = state;
+            RefreshSlots();
         }
     }
 }

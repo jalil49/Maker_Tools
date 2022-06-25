@@ -64,5 +64,24 @@ namespace Extensions
             }
             return array;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chaControl"></param>
+        /// <param name="select">ListInfoBase to check</param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool ClothingUnlocker(this ChaControl chaControl, int select, ChaListDefine.KeyType value)
+        {
+            var lists = chaControl.infoClothes;
+            if (select >= lists.Length) return false;
+            var listInfoBase = lists[select];
+            if (listInfoBase == null) return false;
+            if (!(listInfoBase.dictInfo.TryGetValue((int)value, out var stringValue) && int.TryParse(stringValue, out var intValue))) return false;
+
+            if (intValue == listInfoBase.GetInfoInt(value)) return false;
+
+            return true;
+        }
     }
 }

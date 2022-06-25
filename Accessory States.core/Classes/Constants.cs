@@ -4,21 +4,6 @@ namespace Accessory_States
 {
     public static class Constants
     {
-        static Constants()
-        {
-            var states = new Dictionary<int, string>()
-            {
-                [0] = "Full",
-                [1] = "Half-off 1",
-                [2] = "Half-off 2",
-                [3] = "Naked",
-            };
-            for (var i = -1; i < ClothingLength; i++)
-            {
-                KnownNameData[i] = new NameData() { Name = GetClothingName(i), StateNames = states };
-            }
-            UnknownNameData = new NameData() { Name = "Unknown", StateNames = states };
-        }
         public static string GetClothingName(int clothNum)
         {
             switch (clothNum)
@@ -40,17 +25,26 @@ namespace Accessory_States
                 default: return "Unknown";
             }
         }
-        public static NameData GetClothingNameData(int clothNum)
+
+        public static List<NameData> GetNameDataList()
         {
-            if (KnownNameData.TryGetValue(clothNum, out var nameData)) return nameData;
-            return UnknownNameData;
+            var states = new Dictionary<int, string>()
+            {
+                [0] = "Full",
+                [1] = "Half-off 1",
+                [2] = "Half-off 2",
+                [3] = "Naked",
+            };
+
+            var list = new List<NameData>();
+            for (var i = -1; i < ClothingLength; i++)
+                list.Add(new NameData() { Name = GetClothingName(i), StateNames = states, StateLength = 4, Binding = i });
+            return list;
         }
 
         public const string CoordinateKey = "CoordinateData";
         public const string AccessoryKey = "SlotData";
         public const int SaveVersion = 2;
-        public readonly static Dictionary<int, NameData> KnownNameData = new Dictionary<int, NameData>();
-        public readonly static NameData UnknownNameData;
 #if KK || KKS
         public const int ClothingLength = 9;
 #else
