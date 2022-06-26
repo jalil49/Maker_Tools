@@ -19,11 +19,12 @@ namespace Accessory_States
             __instance.GetComponent<CharaEvent>().AccessoryCategoryChange(cateNo, show);
         }
 
+        //TODO: Check this for crashing
         [HarmonyPrefix]
         [HarmonyPatch(typeof(CustomChangeMainMenu), nameof(CustomChangeMainMenu.ChangeWindowSetting))]
         public static void Hook_ChangeWindowSetting(int no)
         {
-            CharaEvent.StopMakerLoop = no == 3;
+            CharaEvent.StopMakerLoop = no < 4;
         }
     }
 }

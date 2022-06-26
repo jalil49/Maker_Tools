@@ -2,8 +2,6 @@
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UniRx;
@@ -536,7 +534,7 @@ namespace Accessory_Themes
             }
         }
 
-        internal void MovIt(List<QueueItem> _) => UpdatePluginData();
+        internal void MovIt() => UpdatePluginData();
 
         private void PopulateThemeDict()
         {

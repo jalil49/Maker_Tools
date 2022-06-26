@@ -152,7 +152,7 @@ namespace Accessory_States
                 default:
                     break;
             }
-            RemoveClothingBinding(kind);
+            RemoveAllByBinding(kind);
         }
 
         private void UpdateClothNots()
@@ -161,6 +161,7 @@ namespace Accessory_States
             ClothNotData[0] = ChaControl.notBot || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 2;
             ClothNotData[1] = ChaControl.notBra || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 1;
             ClothNotData[2] = ChaControl.notShorts || GetClothingNot(2, ChaListDefine.KeyType.Coordinate) == 2;
+
         }
 
         public bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
@@ -190,20 +191,24 @@ namespace Accessory_States
             if (kind >= lists.Length || kind < 0) return null;
             return lists[kind];
         }
-        private void RemoveClothingBinding(int kind)
+        private void RemoveAllByBinding(int kind)
         {
-            var slotinfo = SlotInfo;
-            var removelist = slotinfo.Where(x => x.Value.bindingDatas.Any(y => y.Binding == kind)).ToList();
-            for (int i = 0, n = removelist.Count; i < n; i++)
+            RemoveNameData(Names.FirstOrDefault(x => x.Binding == kind));
+        }
+
+        private void RemoveNameData(NameData nameData)
+        {
+            if (nameData == null) return;
+            foreach (var item in SlotBindingData)
             {
-                var bindData = slotinfo[removelist[i].Key].bindingDatas;
-                for (var j = bindData.Count - 1; j >= 0; j--)
+                var result = item.Value.bindingDatas.RemoveAll(x => x.NameData == nameData);
+                if (result > 0)
                 {
-                    if (bindData[j].Binding == kind)
-                        bindData.RemoveAt(j);
+                    SaveSlotData(item.Key);
                 }
-                SaveSlotData(removelist[i].Key);
             }
         }
+
+        internal void MovIt(List<QueueItem> _) => UpdatePluginData();
     }
 }

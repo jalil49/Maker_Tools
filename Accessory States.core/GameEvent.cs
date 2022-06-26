@@ -16,11 +16,7 @@ namespace Accessory_States
         HSprite[] HSprites;
 
         readonly Dictionary<int, List<Button>> ButtonList = new Dictionary<int, List<Button>>();
-#if KK
-        protected override void OnStartH(BaseLoader proc, HFlag hFlag, bool vr)
-#else
         protected override void OnStartH(MonoBehaviour proc, HFlag hFlag, bool vr)
-#endif
         {
             if (vr)
             {
@@ -60,11 +56,7 @@ namespace Accessory_States
                 }
             }
         }
-#if KK
-        protected override void OnEndH(BaseLoader proc, HFlag hFlag, bool vr)
-#else
         protected override void OnEndH(MonoBehaviour proc, HFlag hFlag, bool vr)
-#endif
         {
             ButtonList.Clear();
             heroines = null;
@@ -140,6 +132,7 @@ namespace Accessory_States
             }
             Destroy(Remove);
         }
+
         private Button Createbutton(int Female, bool Harem, string name, int kind, HSprite Sprite)
         {
             var hSceneSpriteCategory = Harem ? Sprite.lstMultipleFemaleDressButton[Female].accessoryAll : Sprite.categoryAccessoryAll;
@@ -166,11 +159,6 @@ namespace Accessory_States
             list.Add(button);
             hSceneSpriteCategory.lstButton.Add(button);
             return button;
-        }
-
-        protected override void OnGameLoad(GameSaveLoadEventArgs args)
-        {
-            base.OnGameLoad(args);
         }
     }
 }

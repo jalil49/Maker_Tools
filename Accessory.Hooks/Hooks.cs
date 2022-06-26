@@ -19,8 +19,8 @@ namespace Additional_Card_Info
         {
             Logger = Setting_Logger;
             Harmony.CreateAndPatchAll(typeof(Hooks));
-            //if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
-            //    Harmony.CreateAndPatchAll(typeof(MoreOutfits));
+            if (TryfindPluginInstance("madevil.kk.MovUrAcc"))
+                Harmony.CreateAndPatchAll(typeof(MovUrACC));
 #if ACI || States
             ClothingNotPatch.Init();
 #endif
@@ -47,9 +47,9 @@ namespace Additional_Card_Info
             {
                 Harmony.CreateAndPatchAll(typeof(ClothingNotPatch));
             }
-            //TODO: Check That this doesn't break anything
-#if States
 
+#if States
+            //TODO: Check That this doesn't break anything
             [HarmonyPostfix]
             [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
             public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
@@ -77,6 +77,16 @@ namespace Additional_Card_Info
             }
         }
 #endif
+
+        internal static class MovUrACC
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch("MovUrAcc.MovUrAcc, KK_MovUrAcc", "ProcessQueue")]
+            internal static void MovPatch(List<QueueItem> Queue)
+            {
+                KKAPI.Maker.MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
+            }
+        }
     }
 
     internal class QueueItem

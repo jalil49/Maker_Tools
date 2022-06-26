@@ -1,4 +1,5 @@
-﻿using KKAPI.Chara;
+﻿using Extensions.GUI_Classes;
+using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Utilities;
 using System;
@@ -7,17 +8,10 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
-
 namespace Accessory_States
 {
     partial class CharaEvent : CharaCustomFunctionController
     {
-        internal readonly Dictionary<int, int[]> GUI_Custom_Dict = new Dictionary<int, int[]>();
-
-        static readonly Dictionary<int, SlotData> GUI_int_state_copy_Dict = new Dictionary<int, SlotData>();
-
-        internal readonly Dictionary<string, bool> GUI_Parent_Dict = new Dictionary<string, bool>();
-
         private static bool ShowToggleInterface = false;
 
         private static bool ShowCustomGui = false;

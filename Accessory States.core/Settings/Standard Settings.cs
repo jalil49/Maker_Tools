@@ -32,7 +32,6 @@ namespace Accessory_States
         {
             Instance = this;
             Logger = base.Logger;
-            Hooks.Init(Logger);
             CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
             StartCoroutine(DelayedInit());
             StartCoroutine(Wait());
@@ -42,6 +41,7 @@ namespace Accessory_States
                 var ASS_Exists = CharaEvent.ASSExists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
                 if (!ASS_Exists)
                 {
+                    //Create Dummy Controller to make data visible outside of maker
                     CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
                 }
             }
@@ -58,7 +58,6 @@ namespace Accessory_States
                 //CreateStudioControls();
             }
             GameUnique();
-
         }
 
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)
