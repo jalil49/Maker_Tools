@@ -7,27 +7,33 @@ using static GUIHelper.OnGuiExtensions;
 
 namespace Extensions.GUI_Classes
 {
-    public class TextFieldGUI : IDraw<string>
+    public class IntTextFieldGUI
     {
-        public string Text = "Default Text";
+        public string Text = "0";
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
-
-        public TextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
+        public Action<int> action;
+        public IntTextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
         {
             style = FieldStyle;
             Text = _text;
+            layoutOptions = gUILayoutOptions;
         }
 
-        public void Draw(Action<string> action)
+        public void Draw()
         {
             var newText = GUILayout.TextField(Text, style, layoutOptions);
-            if (newText != Text)
+            if (newText != Text && int.TryParse(newText, out var value))
             {
                 Text = newText;
                 if (action == null) return;
-                action.Invoke(Text);
+                action.Invoke(value);
             }
+        }
+
+        public int GetValue()
+        {
+            return int.Parse(Text);
         }
     }
 }

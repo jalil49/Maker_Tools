@@ -34,7 +34,11 @@ namespace Additional_Card_Info
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
+#if States
+            Settings.Slot_ACC_Change(slotNo, type);
+#else
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
+#endif
         }
 
 #if ACI || States
@@ -55,7 +59,7 @@ namespace Additional_Card_Info
             public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
             {
                 var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
-                charaevent.ClothingTypeChange(__instance.clothesType, index);
+                Settings.ClothingTypeChange(__instance.clothesType, index);
 
             }
 #endif
@@ -84,7 +88,11 @@ namespace Additional_Card_Info
             [HarmonyPatch("MovUrAcc.MovUrAcc, KK_MovUrAcc", "ProcessQueue")]
             internal static void MovPatch(List<QueueItem> Queue)
             {
+#if States
+                Settings.MovIt(Queue);
+#else
                 KKAPI.Maker.MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
+#endif
             }
         }
     }

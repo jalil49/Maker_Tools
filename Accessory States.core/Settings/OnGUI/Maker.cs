@@ -1,21 +1,20 @@
 ﻿using KKAPI;
-using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using KKAPI.Maker.UI.Sidebar;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Accessory_States
 {
-    partial class CharaEvent : CharaCustomFunctionController
+    //Maker related 
+    public partial class Settings
     {
+        private static readonly string[] shoetypetext = new string[] { "Inside", "Outside", "Both" };
+        private static readonly string[] TabText = new string[] { "Assign", "Settings" };
+
         static MakerButton gui_button;
 
         static bool MakerEnabled = false;
@@ -24,7 +23,7 @@ namespace Accessory_States
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
-            MakerEnabled = Settings.Enable.Value;
+            MakerEnabled = Enable.Value;
             if (!MakerEnabled)
             {
                 return;
@@ -35,11 +34,11 @@ namespace Accessory_States
 
             gui_button = new MakerButton("States GUI", category, owner);
             MakerAPI.AddAccessoryWindowControl(gui_button, true);
-            gui_button.OnClick.AddListener(delegate () { });
+            gui_button.OnClick.AddListener(delegate () { _makerGUI.Show = !_makerGUI.Show; });
 
 
             var interfacebutton = e.AddSidebarControl(new SidebarToggle("ACC States", true, owner));
-            interfacebutton.ValueChanged.Subscribe(x => ShowToggleInterface = x);
+            interfacebutton.ValueChanged.Subscribe(x => _statesGUI.Show = !_statesGUI.Show);
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             gui_button.GroupingID = GroupingID;
@@ -47,7 +46,7 @@ namespace Accessory_States
 
         public static void Maker_started()
         {
-            MakerEnabled = Settings.Enable.Value;
+            MakerEnabled = Enable.Value;
             if (!MakerEnabled)
             {
                 return;
@@ -56,6 +55,9 @@ namespace Accessory_States
 
             AccessoriesApi.AccessoriesCopied += AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred += AccessoriesApi_AccessoryTransferred;
+
+            _makerGUI = new MakerGUI() { Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, Screen.width * 0.225f, Screen.height * 0.273f) };
+            _statesGUI = new StatesGUI() { Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, Screen.width * 0.2f, Screen.height * 0.3f) };
         }
 
         public static void Maker_Ended()
@@ -65,75 +67,52 @@ namespace Accessory_States
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
 
-            ShowCustomGui = false;
             MakerEnabled = false;
-            ShowToggleInterface = false;
+            _makerGUI = null;
+            _statesGUI = null;
         }
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
-            ControllerGet.AccessoriesTransferred(e);
+            var controller = ControllerGet;
+            controller.SlotBindingData.Remove(e.DestinationSlotIndex);
+            controller.LoadSlotData(e.DestinationSlotIndex);
+            controller.UpdateParentedDict();
         }
 
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
         {
-            ControllerGet.AccessoriesCopied(e);
-        }
-
-        private void AccessoriesTransferred(AccessoryTransferEventArgs e)
-        {
-            SlotBindingData.Remove(e.DestinationSlotIndex);
-            LoadSlotData(e.DestinationSlotIndex);
-            UpdateParentedDict();
-        }
-
-        private void AccessoriesCopied(AccessoryCopyEventArgs e)
-        {
-            if (e.CopyDestination == CurrentCoordinate.Value)
+            var controller = ControllerGet;
+            if (e.CopyDestination == controller.CurrentCoordinate.Value)
             {
                 foreach (var item in e.CopiedSlotIndexes)
                 {
-                    SlotBindingData.Remove(item);
-                    LoadSlotData(item);
+                    controller.SlotBindingData.Remove(item);
+                    controller.LoadSlotData(item);
                 }
             }
         }
-        private void ACC_Is_Parented_ValueChanged(int slot, bool isparented)
-        {
-            if (!SlotBindingData.TryGetValue(slot, out var slotdata))
-            {
-                slotdata = SlotBindingData[slot] = new SlotData();
-            }
-            slotdata.Parented = isparented;
-
-            UpdateParentedDict();
-
-            if (!GUI_Parent_Dict.TryGetValue(PartsArray[slot].parentKey, out var show) || !isparented)
-            {
-                show = true;
-            }
-            ChaControl.SetAccessoryState(slot, show);
-        }
-
-        internal void Slot_ACC_Change(int slotNo, int type)
+        internal static void Slot_ACC_Change(int slotNo, int type)
         {
             if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
             {
                 return;
             }
+            var controller = ControllerGet;
             if (type == 120)
             {
-                SlotBindingData.Remove(slotNo);
-                SaveSlotData(slotNo);
+                controller.SlotBindingData.Remove(slotNo);
+                controller.SaveSlotData(slotNo);
             }
         }
 
-        internal void ClothingTypeChange(int kind, int index)
+        internal static void ClothingTypeChange(int kind, int index)
         {
             if (index != 0)
                 return;
 
             UpdateClothNots();
+            var ClothNotData = ControllerGet.ClothNotData;
 
             switch (kind)
             {
@@ -155,16 +134,16 @@ namespace Accessory_States
             RemoveAllByBinding(kind);
         }
 
-        private void UpdateClothNots()
+        private static void UpdateClothNots()
         {
-            ClothNotData = new bool[3] { false, false, false };
-            ClothNotData[0] = ChaControl.notBot || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 2;
-            ClothNotData[1] = ChaControl.notBra || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 1;
-            ClothNotData[2] = ChaControl.notShorts || GetClothingNot(2, ChaListDefine.KeyType.Coordinate) == 2;
-
+            var controller = ControllerGet;
+            var ClothNotData = controller.ClothNotData = new bool[3] { false, false, false };
+            ClothNotData[0] = controller.ChaControl.notBot || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 2;
+            ClothNotData[1] = controller.ChaControl.notBra || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 1;
+            ClothNotData[2] = controller.ChaControl.notShorts || GetClothingNot(2, ChaListDefine.KeyType.Coordinate) == 2;
         }
 
-        public bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
+        public static bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
         {
             var listInfoBase = GetListInfoBase(kind);
             if (listInfoBase == null) return false;
@@ -174,41 +153,43 @@ namespace Accessory_States
             return true;
         }
 
-        public int GetClothingNot(int kind, ChaListDefine.KeyType key)
+        public static int GetClothingNot(int kind, ChaListDefine.KeyType key)
         {
             return GetClothingNot(GetListInfoBase(kind), key);
         }
-        public int GetClothingNot(ListInfoBase listInfo, ChaListDefine.KeyType key)
+        public static int GetClothingNot(ListInfoBase listInfo, ChaListDefine.KeyType key)
         {
             if (listInfo == null) return 0;
             if (!(listInfo.dictInfo.TryGetValue((int)key, out var stringValue) && int.TryParse(stringValue, out var intValue))) return 0;
 
             return intValue;
         }
-        public ListInfoBase GetListInfoBase(int kind)
+        public static ListInfoBase GetListInfoBase(int kind)
         {
-            var lists = ChaControl.infoClothes;
+            var lists = ControllerGet.ChaControl.infoClothes;
             if (kind >= lists.Length || kind < 0) return null;
             return lists[kind];
         }
-        private void RemoveAllByBinding(int kind)
+        private static void RemoveAllByBinding(int kind)
         {
-            RemoveNameData(Names.FirstOrDefault(x => x.Binding == kind));
+            RemoveNameData(ControllerGet.Names.FirstOrDefault(x => x.Binding == kind));
         }
 
-        private void RemoveNameData(NameData nameData)
+        private static void RemoveNameData(NameData nameData)
         {
             if (nameData == null) return;
-            foreach (var item in SlotBindingData)
+            var controller = ControllerGet;
+
+            foreach (var item in controller.SlotBindingData)
             {
                 var result = item.Value.bindingDatas.RemoveAll(x => x.NameData == nameData);
                 if (result > 0)
                 {
-                    SaveSlotData(item.Key);
+                    controller.SaveSlotData(item.Key);
                 }
             }
         }
 
-        internal void MovIt(List<QueueItem> _) => UpdatePluginData();
+        internal static void MovIt(List<QueueItem> _) => ControllerGet.UpdatePluginData();
     }
 }

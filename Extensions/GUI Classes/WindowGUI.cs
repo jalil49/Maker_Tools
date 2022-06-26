@@ -12,10 +12,10 @@ namespace Extensions.GUI_Classes
         public string Text = "Default Text";
         public int WindowID;
         public Rect Rect;
-
+        public bool Show;
         public void Draw()
         {
-            Rect = GUILayout.Window(WindowID, Rect, WindowDraw, Text);
+            GUILayout.Window(WindowID, Rect, WindowDraw, Text);
         }
 
         public abstract void Init();

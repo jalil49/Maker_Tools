@@ -16,23 +16,26 @@
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\NameData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\StatesGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\SlotDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\CoordinateDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Studio.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\MakerGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\StudioGUI\StudioGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Maker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Studio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordianteData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GameEvent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\GUI Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Settings\OnGUI\" />
   </ItemGroup>
 </Project>

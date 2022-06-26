@@ -50,8 +50,8 @@ namespace Accessory_States
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             ASS_SAVE = Config.Bind("Setting", "Accessory State Sync Save", true, "Save ASS format as well.");
-            MakerAPI.MakerStartedLoading += (s, e) => CharaEvent.Maker_started();
-            MakerAPI.RegisterCustomSubCategories += CharaEvent.MakerAPI_RegisterCustomSubCategories;
+            MakerAPI.MakerStartedLoading += (s, e) => Maker_started();
+            MakerAPI.RegisterCustomSubCategories += MakerAPI_RegisterCustomSubCategories;
 
             if (StudioAPI.InsideStudio)
             {

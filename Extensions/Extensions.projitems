@@ -9,6 +9,14 @@
     <Import_RootNamespace>Extensions</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\AreaGui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ScrollGui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IntTextFieldGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\WindowGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\LabelGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextFieldGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IDraw.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ButtonGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToggleGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OnGuiExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />

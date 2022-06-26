@@ -28,9 +28,9 @@ namespace Accessory_States
 
 
         #region Properties
-        private ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
+        internal ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
 
-        private ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
+        internal ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
 
         internal readonly List<NameData> Names = new List<NameData>();
 
@@ -103,7 +103,7 @@ namespace Accessory_States
             Names.AddRange(Constants.GetNameDataList());
         }
 
-        private void SaveSlotData(int slot)
+        internal void SaveSlotData(int slot)
         {
             if (slot >= PartsArray.Length)
             {
@@ -117,7 +117,7 @@ namespace Accessory_States
             SetAccessoryExtData(null, slot);
         }
 
-        private void SaveSlotData(int slot, SlotData slotData)
+        internal void SaveSlotData(int slot, SlotData slotData)
         {
             if (slot >= PartsArray.Length)
             {
@@ -131,7 +131,7 @@ namespace Accessory_States
             ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, NowCoordinateData.Serialize());
         }
 
-        private void LoadSlotData(int slot)
+        internal void LoadSlotData(int slot)
         {
             if (slot >= PartsArray.Length)
             {

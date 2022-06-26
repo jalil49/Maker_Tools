@@ -18,8 +18,6 @@ namespace Accessory_States
         {
             var insidermaker = currentGameMode == GameMode.Maker;
 
-            GUI_int_state_copy_Dict.Clear();
-
             var chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
 
             var Extended_Data = GetExtendedData();
@@ -33,7 +31,6 @@ namespace Accessory_States
 
             CurrentCoordinate.Subscribe(x =>
             {
-                GUI_int_state_copy_Dict.Clear();
                 UpdatePluginData();
                 StartCoroutine(ChangeOutfitCoroutine());
             });
@@ -174,7 +171,7 @@ namespace Accessory_States
         {
             var coordinateaccessory = ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.parts;
             var nowcoodaccessory = ChaControl.nowCoordinate.accessory.parts;
-            var slotslist = SlotBindingData.Where(x => x.Value.bindingDatas.Any(y => y.GetBinding() == Selectedkind)).Select(x => x.Key);
+            var slotslist = SlotBindingData.Where(x => x.Value.bindingDatas.Any(y => y.GetBinding() == -2)).Select(x => x.Key);
             foreach (var slot in slotslist)
             {
                 coordinateaccessory[slot].hideCategory = nowcoodaccessory[slot].hideCategory = hidesetting;
@@ -237,7 +234,8 @@ namespace Accessory_States
 
         internal void SetClothesState(int clothesKind, byte state)
         {
-            var nameData = Names.First(x => x.Binding == clothesKind);
+            var nameData = Names.FirstOrDefault(x => x.Binding == clothesKind);
+            if (nameData == null) return;
             nameData.CurrentState = state;
             RefreshSlots();
         }

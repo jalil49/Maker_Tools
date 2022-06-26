@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using static GUIHelper.OnGuiExtensions;
-
+using static UnityEngine.GUILayout;
 
 namespace Extensions.GUI_Classes
 {
@@ -20,7 +20,9 @@ namespace Extensions.GUI_Classes
 
         public void Draw()
         {
+            BeginVertical();
             GUILayout.Label(Text, style, layoutOptions);
+            EndVertical();
         }
     }
 }

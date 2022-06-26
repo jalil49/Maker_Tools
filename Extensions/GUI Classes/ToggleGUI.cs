@@ -7,13 +7,13 @@ using static GUIHelper.OnGuiExtensions;
 
 namespace Extensions.GUI_Classes
 {
-    public class ToggleGUI : IDraw<bool>
+    public class ToggleGUI
     {
         public bool Value = false;
         public string Text = "Default Text";
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
-
+        public Action<bool> onToggle;
         public ToggleGUI(string _text, params GUILayoutOption[] options)
         {
             Text = _text;
@@ -21,13 +21,13 @@ namespace Extensions.GUI_Classes
             layoutOptions = options;
         }
 
-        public void Draw(Action<bool> action)
+        public void Draw()
         {
             if (GUILayout.Toggle(Value, Text, ToggleStyle, layoutOptions) ^ Value)//xor operator
             {
                 Value = !Value;
-                if (action == null) return;
-                action.Invoke(Value);
+                if (onToggle == null) return;
+                onToggle.Invoke(Value);
             }
         }
     }
