@@ -16,12 +16,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\NameData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\StatesGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\SlotDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\CoordinateDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\MakerGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\StudioGUI\StudioGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGui.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Studio.cs" />
@@ -36,6 +33,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Classes\StudioGUI\" />
     <Folder Include="$(MSBuildThisFileDirectory)Settings\OnGUI\" />
   </ItemGroup>
 </Project>

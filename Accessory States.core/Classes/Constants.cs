@@ -17,8 +17,9 @@ namespace Accessory_States
                 case 5: return "Pantyhose";
                 case 6: return "Socks";
 #if KK || KKS
-                case 7: return "Inner Shoes";
-                case 8: return "Outer Shoes";
+                case 7: return "Shoes";
+                //case 7: return "Inner Shoes";
+                //case 8: return "Outer Shoes";
 #else
                 case 7: return "Shoes";
 #endif
@@ -46,7 +47,7 @@ namespace Accessory_States
         public const string AccessoryKey = "SlotData";
         public const int SaveVersion = 2;
 #if KK || KKS
-        public const int ClothingLength = 9;
+        public const int ClothingLength = 8;
 #else
         public const int ClothingLength = 8;
 #endif

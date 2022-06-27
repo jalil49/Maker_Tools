@@ -7,19 +7,32 @@ using static GUIHelper.OnGuiExtensions;
 
 namespace Extensions.GUI_Classes
 {
-    public abstract class WindowGUI
+    public class WindowGUI
     {
-        public string Text = "Default Text";
         public int WindowID;
         public Rect Rect;
         public bool Show;
+        public GUI.WindowFunction WindowFunction;
+        public GUIContent content;
         public void Draw()
         {
-            GUILayout.Window(WindowID, Rect, WindowDraw, Text);
+            Rect = GUILayout.Window(WindowID, Rect, DrawCall, content);
         }
 
-        public abstract void Init();
+        public void ToggleShow()
+        {
+            Show = !Show;
+        }
 
-        public abstract void WindowDraw(int id);
+        public void EatDragResize()
+        {
+            Rect = KKAPI.Utilities.IMGUIUtils.DragResizeEatWindow(WindowID, Rect);
+        }
+
+        private void DrawCall(int id)
+        {
+            WindowFunction(id);
+            EatDragResize();
+        }
     }
 }

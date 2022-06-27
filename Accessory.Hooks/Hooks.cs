@@ -35,7 +35,7 @@ namespace Additional_Card_Info
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
 #if States
-            Settings.Slot_ACC_Change(slotNo, type);
+            Maker.SlotAccTypeChange(slotNo, type);
 #else
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
 #endif
@@ -59,7 +59,7 @@ namespace Additional_Card_Info
             public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
             {
                 var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
-                Settings.ClothingTypeChange(__instance.clothesType, index);
+                Maker.ClothingTypeChange(__instance.clothesType, index);
 
             }
 #endif
@@ -89,7 +89,7 @@ namespace Additional_Card_Info
             internal static void MovPatch(List<QueueItem> Queue)
             {
 #if States
-                Settings.MovIt(Queue);
+                Maker.MovIt(Queue);
 #else
                 KKAPI.Maker.MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
 #endif

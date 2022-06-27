@@ -72,6 +72,16 @@ namespace Accessory_States
             return StateLength;
         }
 
+        public List<StateInfo> GetDefaultStates(int slot)
+        {
+            var states = new List<StateInfo>();
+            for (var i = 0; i < StateLength; i++)
+            {
+                states.Add(new StateInfo() { Binding = Binding, Slot = slot, State = i });
+            }
+            return states;
+        }
+
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
