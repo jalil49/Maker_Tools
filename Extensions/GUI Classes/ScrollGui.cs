@@ -7,18 +7,16 @@ using static GUIHelper.OnGuiExtensions;
 
 namespace Extensions.GUI_Classes
 {
-    public class ScrollGUI
+    public class ScrollGUI<T>
     {
         public GUILayoutOption[] layoutOptions;
         private static Vector2 Scrolling = new Vector2();
-        public Action<bool> action;
+        public Action<T> action;
 
-
-
-        public void Draw()
+        public void Draw(T actionObj)
         {
             Scrolling = GUILayout.BeginScrollView(Scrolling, layoutOptions);
-            action.Invoke(true);
+            action.Invoke(actionObj);
             GUILayout.EndScrollView();
         }
     }

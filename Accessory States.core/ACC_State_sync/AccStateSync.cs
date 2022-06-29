@@ -11,6 +11,9 @@ namespace Accessory_States
         [MessagePackObject]
         public class TriggerProperty
         {
+            [IgnoreMember]
+            public const string SerializeKey = "TriggerPropertyList";
+
             [Key("Coordinate")]
             public int Coordinate { get; set; } = -1;
 
@@ -47,12 +50,25 @@ namespace Accessory_States
                 RefKind = refkind;
                 RefState = refstate;
             }
+
+            public TriggerProperty(StateInfo stateInfo, int coordinate)
+            {
+                Coordinate = coordinate;
+                Slot = stateInfo.Slot;
+                RefKind = stateInfo.Binding;
+                RefState = stateInfo.State;
+                Visible = stateInfo.Show;
+                Priority = stateInfo.Priority;
+            }
         }
 
         [Serializable]
         [MessagePackObject]
         public class TriggerGroup
         {
+            [IgnoreMember]
+            public const string SerializeKey = "TriggerGroupList";
+
             [Key("Coordinate")]
             public int Coordinate { get; set; } = -1;
 
@@ -75,7 +91,18 @@ namespace Accessory_States
             public int Secondary { get; set; } = -1;
 
             [Key("GUID")]
-            public string GUID { get; set; } = Guid.NewGuid().ToString("D").ToUpper();
+            public string GUID
+            {
+                get
+                {
+                    if (_guid == null)
+                    { _guid = Guid.NewGuid().ToString("D").ToUpper(); }
+                    return _guid;
+                }
+                set { _guid = value; }
+            }
+
+            private string _guid;
 
             [SerializationConstructor]
             public TriggerGroup(int coordinate, int kind, string label, int state, int startup, int secondary)
@@ -126,10 +153,24 @@ namespace Accessory_States
                 States[state] = label;
                 return state;
             }
+
+            public TriggerGroup(NameData nameData, int coord)
+            {
+                Coordinate = coord;
+                Kind = nameData.Binding;
+                State = nameData.CurrentState;
+                States = nameData.StateNames;
+                Label = nameData.Name;
+                Startup = nameData.DefaultState;
+            }
         }
 
         internal static List<string> _cordNames = new List<string>();
+#if KK
         internal static List<string> _clothesNames = new List<string>() { "Top", "Bottom", "Bra", "Underwear", "Gloves", "Pantyhose", "Legwear", "Indoors", "Outdoors" };
+#else
+        internal static List<string> _clothesNames = new List<string>() { "Top", "Bottom", "Bra", "Underwear", "Gloves", "Pantyhose", "Legwear", "Shoes" };
+#endif
         internal static Dictionary<int, string> _statesNames = new Dictionary<int, string>() { [0] = "Full", [1] = "Half 1", [2] = "Half 2", [3] = "Undressed" };
         internal static Dictionary<string, string> _accessoryParentNames = new Dictionary<string, string>();
 

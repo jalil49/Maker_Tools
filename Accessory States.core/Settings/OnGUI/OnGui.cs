@@ -27,15 +27,23 @@ namespace Accessory_States
                 OnGuiExtensions.InitializeStyles();
             }
 
+
             if (_maker != null)
             {
-                _maker.OnGUI();
+                if (KKAPI.Maker.MakerAPI.IsInterfaceVisible())
+                    _maker.OnGUI();
             }
 
             if (_studio != null)
             {
                 _studio.OnGUI();
             }
+        }
+
+        internal static void UpdateGUI(CharaEvent charaEvent)
+        {
+            if (_maker != null)
+                _maker.ClearCoordinate();
         }
     }
 }

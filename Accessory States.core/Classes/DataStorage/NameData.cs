@@ -17,15 +17,16 @@ namespace Accessory_States
         public Dictionary<int, string> StateNames { get; set; }
 
         [IgnoreMember]
-        public int StateLength = 0;
+        public int StateLength => StateNames.Count;
 
         [IgnoreMember]
         public int Binding = 0;
 
-        [IgnoreMember]
+        /// <summary>
+        /// Store for Studio Reference maybe EC
+        /// otherwise should be returned to default
+        /// </summary>
         public int CurrentState = 0;
-
-        private int _modStateLength { get { return StateLength + 2; } }
 
         public NameData() { NullCheck(); }
 
@@ -40,8 +41,10 @@ namespace Accessory_States
 
         internal void NullCheck()
         {
-            if (StateNames == null) StateNames = new Dictionary<int, string>();
-            if (Name == null) Name = "";
+            if (StateNames == null)
+                StateNames = new Dictionary<int, string>();
+            if (Name == null)
+                Name = "";
         }
 
         public bool Equals(NameData other)
@@ -51,10 +54,12 @@ namespace Accessory_States
 
         public void MergeStatesWith(NameData other)
         {
-            if (other == null) return;
+            if (other == null)
+                return;
             foreach (var item in other.StateNames)
             {
-                if (this.StateNames.ContainsKey(item.Key)) continue;
+                if (this.StateNames.ContainsKey(item.Key))
+                    continue;
 
                 this.StateNames[item.Key] = item.Value;
             }
@@ -62,14 +67,9 @@ namespace Accessory_States
 
         public string GetStateName(int state)
         {
-            if (StateNames.TryGetValue(state, out var name)) return name;
-            return "State: " + state;
-        }
-
-        public int SetMaxStateLength(int state)
-        {
-            StateLength = Math.Max(state, StateLength);
-            return StateLength;
+            if (StateNames.TryGetValue(state, out var name))
+                return name;
+            return StateNames[state] = "State: " + state;
         }
 
         public List<StateInfo> GetDefaultStates(int slot)
@@ -85,12 +85,21 @@ namespace Accessory_States
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            CurrentState = DefaultState;
+            Settings.Logger.LogWarning("Namedata Deserialized");
+            if (!KKAPI.Studio.StudioAPI.InsideStudio)
+                CurrentState = DefaultState;
         }
 
         public int IncrementCurrentState()
         {
-            CurrentState = ++CurrentState % _modStateLength;
+            if (++CurrentState >= StateLength)
+                CurrentState = 0;
+            return CurrentState;
+        }
+        public int DecrementCurrentState()
+        {
+            if (--CurrentState < 0)
+                CurrentState = StateLength - 1;
             return CurrentState;
         }
     }

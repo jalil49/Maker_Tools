@@ -26,9 +26,16 @@ namespace Extensions.GUI_Classes
             if (newText != Text && int.TryParse(newText, out var value))
             {
                 Text = newText;
-                if (action == null) return;
+                if (action == null)
+                    return;
                 action.Invoke(value);
             }
+        }
+
+        public void Draw(int value)
+        {
+            Text = value.ToString();
+            Draw();
         }
 
         public int GetValue()

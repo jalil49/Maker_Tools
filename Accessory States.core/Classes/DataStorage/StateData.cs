@@ -41,6 +41,7 @@ namespace Accessory_States
         [OnSerializing()]
         internal void OnSerializingMethod(StreamingContext context)
         {
+            Settings.Logger.LogWarning("Onserialize statedata");
             if (Binding >= Constants.ClothingLength)
                 Binding = -1;
         }

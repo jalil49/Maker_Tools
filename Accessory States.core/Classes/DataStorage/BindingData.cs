@@ -45,25 +45,19 @@ namespace Accessory_States
         {
             foreach (var item in States)
             {
-                if (item.State != state) continue;
-                if (item.ShoeType == shoe || item.ShoeType == 2) return item;
+                if (item.State != state)
+                    continue;
+                if (item.ShoeType == shoe || item.ShoeType == 2)
+                    return item;
             }
             return null;
         }
 
         public int GetBinding()
         {
-            if (States == null || States.Count == 0) return -1;
+            if (States == null || States.Count == 0)
+                return -1;
             return States[0].Binding;
-        }
-
-        public void SetBinding()
-        {
-            foreach (var item in States)
-            {
-                item.Binding = NameData.Binding;
-                if (NameData != null) NameData.SetMaxStateLength(item.State);
-            }
         }
 
         internal void SetSlot(int slot)

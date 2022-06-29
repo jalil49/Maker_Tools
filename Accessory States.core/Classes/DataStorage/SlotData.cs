@@ -30,22 +30,29 @@ namespace Accessory_States
 
         internal void NullCheck()
         {
-            if (bindingDatas == null) bindingDatas = new List<BindingData>();
+            if (bindingDatas == null)
+                bindingDatas = new List<BindingData>();
         }
 
         public bool ShouldSave()
         {
-            if (Parented) return true;
-            if (bindingDatas != null && bindingDatas.Count > 0) return true;
+            if (Parented)
+                return true;
+            if (bindingDatas != null && bindingDatas.Count > 0)
+                return true;
             return false;
         }
 
-        public bool Contains(NameData nameData)
+        public bool TryGetBinding(NameData nameData, out BindingData binding)
         {
             foreach (var item in bindingDatas)
             {
-                if (nameData == item.NameData) return true;
+                if (nameData != item.NameData)
+                    continue;
+                binding = item;
+                return true;
             }
+            binding = null;
             return false;
         }
 
@@ -60,8 +67,8 @@ namespace Accessory_States
 
         public ExtensibleSaveFormat.PluginData Serialize()
         {
-
-            if (!ShouldSave()) return null;
+            if (!ShouldSave())
+                return null;
             var data = new ExtensibleSaveFormat.PluginData() { version = Constants.SaveVersion };
             data.data.Add(Constants.AccessoryKey, MessagePackSerializer.Serialize(this));
             return data;
@@ -75,7 +82,8 @@ namespace Accessory_States
                 {
                     foreach (var item2 in item.States)
                     {
-                        if (item2.ShoeType == 2 || item2.ShoeType == shoe) return true;
+                        if (item2.ShoeType == 2 || item2.ShoeType == shoe)
+                            return true;
                     }
                 }
             }

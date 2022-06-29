@@ -27,7 +27,8 @@ namespace Accessory_States
                 Coordinate[item.Key] = new CoordinateDataV1();
             }
 
-            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null) attemptASS = true;
+            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null)
+                attemptASS = true;
 
             if (!attemptASS)
             {
@@ -51,7 +52,8 @@ namespace Accessory_States
             else
             {
                 //TODO: Reimplement ASS
-                if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null) return;
+                if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null)
+                    return;
 
                 var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
@@ -86,8 +88,10 @@ namespace Accessory_States
                     }
                 }
 
-                if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+                if (TriggerPropertyList == null)
+                    TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                if (TriggerGroupList == null)
+                    TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
                 foreach (var item in Coordinate)
                 {
@@ -99,7 +103,8 @@ namespace Accessory_States
 
             foreach (var item in coordinateMapping)
             {
-                if (!Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
+                if (!Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue)
+                    continue;
                 transfer[item.Value.Value] = coord;
             }
 

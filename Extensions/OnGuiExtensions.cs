@@ -11,6 +11,8 @@ namespace GUIHelper
         public static GUIStyle SliderStyle { get; set; }
         public static GUIStyle SliderThumbStyle { get; set; }
 
+        public static GUIStyle WindowStyle { get; set; }
+
         /// <summary>
         /// Initialize all files and set a default font size
         /// </summary>
@@ -18,12 +20,14 @@ namespace GUIHelper
         {
             if (LabelStyle == null)
             {
+
                 LabelStyle = new GUIStyle(GUI.skin.label);
                 ButtonStyle = new GUIStyle(GUI.skin.button);
                 FieldStyle = new GUIStyle(GUI.skin.textField);
                 ToggleStyle = new GUIStyle(GUI.skin.toggle);
                 SliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
                 SliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
+                WindowStyle = new GUIStyle(GUI.skin.window);
                 ButtonStyle.hover.textColor = Color.red;
                 ButtonStyle.onNormal.textColor = Color.red;
 
@@ -44,10 +48,11 @@ namespace GUIHelper
         /// Creates a Button with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
-        public static bool Button(string text, bool expandwidth = true)
+        public static bool Button(string text, string tooltip = " ", bool expandwidth = true)
         {
-            return GUILayout.Button(text, ButtonStyle, GUILayout.ExpandWidth(expandwidth));
+            return GUILayout.Button(new GUIContent(text, tooltip), ButtonStyle, GUILayout.ExpandWidth(expandwidth));
         }
+
 
         /// <summary>
         /// Creates a TextField with default style
@@ -55,7 +60,7 @@ namespace GUIHelper
         /// <returns>value of GUI element</returns>
         public static string TextField(string text, bool expandwidth = true)
         {
-            return GUILayout.TextField(text, FieldStyle, GUILayout.ExpandWidth(expandwidth));
+            return GUILayout.TextField(text, FieldStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(10));
         }
 
         /// <summary>
@@ -87,6 +92,16 @@ namespace GUIHelper
             ToggleStyle.fontSize = size;
             SliderStyle.fontSize = size;
             SliderThumbStyle.fontSize = size;
+            WindowStyle.fontSize = size;
+        }
+
+        public static void IncrementFontSize()
+        {
+            SetFontSize(LabelStyle.fontSize + 1);
+        }
+        public static void DecrementFontSize()
+        {
+            SetFontSize(System.Math.Max(0, LabelStyle.fontSize - 1));
         }
     }
 }

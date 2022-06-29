@@ -1,93 +1,90 @@
-﻿#if false
-using HarmonyLib;
+﻿using HarmonyLib;
 using KKAPI.Chara;
 using KKAPI.Maker;
-
+using MessagePack;
+using System.Collections.Generic;
+using System.Linq;
+using static Accessory_States.AccStateSync;
+using static ExtensibleSaveFormat.Extensions;
 namespace Accessory_States
 {
     partial class CharaEvent : CharaCustomFunctionController
     {
-        private Traverse ASS_Traverse;
-
-        private bool ASS_Setup()
+        private void ConvertCoordinateToAss(int coord, ChaFileCoordinate coordinate, ref List<TriggerProperty> triggers, ref List<TriggerGroup> groups)
         {
-            if (!ASS_Exists)
-                return false;
-
-            if (ASS_Traverse != null)
+            var localNames = Constants.GetNameDataList();
+            var slot = 0;
+            foreach (var part in coordinate.accessory.parts)
             {
-                return true;
-            }
-            ASS_Traverse = Traverse.Create(ChaControl.GetComponent("AccStateSync.AccStateSync+AccStateSyncController, KK_AccStateSync"));
-            return true;
-        }
-
-        private void DeleteGroup(int _kind)
-        {
-            if (!ASS_Setup())
-            {
-                return;
-            }
-            ASS_Traverse.Method("RemoveTriggerGroup", new object[] { (int)CurrentCoordinate.Value, _kind }).GetValue();
-            RefreshCache();
-        }
-
-        private void RenameGroup(int _kind, string _label)
-        {
-            if (!ASS_Setup())
-            {
-                return;
+                GetSlotData(slot, part, ref localNames, coord, ref triggers);
+                slot++;
             }
 
-            ASS_Traverse.Method("RenameTriggerGroup", new object[] { _kind, _label }).GetValue();
-            RefreshCache();
-        }
-
-        private void AddGroup(int _kind, string _label)
-        {
-            if (!ASS_Setup())
+            foreach (var item in localNames)
             {
-                return;
+                groups.Add(new TriggerGroup(item, coord));
             }
-            Settings.Logger.LogWarning("adding group " + _label);
-            DeleteGroup(_kind);
-            ASS_Traverse.Method("RemoveTriggerGroupNewOrGetTriggerGroup", new object[] { (int)CurrentCoordinate.Value, _kind }).GetValue();
-            RenameGroup(_kind, _label);
-            RefreshCache();
         }
 
-        private void RemoveTriggerSlot()
+        private SlotData GetSlotData(int slot, ChaFileAccessory.PartsInfo part, ref List<NameData> localNames, int coord, ref List<TriggerProperty> triggers)
         {
-            var _slot = AccessoriesApi.SelectedMakerAccSlot;
-            ASS_Traverse.Method("RemoveSlotTriggerProperty", new object[] { (int)CurrentCoordinate.Value, _slot }).GetValue();
-            RefreshCache();
-        }
-
-        private void RemoveTriggerByKind(int _refKind)
-        {
-            ASS_Traverse.Method("RemoveSlotTriggerProperty", new object[] { (int)CurrentCoordinate.Value, _refKind }).GetValue();
-            RefreshCache();
-        }
-
-        private void ChangeTriggerProperty(int _refKind)
-        {
-            var _slot = AccessoriesApi.SelectedMakerAccSlot;
-
-            var list = SlotInfo[_slot].States;
-            var _coord = (int)CurrentCoordinate.Value;
-            var single = 3 < _refKind && _refKind < 9;
-            for (int _refState = 0, n = MaxState(_refKind) + 1; _refState < n; _refState++)
+            if (!part.TryGetExtendedDataById(Settings.GUID, out var extendedData) || extendedData == null || extendedData.version > 2 || !extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) || bytearray == null)
             {
-                var test = ASS_Traverse.Method("NewOrGetTriggerProperty", new object[] { _coord, _slot, _refKind, _refState }).GetValue();
-                Traverse.Create(test).Property("Visible").SetValue(ShowState(_refState, list));
+                return null;
             }
-            RefreshCache();
+
+            var slotdata = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
+            foreach (var item in slotdata.bindingDatas)
+            {
+                item.SetSlot(slot);
+                var binding = item.GetBinding();
+
+                if (binding < 0)
+                {
+                    if (item.NameData == null)
+                        continue;
+                    //re-value binding reference
+                    var nameDataReference = localNames.FirstOrDefault(x => x.Equals(item.NameData));
+
+                    if (nameDataReference == null)
+                    {
+                        localNames.Add(item.NameData);
+                        item.NameData.Binding = Constants.ClothingLength + localNames.IndexOf(nameDataReference);
+                    }
+                    else
+                    {
+                        nameDataReference.MergeStatesWith(item.NameData);
+                        item.NameData = nameDataReference;
+                    }
+                    foreach (var state in item.States)
+                    {
+                        triggers.Add(new TriggerProperty(state, coord));
+                    }
+                    continue;
+                }
+
+                if (binding < Constants.ClothingLength)
+                {
+                    item.NameData = localNames.First(x => x.Binding == binding);
+                }
+
+                foreach (var state in item.States)
+                {
+                    if (state.ShoeType == AssShoePreference || state.ShoeType == 2)
+                        triggers.Add(new TriggerProperty(state, coord));
+                }
+            }
+            return slotdata;
         }
 
-        private void RefreshCache()
+        private void AssCardSave(ref List<TriggerProperty> triggers, ref List<TriggerGroup> groups)
         {
-            ASS_Traverse.Method("RefreshCache").GetValue();
+            var coord = 0;
+            foreach (var coordinate in ChaControl.chaFile.coordinate)
+            {
+                ConvertCoordinateToAss(coord, coordinate, ref triggers, ref groups);
+                coord++;
+            }
         }
     }
 }
-#endif

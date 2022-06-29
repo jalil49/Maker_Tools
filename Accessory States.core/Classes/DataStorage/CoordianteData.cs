@@ -12,15 +12,35 @@ namespace Accessory_States
     public class CoordinateData
     {
         public bool[] ClothingNotData;
+
+        public int AssShowPreference
+        {
+            get { return _assShowPreference; }
+            set
+            {
+                if (value > 1)
+                    value = 1;
+                if (value < 0)
+                    value = 0;
+                _assShowPreference = value;
+            }
+        }
+
+        private int _assShowPreference;
+
         public CoordinateData() { NullCheck(); }
 
         public void Clear()
         {
+            ClothingNotData = null;
+            NullCheck();
+            AssShowPreference = 0;
         }
 
         internal void NullCheck()
         {
-            if (ClothingNotData == null) ClothingNotData = new bool[3] { false, false, false };
+            if (ClothingNotData == null)
+                ClothingNotData = new bool[3] { false, false, false };
         }
 
         public ExtensibleSaveFormat.PluginData Serialize()

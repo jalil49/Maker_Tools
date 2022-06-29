@@ -15,8 +15,6 @@ namespace Accessory_States
 
         public static event EventHandler<CoordinateLoadedEventARG> Coordloaded;
 
-        private byte lastknownshoetype = 0;
-
         private bool ShowSub = true;
         private bool ShowMain = true;
 
@@ -34,10 +32,16 @@ namespace Accessory_States
 
         internal readonly List<NameData> Names = new List<NameData>();
 
-        internal bool[] ClothNotData
+        public bool[] ClothNotData
         {
             get { return NowCoordinateData.ClothingNotData; }
             set { NowCoordinateData.ClothingNotData = value; }
+        }
+
+        public int AssShoePreference
+        {
+            get { return NowCoordinateData.AssShowPreference; }
+            set { NowCoordinateData.AssShowPreference = value; }
         }
 
         public static bool StopMakerLoop { get; internal set; }
@@ -89,7 +93,8 @@ namespace Accessory_States
             ParentedNameDictionary.Clear();
             foreach (var item in SlotBindingData)
             {
-                if (!item.Value.Parented) continue;
+                if (!item.Value.Parented)
+                    continue;
                 ParentedNameDictionary[PartsArray[item.Key].parentKey] = true;
             }
         }
@@ -123,7 +128,12 @@ namespace Accessory_States
             {
                 return;
             }
+            Settings.Logger.LogWarning($"Saving slot {slot} data: serialized {slotData.ShouldSave()}");
             SetAccessoryExtData(slotData.Serialize(), slot);
+            if (KKAPI.Maker.MakerAPI.InsideAndLoaded)
+            {
+                SetAccessoryExtData(slotData.Serialize(), slot, (int)CurrentCoordinate.Value);
+            }
         }
 
         private void SaveCoordinateData()
@@ -139,7 +149,12 @@ namespace Accessory_States
             }
 
             var extendedData = GetAccessoryExtData(slot);
-            if (extendedData == null) return;
+            if (extendedData == null)
+            {
+                Settings.Logger.LogWarning("No data in slot " + slot);
+
+                return;
+            }
 
             if (extendedData.version > 2)
             {
@@ -148,6 +163,7 @@ namespace Accessory_States
 
             if (extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
             {
+                Settings.Logger.LogWarning("Loaded Data slot " + slot);
                 var slotdata = SlotBindingData[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
                 foreach (var item in slotdata.bindingDatas)
                 {
@@ -155,7 +171,8 @@ namespace Accessory_States
                     var binding = item.GetBinding();
                     if (binding < 0)
                     {
-                        if (item.NameData == null) continue;
+                        if (item.NameData == null)
+                            continue;
                         //re-value binding reference
                         var nameDataReference = Names.FirstOrDefault(x => x.Equals(item.NameData));
 
@@ -170,15 +187,12 @@ namespace Accessory_States
                             item.NameData = nameDataReference;
                         }
 
-                        item.SetBinding();
-                        //nameDataReference.AssociatedSlots.Add(slot);
                         continue;
                     }
 
                     if (binding < Constants.ClothingLength)
                     {
                         item.NameData = Names.First(x => x.Binding == binding);
-                        //item.NameData.AssociatedSlots.Add(slot);
                     }
                 }
             }

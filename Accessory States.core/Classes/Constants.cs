@@ -8,22 +8,32 @@ namespace Accessory_States
         {
             switch (clothNum)
             {
-                case -1: return "None";
-                case 0: return "Top";
-                case 1: return "Bottom";
-                case 2: return "Bra";
-                case 3: return "Panties";
-                case 4: return "Gloves";
-                case 5: return "Pantyhose";
-                case 6: return "Socks";
+                case -1:
+                    return "None";
+                case 0:
+                    return "Top";
+                case 1:
+                    return "Bottom";
+                case 2:
+                    return "Bra";
+                case 3:
+                    return "Panties";
+                case 4:
+                    return "Gloves";
+                case 5:
+                    return "Pantyhose";
+                case 6:
+                    return "Socks";
 #if KK || KKS
-                case 7: return "Shoes";
+                case 7:
+                    return "Shoes";
                 //case 7: return "Inner Shoes";
                 //case 8: return "Outer Shoes";
 #else
                 case 7: return "Shoes";
 #endif
-                default: return "Unknown";
+                default:
+                    return "Unknown";
             }
         }
 
@@ -32,14 +42,14 @@ namespace Accessory_States
             var states = new Dictionary<int, string>()
             {
                 [0] = "Full",
-                [1] = "Half-off 1",
-                [2] = "Half-off 2",
+                [1] = "Shift",
+                [2] = "Hang",
                 [3] = "Naked",
             };
 
             var list = new List<NameData>();
             for (var i = -1; i < ClothingLength; i++)
-                list.Add(new NameData() { Name = GetClothingName(i), StateNames = states, StateLength = 4, Binding = i });
+                list.Add(new NameData() { Name = GetClothingName(i), StateNames = states, Binding = i });
             return list;
         }
 
