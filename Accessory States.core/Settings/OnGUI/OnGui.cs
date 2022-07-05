@@ -1,10 +1,6 @@
 ﻿using BepInEx;
-using Extensions;
-using Extensions.GUI_Classes;
-using GUIHelper;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using static Extensions.OnGUIExtensions;
+
 namespace Accessory_States
 {
     public partial class Settings : BaseUnityPlugin
@@ -24,7 +20,7 @@ namespace Accessory_States
             if (!_initialized)
             {
                 _initialized = true;
-                OnGuiExtensions.InitializeStyles();
+                InitializeStyles();
             }
 
 

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
-
+using static Extensions.OnGUIExtensions;
 
 namespace Extensions.GUI_Classes
 {
@@ -14,10 +11,11 @@ namespace Extensions.GUI_Classes
         private string newText;
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
-        public Action<string> action;
+        public Action<string> newAction;
+        public Action<string, string> oldAction;
         public TextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
         {
-            style = FieldStyle;
+            style = TextFieldStyle;
             Text = _text;
             layoutOptions = gUILayoutOptions;
             newText = _text;
@@ -28,22 +26,41 @@ namespace Extensions.GUI_Classes
             var newText = GUILayout.TextField(Text, style, layoutOptions);
             if (newText != Text)
             {
+                if (oldAction != null)
+                {
+                    oldAction.Invoke(Text, newText);
+                }
                 Text = newText;
-                if (action == null)
-                    return;
-                action.Invoke(Text);
+                if (newAction != null)
+                {
+                    newAction.Invoke(Text);
+                }
             }
         }
+
         public void ConfirmDraw()
         {
             newText = GUILayout.TextField(newText, style, layoutOptions);
+
             if (newText != Text && Button(ButtonText, expandwidth: false))
             {
+                if (oldAction != null)
+                {
+                    oldAction.Invoke(Text, newText);
+                }
+
                 Text = newText;
-                if (action == null)
-                    return;
-                action.Invoke(Text);
+
+                if (newAction != null)
+                {
+                    newAction.Invoke(Text);
+                }
             }
+        }
+
+        internal void ManuallySetNewText(string text)
+        {
+            newText = text;
         }
     }
 }

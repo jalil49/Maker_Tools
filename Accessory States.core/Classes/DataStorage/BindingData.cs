@@ -21,11 +21,7 @@ namespace Accessory_States
         {
             States.Sort((x, y) =>
             {
-                var result = x.Binding.CompareTo(y.Binding);
-                if (result != 0)
-                    return result;
-
-                result = x.State.CompareTo(y.State);
+                var result = x.State.CompareTo(y.State);
                 if (result != 0)
                     return result;
 
@@ -57,7 +53,15 @@ namespace Accessory_States
         {
             if (States == null || States.Count == 0)
                 return -1;
-            return States[0].Binding;
+            return NameData.Binding;
+        }
+
+        public void SetBinding()
+        {
+            foreach (var item in States)
+            {
+                item.Binding = NameData.Binding;
+            }
         }
 
         internal void SetSlot(int slot)

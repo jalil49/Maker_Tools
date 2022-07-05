@@ -30,7 +30,7 @@ namespace Accessory_States
 
         internal ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
 
-        internal readonly List<NameData> Names = new List<NameData>();
+        internal readonly List<NameData> NameDataList = new List<NameData>();
 
         public bool[] ClothNotData
         {
@@ -43,8 +43,6 @@ namespace Accessory_States
             get { return NowCoordinateData.AssShowPreference; }
             set { NowCoordinateData.AssShowPreference = value; }
         }
-
-        public static bool StopMakerLoop { get; internal set; }
 
         #endregion
 
@@ -104,8 +102,8 @@ namespace Accessory_States
             NowCoordinateData.Clear();
             ParentedNameDictionary.Clear();
             SlotBindingData.Clear();
-            Names.Clear();
-            Names.AddRange(Constants.GetNameDataList());
+            NameDataList.Clear();
+            NameDataList.AddRange(Constants.GetNameDataList());
         }
 
         internal void SaveSlotData(int slot)
@@ -152,7 +150,6 @@ namespace Accessory_States
             if (extendedData == null)
             {
                 Settings.Logger.LogWarning("No data in slot " + slot);
-
                 return;
             }
 
@@ -174,12 +171,12 @@ namespace Accessory_States
                         if (item.NameData == null)
                             continue;
                         //re-value binding reference
-                        var nameDataReference = Names.FirstOrDefault(x => x.Equals(item.NameData));
+                        var nameDataReference = NameDataList.FirstOrDefault(x => x.Equals(item.NameData));
 
                         if (nameDataReference == null)
                         {
-                            Names.Add(item.NameData);
-                            item.NameData.Binding = Constants.ClothingLength + Names.IndexOf(nameDataReference);
+                            NameDataList.Add(item.NameData);
+                            item.NameData.Binding = Constants.ClothingLength + NameDataList.IndexOf(nameDataReference);
                         }
                         else
                         {
@@ -192,7 +189,7 @@ namespace Accessory_States
 
                     if (binding < Constants.ClothingLength)
                     {
-                        item.NameData = Names.First(x => x.Binding == binding);
+                        item.NameData = NameDataList.First(x => x.Binding == binding);
                     }
                 }
             }

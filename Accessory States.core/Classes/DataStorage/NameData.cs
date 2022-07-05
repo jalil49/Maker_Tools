@@ -8,7 +8,7 @@ namespace Accessory_States
 {
     [Serializable]
     [MessagePackObject(true)]
-    public class NameData
+    public class NameData : IMessagePackSerializationCallbackReceiver
     {
         public string Name { get; set; }
 
@@ -16,10 +16,9 @@ namespace Accessory_States
 
         public Dictionary<int, string> StateNames { get; set; }
 
-        [IgnoreMember]
-        public int StateLength => StateNames.Count;
-
-        [IgnoreMember]
+        /// <summary>
+        /// Should be discarded for none-clothing articles
+        /// </summary>
         public int Binding = 0;
 
         /// <summary>
@@ -27,6 +26,9 @@ namespace Accessory_States
         /// otherwise should be returned to default
         /// </summary>
         public int CurrentState = 0;
+
+        [IgnoreMember]
+        public int StateLength => StateNames.Count;
 
         public NameData() { NullCheck(); }
 
@@ -79,15 +81,8 @@ namespace Accessory_States
             {
                 states.Add(new StateInfo() { Binding = Binding, Slot = slot, State = i });
             }
+            Settings.Logger.LogWarning($"GetDefaultStates count {states.Count} bind {Binding}");
             return states;
-        }
-
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            Settings.Logger.LogWarning("Namedata Deserialized");
-            if (!KKAPI.Studio.StudioAPI.InsideStudio)
-                CurrentState = DefaultState;
         }
 
         public int IncrementCurrentState()
@@ -99,8 +94,18 @@ namespace Accessory_States
         public int DecrementCurrentState()
         {
             if (--CurrentState < 0)
-                CurrentState = StateLength - 1;
+                CurrentState = Math.Max(0, StateLength - 1);
             return CurrentState;
+        }
+
+        public void OnBeforeSerialize()
+        { }
+
+        public void OnAfterDeserialize()
+        {
+            Settings.Logger.LogWarning("Namedata Deserialized");
+            if (!KKAPI.Studio.StudioAPI.InsideStudio)
+                CurrentState = DefaultState;
         }
     }
 }

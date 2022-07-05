@@ -1,37 +1,32 @@
 ﻿using MessagePack;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Accessory_States
 {
     [Serializable]
     [MessagePackObject(true)]
-    public class SlotData
+    public class SlotData : IMessagePackSerializationCallbackReceiver
     {
         public List<BindingData> bindingDatas;
 
         public bool Parented;
 
-        public SlotData() => NullCheck();
+        public Gameformat Format;
 
-        public SlotData(SlotData slotdata) => CopyData(slotdata);
-
-        public void CopyData(SlotData slotdata) => CopyData(slotdata.bindingDatas, slotdata.Parented);
-
-        public SlotData(List<BindingData> bindingDatas, bool Parented) => CopyData(bindingDatas, Parented);
-
-        public void CopyData(List<BindingData> bindingDatas, bool _parented)
+        public SlotData()
         {
-            this.bindingDatas = bindingDatas;
-            Parented = _parented;
-            NullCheck();
+            bindingDatas = new List<BindingData>();
+            Parented = false;
+            Format = DefaultFormat;
         }
-
         internal void NullCheck()
         {
             if (bindingDatas == null)
                 bindingDatas = new List<BindingData>();
+
+            if (Gameformat.Unknown == Format)
+                Format = DefaultFormat;
         }
 
         public bool ShouldSave()
@@ -55,7 +50,6 @@ namespace Accessory_States
             binding = null;
             return false;
         }
-
 
         public void SetSlot(int slot)
         {
@@ -88,6 +82,38 @@ namespace Accessory_States
                 }
             }
             return false;
+        }
+
+        public void OnBeforeSerialize()
+        {
+            bindingDatas.RemoveAll(x => x.GetBinding() < 0);
+        }
+
+        public void OnAfterDeserialize()
+        {
+
+        }
+
+        public SlotData DeepClone()
+        {
+            return MessagePackSerializer.Deserialize<SlotData>(MessagePackSerializer.Serialize(this));
+        }
+
+        [IgnoreMember]
+        public const Gameformat DefaultFormat =
+#if KK
+            Gameformat.KK;
+#elif KKS
+            Gameformat.KKS;
+#elif EC
+            Gameformat.EC;
+#endif
+        public enum Gameformat
+        {
+            Unknown,
+            KK,
+            KKS,
+            EC
         }
     }
 }

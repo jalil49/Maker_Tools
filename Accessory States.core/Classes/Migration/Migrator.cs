@@ -11,7 +11,8 @@ namespace Accessory_States.Migration
     {
         public static void StandardCharaMigrator(ChaControl control, PluginData importeddata)
         {
-            if (importeddata.version > 1) return;
+            if (importeddata.version > 1)
+                return;
 
             var dict = new Dictionary<int, CoordinateDataV1>();
             var coordlength = control.chaFile.coordinate.Length;
@@ -36,7 +37,8 @@ namespace Accessory_States.Migration
 
             for (var coordnum = 0; coordnum < coordlength; coordnum++)
             {
-                if (!dict.TryGetValue(coordnum, out var dataV1)) continue;
+                if (!dict.TryGetValue(coordnum, out var dataV1))
+                    continue;
                 CoordinateProcess(control.chaFile.coordinate[coordnum], dataV1);
                 if (coordnum == control.fileStatus.coordinateType)
                 {
@@ -48,7 +50,8 @@ namespace Accessory_States.Migration
         }
         public static void StandardCoordMigrator(ChaFileCoordinate file, PluginData importeddata)
         {
-            if (importeddata.version > 1) return;
+            if (importeddata.version > 1)
+                return;
 
             var dict = new CoordinateDataV1();
 
@@ -75,17 +78,23 @@ namespace Accessory_States.Migration
 
             foreach (var item in dict.Names)
             {
-                if (names.Any(x => x.Name == item.Value.Name)) continue;
+                if (names.Any(x => x.Name == item.Value.Name))
+                    continue;
                 names.Add(item.Value.ToNewNameData());
             }
 
             foreach (var item in dict.Slotinfo)
             {
-                if (parts.Length <= item.Key) continue;
+                if (parts.Length <= item.Key)
+                    continue;
                 var slotdata = new SlotData
                 {
                     Parented = item.Value.Parented
                 };
+                if (item.Value.Binding == 8)
+                {
+                    item.Value.Binding = 7;
+                }
                 var nameData = names.FirstOrDefault(x => x.Binding == item.Value.Binding);
                 if (nameData != null)
                 {

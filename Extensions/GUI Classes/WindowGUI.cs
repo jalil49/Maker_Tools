@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
+﻿using UnityEngine;
+using static Extensions.OnGUIExtensions;
 
 
 namespace Extensions.GUI_Classes
@@ -14,22 +11,23 @@ namespace Extensions.GUI_Classes
         public WindowGUI WindowRef;
         public Vector2 RectAdjustVec;
         private bool firstDraw;
-
         public bool Show;
         public GUI.WindowFunction WindowFunction;
         public GUIContent content;
         private readonly Texture2D WindowTexture;
         private readonly GUIStyle boxStyle;
+        private int frameCounter;
 
-        public WindowGUI()
+        public WindowGUI(bool transparent = false)
         {
             if (WindowTexture == null)
             {
                 WindowTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
                 var colorVal = 0.2f;
-                WindowTexture.SetPixel(0, 0, new Color(colorVal, colorVal, colorVal));
+                WindowTexture.SetPixel(0, 0, new Color(colorVal, colorVal, colorVal, transparent ? 0.5f : 1f));
                 WindowTexture.Apply();
             }
+            frameCounter = 0;
             firstDraw = true;
             boxStyle = new GUIStyle { normal = new GUIStyleState { background = WindowTexture } };
         }
@@ -53,39 +51,56 @@ namespace Extensions.GUI_Classes
             GUI.Box(Rect, GUIContent.none, boxStyle);
             Rect = GUILayout.Window(WindowID, Rect, DrawCall, content);
 
-            //keep in window
-
-            if (Rect.center.x > Screen.width)
-                Rect.x -= Rect.center.x - Screen.width;
-            if (Rect.center.x < 0)
-                Rect.x -= Rect.center.x;
-
-            if (Rect.center.y > Screen.height)
-                Rect.y -= Rect.center.y - Screen.height;
-            if (Rect.center.y < 0)
-                Rect.y -= Rect.center.y;
-
-            //if (Rect.xMax > Screen.width)
-            //    Rect.x -= Rect.xMax - Screen.width;
-            //if (Rect.xMin < 0)
-            //    Rect.x -= Rect.xMin;
-
-            //if (Rect.yMax > Screen.height)
-            //    Rect.y -= Rect.yMax - Screen.height;
-            //if (Rect.yMin < 0)
-            //    Rect.y -= Rect.yMin;
+            if (frameCounter++ >= 60)
+                KeepWithinWindowBounds();
         }
 
         public void ToggleShow()
         {
             Show = !Show;
         }
+        public void ToggleShow(bool show)
+        {
+            Show = show;
+        }
 
         private void DrawCall(int id)
         {
             WindowFunction(id);
+            GUILayout.FlexibleSpace();
             Label(GUI.tooltip);
             Rect = KKAPI.Utilities.IMGUIUtils.DragResizeEatWindow(WindowID, Rect);
+        }
+
+        private void KeepWithinWindowBounds()
+        {
+            frameCounter = 0;//reset counter
+            var axisAdjust = Rect.width * 0.9f;
+
+            //**Horizontal adjustments**//
+
+            //too far to the right
+            var adjustValue = Rect.max.x - axisAdjust;
+            if (adjustValue > Screen.width)
+                Rect.x -= adjustValue - Screen.width;
+
+            //too far to the left
+            adjustValue = Rect.min.x + axisAdjust;
+            if (adjustValue < 0)
+                Rect.x -= adjustValue;
+
+            //**Vertical adjustments**//
+            axisAdjust = Rect.height * 0.9f;
+
+            //too far to the bottom
+            adjustValue = Rect.max.y - axisAdjust;
+            if (adjustValue > Screen.height)
+                Rect.y -= adjustValue - Screen.height;
+
+            adjustValue = Rect.min.y + axisAdjust;
+            //too far to the top
+            if (adjustValue < 0)
+                Rect.y -= adjustValue;
         }
     }
 }

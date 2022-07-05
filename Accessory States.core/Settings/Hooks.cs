@@ -1,5 +1,4 @@
-﻿using ChaCustom;
-using HarmonyLib;
+﻿using HarmonyLib;
 
 namespace Accessory_States
 {
@@ -7,9 +6,9 @@ namespace Accessory_States
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetClothesState))]
-        public static void Hook_SetClothesState(ChaControl __instance, int clothesKind, byte state)
+        public static void Hook_SetClothesState(ChaControl __instance)
         {
-            __instance.GetComponent<CharaEvent>().SetClothesState(clothesKind, state);
+            __instance.GetComponent<CharaEvent>().SetClothesState();
         }
 
         [HarmonyPostfix]
@@ -17,14 +16,6 @@ namespace Accessory_States
         public static void Hook_SetAccessoryStateCategory(ChaControl __instance, int cateNo, bool show)
         {
             __instance.GetComponent<CharaEvent>().AccessoryCategoryChange(cateNo, show);
-        }
-
-        //TODO: Check this for crashing
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(CustomChangeMainMenu), nameof(CustomChangeMainMenu.ChangeWindowSetting))]
-        public static void Hook_ChangeWindowSetting(int no)
-        {
-            CharaEvent.StopMakerLoop = no < 4;
         }
     }
 }

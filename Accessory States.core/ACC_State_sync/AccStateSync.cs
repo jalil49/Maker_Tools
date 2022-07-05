@@ -51,10 +51,10 @@ namespace Accessory_States
                 RefState = refstate;
             }
 
-            public TriggerProperty(StateInfo stateInfo, int coordinate)
+            public TriggerProperty(StateInfo stateInfo, int coordinate, int slot)
             {
                 Coordinate = coordinate;
-                Slot = stateInfo.Slot;
+                Slot = slot;
                 RefKind = stateInfo.Binding;
                 RefState = stateInfo.State;
                 Visible = stateInfo.Show;
@@ -120,40 +120,6 @@ namespace Accessory_States
             }
             public TriggerGroup(int coordinate, int kind, string label, int startup, int secondary) : this(coordinate, kind, label, 0, startup, secondary) { }
             public TriggerGroup(int coordinate, int kind, string label = "") : this(coordinate, kind, label, 0, 0, -1) { }
-
-            public void Rename(string label)
-            {
-                if (label.Trim().IsNullOrEmpty())
-                    label = $"Custom {Kind - 8}";
-                Label = label;
-            }
-
-            public void RenameState(int state, string label)
-            {
-                if (!States.ContainsKey(state))
-                    return;
-                if (label.Trim().IsNullOrEmpty())
-                    label = $"State {state + 1}";
-                States[state] = label;
-            }
-
-            public int GetNewStateID()
-            {
-                return States.OrderByDescending(x => x.Key).FirstOrDefault().Key + 1;
-            }
-
-            public int AddNewState()
-            {
-                var state = States.OrderByDescending(x => x.Key).FirstOrDefault().Key + 1;
-                return AddNewState(state);
-            }
-            public int AddNewState(int state)
-            {
-                var label = $"State {state + 1}";
-                States[state] = label;
-                return state;
-            }
-
             public TriggerGroup(NameData nameData, int coord)
             {
                 Coordinate = coord;
@@ -162,6 +128,18 @@ namespace Accessory_States
                 States = nameData.StateNames;
                 Label = nameData.Name;
                 Startup = nameData.DefaultState;
+            }
+
+            public NameData ToNameData()
+            {
+                return new NameData
+                {
+                    Name = Label,
+                    Binding = Kind,
+                    StateNames = States,
+                    CurrentState = Startup,
+                    DefaultState = State
+                };
             }
         }
 

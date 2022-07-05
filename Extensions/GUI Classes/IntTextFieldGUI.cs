@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
+using static Extensions.OnGUIExtensions;
 
 
 namespace Extensions.GUI_Classes
@@ -15,7 +13,7 @@ namespace Extensions.GUI_Classes
         public Action<int> action;
         public IntTextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
         {
-            style = FieldStyle;
+            style = TextFieldStyle;
             Text = _text;
             layoutOptions = gUILayoutOptions;
         }

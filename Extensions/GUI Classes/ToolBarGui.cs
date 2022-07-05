@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
-
+using static Extensions.OnGUIExtensions;
 
 namespace Extensions.GUI_Classes
 {
@@ -13,7 +10,7 @@ namespace Extensions.GUI_Classes
         public GUIContent[] Text;
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
-        public Action<int> onToggle;
+        public Action<int> action;
         public ToolbarGUI(GUIContent[] _text, params GUILayoutOption[] options)
         {
             Text = _text;
@@ -27,9 +24,9 @@ namespace Extensions.GUI_Classes
             if (newValue != Value)//xor operator
             {
                 Value = newValue;
-                if (onToggle == null)
+                if (action == null)
                     return;
-                onToggle.Invoke(Value);
+                action.Invoke(Value);
             }
         }
     }

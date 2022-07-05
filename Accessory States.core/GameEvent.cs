@@ -85,7 +85,7 @@ namespace Accessory_States
 
             ButtonList.Remove(Female);
 
-            var nameDataList = controller.Names;
+            var nameDataList = controller.NameDataList;
             var slotinfo = controller.SlotBindingData;
             var shoetype = Heroine_Ctrl.fileStatus.shoesType;
             foreach (var nameData in nameDataList)

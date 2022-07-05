@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
 
 
 namespace Extensions.GUI_Classes

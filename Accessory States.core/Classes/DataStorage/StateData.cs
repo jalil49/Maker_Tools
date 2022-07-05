@@ -1,6 +1,5 @@
 ﻿using MessagePack;
 using System;
-using System.Runtime.Serialization;
 
 namespace Accessory_States
 {
@@ -8,18 +7,20 @@ namespace Accessory_States
     [MessagePackObject(true)]
     public class StateInfo
     {
+        //unused
         public int Slot { get; set; }
+
+        //No ASS equiv
         public byte ShoeType { get; set; }
 
         public int Priority { get; set; }
 
         // use ASS custom keys
+        // seems to be unused with NameData reference focus
         /// <summary>
-        /// Should be recalculated on load
-        /// currently serialized to be -1 for accessories groups
+        /// Should be recalculated on load in case accessories are programatically moved
         /// </summary>
         [Key("RefKind")]
-
         public int Binding { get; set; }
 
         [Key("RefState")]
@@ -36,14 +37,6 @@ namespace Accessory_States
             Priority = 0;
             ShoeType = 2;
             Show = true;
-        }
-
-        [OnSerializing()]
-        internal void OnSerializingMethod(StreamingContext context)
-        {
-            Settings.Logger.LogWarning("Onserialize statedata");
-            if (Binding >= Constants.ClothingLength)
-                Binding = -1;
         }
     }
 }

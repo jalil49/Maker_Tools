@@ -9,9 +9,9 @@
     <Import_RootNamespace>Accessory_States</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\AccStateSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\AccStateSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-Sync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\Migration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\Migration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\StateData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\NameData.cs" />
@@ -19,8 +19,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\SlotDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\CoordinateDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetFolder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Presets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Studio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
@@ -35,6 +38,5 @@
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\" />
     <Folder Include="$(MSBuildThisFileDirectory)Classes\StudioGUI\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Settings\OnGUI\" />
   </ItemGroup>
 </Project>

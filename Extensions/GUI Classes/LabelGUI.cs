@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
+using static Extensions.OnGUIExtensions;
 using static UnityEngine.GUILayout;
 
 namespace Extensions.GUI_Classes

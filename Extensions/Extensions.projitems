@@ -12,7 +12,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\AreaGui.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ScrollGui.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IntTextFieldGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToolBarGui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextAreaGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToolBarGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\WindowGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\LabelGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextFieldGUI.cs" />

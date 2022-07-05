@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static GUIHelper.OnGuiExtensions;
+using static Extensions.OnGUIExtensions;
 
 
 namespace Extensions.GUI_Classes
@@ -24,7 +22,8 @@ namespace Extensions.GUI_Classes
         {
             if (GUILayout.Button(Text, style, layoutOptions))
             {
-                if (action == null) return;
+                if (action == null)
+                    return;
                 action.Invoke(invoke);
             }
         }

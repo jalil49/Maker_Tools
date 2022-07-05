@@ -3,8 +3,6 @@ using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using MessagePack;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
@@ -20,13 +18,55 @@ namespace Accessory_States
 
             var chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
 
-            var Extended_Data = GetExtendedData();
-            if (Extended_Data != null)
+            var extendedData = GetExtendedData();
+            if (extendedData != null)
             {
-                if (Extended_Data.version < 2)
+                if (extendedData.version < 2)
                 {
-                    Migration.Migrator.StandardCharaMigrator(ChaControl, Extended_Data);
+                    Migration.Migrator.StandardCharaMigrator(ChaControl, extendedData);
                 }
+            }
+            else if ((extendedData = ExtendedSave.GetExtendedDataById(chafile, "madevil.kk.ass")) != null)
+            {
+                var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+                if (extendedData.version > 6)
+                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
+                else if (extendedData.version < 6)
+                {
+                    AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
+                }
+                else
+                {
+                    if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                    {
+                        var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+                        if (_tempTriggerProperty?.Count > 0)
+                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+
+                        if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                        {
+                            var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                            if (_tempTriggerGroup?.Count > 0)
+                            {
+                                foreach (var _group in _tempTriggerGroup)
+                                {
+                                    if (_group.GUID.IsNullOrEmpty())
+                                        _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
+                                }
+                                TriggerGroupList.AddRange(_tempTriggerGroup);
+                            }
+                        }
+                    }
+                }
+
+                if (TriggerPropertyList == null)
+                    TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                if (TriggerGroupList == null)
+                    TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+                FullAssCardLoad(chafile, TriggerPropertyList, TriggerGroupList);
             }
 
             CurrentCoordinate.Subscribe(x =>
@@ -34,6 +74,8 @@ namespace Accessory_States
                 StartCoroutine(ChangeOutfitCoroutine());
                 Settings.UpdateGUI(this);
             });
+
+
         }
 
         // TODO: Confirm ASS support
@@ -49,7 +91,7 @@ namespace Accessory_States
 
             var triggers = new List<AccStateSync.TriggerProperty>();
             var groups = new List<AccStateSync.TriggerGroup>();
-            AssCardSave(ref triggers, ref groups);
+            FullAssCardSave(ref triggers, ref groups);
             if (triggers.Count == 0)
                 return;
             var pluginData = new PluginData() { version = Constants.SaveVersion };
@@ -115,15 +157,18 @@ namespace Accessory_States
             }
         }
 
-        // TODO: do a selective hide
-        internal void ChangeBindingSub(int hidesetting)
+        internal void ChangeBindingSub(int hidesetting, NameData name)
         {
             var coordinateaccessory = ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.parts;
             var nowcoodaccessory = ChaControl.nowCoordinate.accessory.parts;
-            var slotslist = SlotBindingData.Where(x => x.Value.bindingDatas.Any(y => y.GetBinding() == -2)).Select(x => x.Key);
-            foreach (var slot in slotslist)
+            foreach (var slot in SlotBindingData)
             {
-                coordinateaccessory[slot].hideCategory = nowcoodaccessory[slot].hideCategory = hidesetting;
+                foreach (var bindingData in slot.Value.bindingDatas)
+                {
+                    if (bindingData.NameData != name)
+                        continue;
+                    coordinateaccessory[slot.Key].hideCategory = nowcoodaccessory[slot.Key].hideCategory = hidesetting;
+                }
             }
         }
 
@@ -167,7 +212,7 @@ namespace Accessory_States
                     continue;
 
                 var stateInfo = item.GetStateInfo(item.NameData.CurrentState, shoeType);
-                if (stateInfo == null || stateInfo.Binding < 0 || stateInfo.Priority < currentPriority)
+                if (stateInfo == null || item.NameData.Binding < 0 || stateInfo.Priority < currentPriority)
                     continue;
 
 
@@ -183,12 +228,16 @@ namespace Accessory_States
             return result;
         }
 
-        internal void SetClothesState(int clothesKind, byte state)
+        internal void SetClothesState()
         {
-            var nameData = Names.FirstOrDefault(x => x.Binding == clothesKind);
-            if (nameData == null)
-                return;
-            nameData.CurrentState = state;
+            var clothstates = ChaControl.fileStatus.clothesState;
+            for (var i = 0; i < clothstates.Length; i++)
+            {
+                var nameData = NameDataList.FirstOrDefault(x => x.Binding == i);
+                if (nameData == null)
+                    continue;
+                nameData.CurrentState = clothstates[i];
+            }
             RefreshSlots();
         }
     }
