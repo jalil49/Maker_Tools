@@ -112,11 +112,11 @@ namespace Extensions.GUI_Classes
 
         private Rect KeepWithinWindowBounds(Rect modifiedRect)
         {
-            //just incase window somehow is bigger than screen size
-            if (modifiedRect.height >= Screen.height)
-                modifiedRect.height = Screen.height * 0.95f;
+            //just incase window somehow is bigger than screen size from resizing
+            if (modifiedRect.height > Screen.height)
+                modifiedRect.height = Screen.height * 0.9f;
 
-            if (modifiedRect.width >= Screen.width)
+            if (modifiedRect.width > Screen.width)
                 modifiedRect.width = Screen.width * 0.9f;
 
             var axisAdjust = modifiedRect.width * 0.95f;
