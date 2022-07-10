@@ -42,7 +42,12 @@ namespace Accessory_States.Classes.PresetStorage
             Data = null;
             SavedOnDisk = false;
         }
-
+        public bool Filter(string filter)
+        {
+            if (Name.Contains(filter) || FileName.Contains(filter) || Description.Contains(filter))
+                return false;
+            return true;
+        }
         public void SaveFile()
         {
             Presets.SaveFile(FileName, MessagePackSerializer.Serialize(Serialize()));

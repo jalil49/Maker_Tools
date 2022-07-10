@@ -147,9 +147,16 @@ namespace Accessory_States
 
 
                     var bindingData = new BindingData() { NameData = groupRelation[groups.First(x => x.Kind == bindingReference.Key)] };
-
-
+                    slotData.bindingDatas.Add(bindingData);
+                    foreach (var state in bindingReference.Value)
+                    {
+                        bindingData.States.Add(state.ToStateInfo());
+                    }
+                    bindingData.SetBinding();
+                    bindingData.SetSlot(slotReference.Key);
                 }
+
+                part.SetExtendedDataById(Settings.GUID, slotData.Serialize());
             }
         }
     }

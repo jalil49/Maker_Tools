@@ -41,7 +41,11 @@ namespace Accessory_States
         public int AssShoePreference
         {
             get { return NowCoordinateData.AssShowPreference; }
-            set { NowCoordinateData.AssShowPreference = value; }
+            set
+            {
+                NowCoordinateData.AssShowPreference = value;
+                SaveCoordinateData();
+            }
         }
 
         #endregion
@@ -86,6 +90,7 @@ namespace Accessory_States
                 }
             }
         }
+
         internal void UpdateParentedDict()
         {
             ParentedNameDictionary.Clear();
@@ -126,22 +131,22 @@ namespace Accessory_States
             {
                 return;
             }
-            Settings.Logger.LogWarning($"Saving slot {slot} data: serialized {slotData.ShouldSave()}");
-            SetAccessoryExtData(slotData.Serialize(), slot);
+            var pluginData = PartsArray[slot].type != 120 ? slotData.Serialize() : null;
+            SetAccessoryExtData(pluginData, slot);
             if (KKAPI.Maker.MakerAPI.InsideAndLoaded)
             {
-                SetAccessoryExtData(slotData.Serialize(), slot, (int)CurrentCoordinate.Value);
+                SetAccessoryExtData(pluginData, slot, (int)CurrentCoordinate.Value);
             }
         }
 
-        private void SaveCoordinateData()
+        internal void SaveCoordinateData()
         {
             ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, NowCoordinateData.Serialize());
         }
 
         internal void LoadSlotData(int slot)
         {
-            if (slot >= PartsArray.Length)
+            if (slot >= PartsArray.Length || PartsArray[slot].type == 120)
             {
                 return;
             }

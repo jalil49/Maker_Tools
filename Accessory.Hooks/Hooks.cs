@@ -13,6 +13,7 @@ namespace Additional_Card_Info
 {
     internal static partial class Hooks
     {
+        //TODO: Remove
         static ManualLogSource Logger;
 
         public static void Init(ManualLogSource Setting_Logger)
@@ -28,7 +29,8 @@ namespace Additional_Card_Info
 
         private static bool TryfindPluginInstance(string pluginName)
         {
-            return BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out _); ;
+            return BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out _);
+            ;
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
@@ -44,41 +46,20 @@ namespace Additional_Card_Info
 #if ACI || States
         internal static class ClothingNotPatch
         {
-            internal static bool IsshortsCheck = false;
-            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; set; } = new Dictionary<ChaListDefine.KeyType, int>() { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0 };
-
             internal static void Init()
             {
                 Harmony.CreateAndPatchAll(typeof(ClothingNotPatch));
             }
 
 #if States
-            //TODO: Check That this doesn't break anything
             [HarmonyPostfix]
             [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
-            public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
+            public static void Hook_ChangeClothType(int index)
             {
-                var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
-                Maker.ClothingTypeChange(__instance.clothesType, index);
-
+                if (index < 4)
+                    Maker.ClothingTypeChange();
             }
 #endif
-            [HarmonyPostfix]
-            [HarmonyPriority(Priority.HigherThanNormal)]
-            [HarmonyPatch(typeof(ListInfoBase), nameof(ListInfoBase.GetInfo))]
-            internal static void Hook_GetInfo(ChaListDefine.KeyType keyType, string __result)
-            {
-                ClothingNotEvent(keyType, __result);
-            }
-
-            private static void ClothingNotEvent(ChaListDefine.KeyType keyType, string result)
-            {
-                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate || !int.TryParse(result, out var value))
-                {
-                    return;
-                }
-                ListInfoResult[keyType] = value;
-            }
         }
 #endif
 

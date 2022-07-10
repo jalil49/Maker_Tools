@@ -4,7 +4,7 @@ using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+
 namespace Accessory_States
 {
     internal static class Presets

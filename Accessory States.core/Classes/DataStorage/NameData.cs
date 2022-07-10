@@ -2,7 +2,6 @@
 using MessagePack;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace Accessory_States
 {
@@ -103,7 +102,6 @@ namespace Accessory_States
 
         public void OnAfterDeserialize()
         {
-            Settings.Logger.LogWarning("Namedata Deserialized");
             if (!KKAPI.Studio.StudioAPI.InsideStudio)
                 CurrentState = DefaultState;
         }

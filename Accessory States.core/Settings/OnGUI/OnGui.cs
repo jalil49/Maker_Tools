@@ -21,8 +21,13 @@ namespace Accessory_States
             {
                 _initialized = true;
                 InitializeStyles();
+#if Studio
+                if (!KKAPI.Studio.StudioAPI.InsideStudio)//disable OnGui and Update calls when not in maker for main game Initialize styles first, if in studio don't disable
+#endif
+                {
+                    this.enabled = false;
+                }
             }
-
 
             if (_maker != null)
             {
@@ -32,7 +37,7 @@ namespace Accessory_States
 
             if (_studio != null)
             {
-                _studio.OnGUI();
+                _studio.OnGui();
             }
         }
 
@@ -40,6 +45,22 @@ namespace Accessory_States
         {
             if (_maker != null)
                 _maker.ClearCoordinate();
+
+            if (_studio != null)
+                _studio.ClearCoordinate(charaEvent);
+        }
+
+        internal void Update()
+        {
+#if Studio
+            if (KKAPI.Studio.StudioAPI.InsideStudio)//disable OnGui and Update calls when not in maker for main game Initialize styles first, if in studio don't disable
+            {
+                if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.N))
+                {
+                    _studio._slotWindow.ToggleShow();
+                }
+            }
+#endif
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Accessory_States
     public class Maker
     {
         #region Windows
-        private readonly WindowGUI _makerGUI;//main SelectedSlot window
+        private readonly WindowGUI _slotWindow;//main SelectedSlot window
         private readonly WindowGUI _groupGUI;//General NameData window, add, change, remove Namedata and other modifications
         private readonly WindowGUI _presetWindow;
         private readonly WindowGUI _AddBinding;
@@ -27,13 +27,13 @@ namespace Accessory_States
         #endregion
 
         #region Scrolls for windows
-        private readonly ScrollGUI<BindingData> _slotWindowScroll;
-        private readonly ScrollGUI<SlotData> _bindingScroll;
-        private readonly ScrollGUI<List<NameData>> _groupScroll;
-        private readonly ScrollGUI<List<NameData>> _previewScroll;
-        private readonly ScrollGUI<bool> _settingScroll;
-        private readonly ScrollGUI<bool> _singlePresetScroll;
-        private readonly ScrollGUI<bool> _folderPresetScroll;
+        private readonly ScrollGUI _slotWindowScroll;
+        private readonly ScrollGUI _bindingScroll;
+        private readonly ScrollGUI _groupScroll;
+        private readonly ScrollGUI _previewScroll;
+        private readonly ScrollGUI _settingScroll;
+        private readonly ScrollGUI _singlePresetScroll;
+        private readonly ScrollGUI _folderPresetScroll;
         #endregion
 
         #region Settings
@@ -53,7 +53,7 @@ namespace Accessory_States
         private readonly List<PresetFolder> presetFolders = new List<PresetFolder>();
         private readonly Dictionary<PresetData, PresetContols> SingleControls = new Dictionary<PresetData, PresetContols>();
         private readonly Dictionary<PresetFolder, PresetFolderContols> PresetFolderControls = new Dictionary<PresetFolder, PresetFolderContols>();
-
+        private readonly TextFieldGUI PresetFilter;
         private static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
         private static int SelectedSlot => AccessoriesApi.SelectedMakerAccSlot;
@@ -61,6 +61,8 @@ namespace Accessory_States
         {
             get
             {
+                if (SelectedSlot < 0)
+                    return null;
                 if (!GetController.SlotBindingData.TryGetValue(SelectedSlot, out var slotData))
                 {
                     slotData = GetController.SlotBindingData[SelectedSlot] = new SlotData();
@@ -81,107 +83,61 @@ namespace Accessory_States
 
             #region Windows
             var windowcount = 1;
-            _makerGUI = new WindowGUI()
-            {
-                content = new GUIContent("Slot 0", "Modify data attached to this Accessory"),
-                WindowID = windowcount++,
-                Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, 0f, Screen.height * 0.2f),
-                WindowFunction = SlotWindowDraw
-            };
+            _slotWindow = new WindowGUI(windowcount++, Settings.SlotWindowRectMaker, Settings.SlotWindowTransparencyMaker, SlotWindowDraw, new GUIContent("Slot 0", "Modify data attached to this Accessory"));
 
-            _presetWindow = new WindowGUI()
-            {
-                content = new GUIContent("Presets", "Apply, Create or Modify Presets"),
-                WindowID = windowcount++,
-                Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, Screen.width * 0.15f, Screen.height * 0.25f),
-                WindowRef = _makerGUI,
-                RectAdjustVec = new Vector2(0f, 10f),
-                WindowFunction = PresetWindowDraw
-            };
+            _presetWindow = new WindowGUI(windowcount++, Settings.PresetWindowRectMaker, Settings.PresetWindowTransparencyMaker, PresetWindowDraw, new GUIContent("Presets", "Apply, Create or Modify Presets"));
 
-            _groupGUI = new WindowGUI()
-            {
-                content = new GUIContent("Custom Group Data", "Modify Custom Groups"),
-                WindowID = windowcount++,
-                Rect = new Rect(_presetWindow.Rect.xMax + 10, _presetWindow.Rect.y, Screen.width * 0.15f, Screen.height * 0.25f),
-                WindowRef = _makerGUI,
-                RectAdjustVec = new Vector2(10f, 10f),
-                WindowFunction = GroupWindowDraw
-            };
+            _groupGUI = new WindowGUI(windowcount++, Settings.GroupWindowRectMaker, Settings.GroupWindowTransparencyMaker, GroupWindowDraw, new GUIContent("Custom Group Data", "Modify Custom Groups"));
 
-            _settingWindow = new WindowGUI()
-            {
-                content = new GUIContent("Settings", "Modify Plugin Settings"),
-                WindowID = windowcount++,
-                Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, Screen.width * 0.15f, Screen.height * 0.25f),
-                WindowRef = _makerGUI,
-                RectAdjustVec = new Vector2(0f, 10f),
-                WindowFunction = SettingWindowDraw
-            };
+            _settingWindow = new WindowGUI(windowcount++, Settings.SettingWindowRectMaker, Settings.SettingWindowTransparencyMaker, SettingWindowDraw, new GUIContent("Settings", "Modify Plugin Settings"));
 
-            _AddBinding = new WindowGUI()
-            {
-                content = new GUIContent("Group Select", "Select a group to Show"),
-                WindowID = windowcount++,
-                Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, Screen.width * 0.075f, Screen.height * 0.25f),
-                WindowRef = _makerGUI,
-                RectAdjustVec = new Vector2(10f, 0f),
-                WindowFunction = SelectBindingWindowDraw
-            };
+            _AddBinding = new WindowGUI(windowcount++, Settings.AddBindingWindowRectMaker, Settings.AddBindingWindowTransparencyMaker, SelectBindingWindowDraw, new GUIContent("Group Select", "Select a group to Show"));
 
-            _previewWindow = new WindowGUI(true)
-            {
-                content = new GUIContent("State Preview", "Adjust State Values"),
-                WindowID = windowcount++,
-                Rect = new Rect(Screen.width * 0.33f, Screen.height * 0.09f, Screen.width * 0.1f, Screen.height * 0.2f),
-                WindowRef = _makerGUI,
-                RectAdjustVec = new Vector2(10f + _AddBinding.Rect.width + _AddBinding.RectAdjustVec.x, 0f),
-                WindowFunction = PreviewWindowDraw,
-            };
+            _previewWindow = new WindowGUI(windowcount++, Settings.PreviewWindowRectMaker, Settings.PreviewWindowTransparencyMaker, PreviewWindowDraw, new GUIContent("State Preview", "Adjust State Values"));
             #endregion
 
             #region Scrolls
             var scrollLayoutElements = new GUILayoutOption[] { };
 
-            _slotWindowScroll = new ScrollGUI<BindingData>()
+            _slotWindowScroll = new ScrollGUI()
             {
                 action = SlotWindowScroll,
                 layoutOptions = scrollLayoutElements
             };
 
 
-            _groupScroll = new ScrollGUI<List<NameData>>()
+            _groupScroll = new ScrollGUI()
             {
                 action = GroupWindowScroll,
                 layoutOptions = scrollLayoutElements
             };
 
 
-            _bindingScroll = new ScrollGUI<SlotData>()
+            _bindingScroll = new ScrollGUI()
             {
                 action = BindingWindowScroll,
                 layoutOptions = scrollLayoutElements
             };
 
-            _previewScroll = new ScrollGUI<List<NameData>>()
+            _previewScroll = new ScrollGUI()
             {
                 action = PreviewScroll,
                 layoutOptions = scrollLayoutElements
             };
 
-            _settingScroll = new ScrollGUI<bool>()
+            _settingScroll = new ScrollGUI()
             {
                 action = SettingScroll,
                 layoutOptions = scrollLayoutElements
             };
 
-            _singlePresetScroll = new ScrollGUI<bool>()
+            _singlePresetScroll = new ScrollGUI()
             {
                 action = PresetSingleScroll,
                 layoutOptions = scrollLayoutElements
             };
 
-            _folderPresetScroll = new ScrollGUI<bool>()
+            _folderPresetScroll = new ScrollGUI()
             {
                 action = PresetFolderScroll,
                 layoutOptions = scrollLayoutElements
@@ -194,11 +150,12 @@ namespace Accessory_States
 #if KK
             shoeTypeGUIContext[0] = new GUIContent("Indoor", "Story/FreeH: Applies when inside buildings");
             shoeTypeGUIContext[1] = new GUIContent("Outdoor", "Story/FreeH: Applies when outside buildings");
-#else
-            shoeTypeGUIContext[0] = new GUIContent("Indoor", "Story/FreeH: Applies when inside buildings");
-            shoeTypeGUIContext[1] = new GUIContent("Outdoor", "Story/FreeH: Applies when outside buildings");
-#endif
             shoeTypeGUIContext[2] = new GUIContent("Both", "Applies regardless of Location");
+#else
+            shoeTypeGUIContext[0] = new GUIContent("Indoor", "Non-functioning: can attempt in the future Story/FreeH: Applies when inside buildings");
+            shoeTypeGUIContext[1] = new GUIContent("Outdoor", "Non-functioning: can attempt in the future Story/FreeH: Applies when outside buildings");
+            shoeTypeGUIContext[2] = new GUIContent("Both", "Functioning: Applies regardless of Location");
+#endif
 
             var assContent = new GUIContent[]
             {
@@ -217,6 +174,8 @@ namespace Accessory_States
 
             CreateMakerGUI(e);
             DiskLoad();
+
+            PresetFilter = new TextFieldGUI("");
         }
 
         #region KKAPI Events
@@ -228,7 +187,7 @@ namespace Accessory_States
 
             var gui_button = new MakerButton("States GUI", category, owner);
             MakerAPI.AddAccessoryWindowControl(gui_button, true);
-            gui_button.OnClick.AddListener(_makerGUI.ToggleShow);
+            gui_button.OnClick.AddListener(_slotWindow.ToggleShow);
 
             SidebarToggle = e.AddSidebarControl(new SidebarToggle("Show States Preview Menu", false, owner));
             SidebarToggle.ValueChanged.Subscribe(x => _previewWindow.ToggleShow(x));
@@ -254,6 +213,7 @@ namespace Accessory_States
             {
                 return;
             }
+            Settings.Instance.enabled = true;
             MakerAPI.MakerExiting += (s, e) => Maker_Ended();
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
             AccessoriesApi.SelectedMakerAccSlotChanged += AccessoriesApi_SelectedMakerAccSlotChanged;
@@ -281,6 +241,7 @@ namespace Accessory_States
 
             MakerEnabled = false;
             Settings._maker = null;
+            Settings.Instance.enabled = false;
         }
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
@@ -318,32 +279,9 @@ namespace Accessory_States
             controller.SaveSlotData(slotNo);
         }
 
-        internal static void ClothingTypeChange(int kind, int index)
+        internal static void ClothingTypeChange()
         {
-            if (index != 0 || !MakerEnabled)
-                return;
-
             UpdateClothNots();
-            var ClothNotData = GetController.ClothNotData;
-
-            switch (kind)
-            {
-                case 1:
-                    if (ClothNotData[0])
-                        return;
-                    break;
-                case 2:
-                    if (ClothNotData[1])
-                        return;
-                    break;
-                case 3:
-                    if (ClothNotData[2])
-                        return;
-                    break;
-                default:
-                    break;
-            }
-            Settings._maker.RemoveAllByBinding(kind);
         }
 
         internal static void MovIt(List<QueueItem> _) => GetController.UpdatePluginData();
@@ -363,6 +301,7 @@ namespace Accessory_States
             ClothNotData[0] = controller.ChaControl.notBot || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 2;
             ClothNotData[1] = controller.ChaControl.notBra || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 1;
             ClothNotData[2] = controller.ChaControl.notShorts || GetClothingNot(2, ChaListDefine.KeyType.Coordinate) == 2;
+            controller.SaveCoordinateData();
         }
 
         public static bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
@@ -397,26 +336,25 @@ namespace Accessory_States
                 return null;
             return lists[kind];
         }
-        private void RemoveAllByBinding(int kind)
+
+        private BindingData GetSelectedBindingData(SlotData slotData)
         {
-            if (NameControls.TryGetValue(GetController.NameDataList.FirstOrDefault(x => x.Binding == kind), out var controls))
+            if (SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
             {
-                controls.Delete();
+                SelectedDropDown = 0;
             }
+
+            if (slotData.bindingDatas.Count == 0)
+                return null;
+
+            return slotData.bindingDatas[SelectedDropDown];
         }
 
         private void SlotWindowDraw(int id)
         {
-            _makerGUI.content.text = "Slot " + SelectedSlot;
+            _slotWindow.SetWindowName("Slot " + (SelectedSlot + 1));
             var slotData = SelectedSlotData;
-            BindingData bData = null;
-
-            if (SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
-                SelectedDropDown = 0;
-            if (slotData.bindingDatas.Count > 0)
-            {
-                bData = slotData.bindingDatas[SelectedDropDown];
-            }
+            var bData = GetSelectedBindingData(slotData);
 
             GL.BeginHorizontal();
             {
@@ -433,7 +371,7 @@ namespace Accessory_States
                 GL.Space(10);
 
                 if (Button("X", "Close this window", false))
-                    _makerGUI.ToggleShow();
+                    _slotWindow.ToggleShow();
             }
             GL.EndHorizontal();
 
@@ -448,7 +386,37 @@ namespace Accessory_States
                 }
             }
             GL.EndHorizontal();
+#if !KK
+            if (ShoeTypeView != 2)
+            {
+#if KKS
+                Label("KK Functionality, KKS only uses Outdoor ATM by default");
+#else
+                Label("KK Functionality, may attempt to reimplement the feature later");
+#endif
 
+                GL.BeginHorizontal();
+                {
+                    if (ShoeTypeView == 0)
+                    {
+#if KKS
+                        Label("Non-functioning: May be implemented in the future");
+#else
+                        Label("Unknown functionality");
+#endif
+                    }
+                    if (ShoeTypeView == 1)
+                    {
+#if KKS
+                        Label("Default State: May implement Indoor in the future");
+#else
+                        Label("Unknown functionality");
+#endif
+                    }
+                }
+                GL.EndHorizontal();
+            }
+#endif
             GL.BeginHorizontal();
             {
                 if (Button("Group Data", "Create and Modify Custom Groups"))
@@ -490,13 +458,16 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 
-            _slotWindowScroll.Draw(bData);
+            _slotWindowScroll.Draw();
 
             GL.FlexibleSpace();
         }
 
-        private void SlotWindowScroll(BindingData bData)
+        private void SlotWindowScroll()
         {
+            var bData = GetSelectedBindingData(SelectedSlotData);
+            if (bData == null)
+                return;
             GL.BeginVertical(GUI.skin.box);
             for (var i = 0; i < bData.States.Count; i++)
             {
@@ -521,8 +492,6 @@ namespace Accessory_States
 
         private void GroupWindowDraw(int id)
         {
-            var names = GetController.NameDataList;
-
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
@@ -535,17 +504,19 @@ namespace Accessory_States
             {
                 if (Button("Add New Group"))
                 {
+                    var names = GetController.NameDataList;
                     var max = names.Max(x => x.Binding) + 1;
                     names.Add(new NameData() { Binding = max, Name = "Group " + max });
                 }
             }
             GL.EndHorizontal();
 
-            _groupScroll.Draw(names);
+            _groupScroll.Draw();
         }
 
-        private void GroupWindowScroll(List<NameData> names)
+        private void GroupWindowScroll()
         {
+            var names = GetController.NameDataList;
             for (var i = 0; i < names.Count; i++)
             {
                 if (names[i].Binding < Constants.ClothingLength)
@@ -585,6 +556,8 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 
+            PresetFilter.ActiveDraw();
+
             switch (PresetView.Value)
             {
                 case 0:
@@ -615,7 +588,8 @@ namespace Accessory_States
                 }
             }
             GL.EndHorizontal();
-            _folderPresetScroll.Draw(true);
+
+            _folderPresetScroll.Draw();
         }
 
         private void PresetSingleDraw()
@@ -629,17 +603,28 @@ namespace Accessory_States
                 }
             }
             GL.EndHorizontal();
-            _singlePresetScroll.Draw(false);
+            GL.BeginHorizontal();
+            {
+                Label("Preset Filter: ", "Filter Presets for easier searching", false);
+                _singlePresetScroll.Draw();
+            }
+            GL.EndHorizontal();
         }
 
-        private void PresetSingleScroll(bool _)
+        private void PresetSingleScroll()
         {
+            var filter = PresetFilter.Text.Trim();
+            var validfilter = filter.Length > 0;
             for (var i = 0; i < SinglePresetDatas.Count; i++)
             {
                 if (!SingleControls.TryGetValue(SinglePresetDatas[i], out var preset))
                 {
                     preset = SingleControls[SinglePresetDatas[i]] = new PresetContols(SinglePresetDatas[i], SinglePresetDatas);
                 }
+
+                if (validfilter && preset.Filter(filter))
+                    continue;
+
                 GL.BeginVertical(GUI.skin.box);
                 {
                     preset.Draw();
@@ -648,8 +633,11 @@ namespace Accessory_States
             }
         }
 
-        private void PresetFolderScroll(bool _)
+        private void PresetFolderScroll()
         {
+            var filter = PresetFilter.Text.Trim();
+            var validfilter = filter.Length > 0;
+
             for (var i = 0; i < presetFolders.Count; i++)
             {
                 var folder = presetFolders[i];
@@ -657,6 +645,10 @@ namespace Accessory_States
                 {
                     folderPreset = PresetFolderControls[folder] = new PresetFolderContols(folder, presetFolders);
                 }
+
+                if (validfilter && folderPreset.Filter(filter))
+                    continue;
+
                 GL.BeginVertical(GUI.skin.box);
                 {
                     folderPreset.Draw(SelectedSlotData, SelectedSlot);
@@ -671,6 +663,8 @@ namespace Accessory_States
                                 singlePresetControl = new PresetContols(singlePreset, presets);
                                 SingleControls[singlePreset] = singlePresetControl;
                             }
+                            if (singlePreset.Filter(filter))
+                                continue;
                             GL.BeginHorizontal(GUI.skin.box);
                             {
                                 GL.Space(10);
@@ -702,11 +696,12 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 
-            _bindingScroll.Draw(SelectedSlotData);
+            _bindingScroll.Draw();
         }
 
-        private void BindingWindowScroll(SlotData slotData)
+        private void BindingWindowScroll()
         {
+            var slotData = SelectedSlotData;
             foreach (var item in GetController.NameDataList)
             {
                 if (item.Binding < 0)
@@ -764,11 +759,12 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 
-            _previewScroll.Draw(GetController.NameDataList);
+            _previewScroll.Draw();
         }
 
-        private void PreviewScroll(List<NameData> nameDatas)
+        private void PreviewScroll()
         {
+            var nameDatas = GetController.NameDataList;
             var bindingDatas = SelectedSlotData.bindingDatas;
 
             foreach (var nameData in nameDatas)
@@ -797,7 +793,7 @@ namespace Accessory_States
                     GL.BeginHorizontal();
                 {
                     Label(keyvalue.Key, "Display accessory if parented toggle is also enabled", false);
-                    if (Button(keyvalue.Value ? "Show" : "Hide"))
+                    if (Button(keyvalue.Value ? "Show" : "Hide", "If accessory should be shown or hidden with current state"))
                     {
                         dict[keyvalue.Key] = !keyvalue.Value;
                         GetController.RefreshSlots();
@@ -814,10 +810,18 @@ namespace Accessory_States
                 GL.FlexibleSpace();
 
                 if (Button("G-", "Decrease GUI size", false))
-                    DecrementFontSize();
+                {
+                    Settings.MakerFontSize.Value = Math.Max(0, Settings.MakerFontSize.Value - 1);
+                    Settings.Logger.LogMessage(Settings.MakerFontSize.Value);
+                    SetFontSize(Settings.MakerFontSize.Value);
+                }
 
                 if (Button("G+", "Increase GUI size", false))
-                    IncrementFontSize();
+                {
+                    Settings.MakerFontSize.Value += 1;
+                    Settings.Logger.LogMessage(Settings.MakerFontSize.Value);
+                    SetFontSize(Settings.MakerFontSize.Value);
+                }
 
                 GL.Space(10);
 
@@ -826,11 +830,27 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 
-            _settingScroll.Draw(true);
+            _settingScroll.Draw();
         }
 
-        private void SettingScroll(bool _val)
+        private void SettingScroll()
         {
+            GL.BeginVertical(GUI.skin.box);
+            {
+                Label("Settings:");
+                GL.BeginHorizontal();
+                {
+                    Label("Preview Transparency", "", false);
+                    _previewWindow.Transparency = HorizontalSlider(_previewWindow.Transparency, 0, 100, true);
+                }
+                GL.EndHorizontal();
+                //if (Button("Save Settings", "Save Window positions, font sizes and other config settings"))
+                //    Settings.SaveConfig();
+                //if (Button("Reload Settings", "Loads last saved config settings"))
+                //    Settings.ReloadConfig();
+            }
+            GL.EndVertical();
+            GL.Space(5);
             GL.BeginVertical(GUI.skin.box);
             {
                 Label("Accessory State Sync:");
@@ -921,21 +941,21 @@ namespace Accessory_States
         {
             _previewWindow.Draw();
 
-            if (!_makerGUI.Show || !AccessoriesApi.AccessoryCanvasVisible)
+            if (!_slotWindow.Show || !AccessoriesApi.AccessoryCanvasVisible)
                 return;
 
             var parts = GetController.PartsArray;
             if (SelectedSlot < 0 || SelectedSlot >= parts.Length || parts[SelectedSlot].type == 120)
                 return;
 
-            _makerGUI.Draw();
+            _slotWindow.Draw();
             _groupGUI.Draw();
             _presetWindow.Draw();
             _AddBinding.Draw();
             _settingWindow.Draw();
         }
 
-        private class NameDataControls
+        internal class NameDataControls
         {
             public NameData NameData;
             public CharaEvent CharaEvent;
@@ -1004,8 +1024,7 @@ namespace Accessory_States
 
             public void DrawGroupRename()
             {
-                newName = TextField(newName, false);
-                GL.FlexibleSpace();
+                newName = TextField(newName);
                 if (!newName.Equals(NameData.Name) && Button("Update Name", "Updates Name for all accessories as well as saving current data", false))
                 {
                     NameData.Name = newName;
@@ -1050,14 +1069,15 @@ namespace Accessory_States
                 GL.BeginHorizontal();
                 {
                     GL.FlexibleSpace();
+                    Label($"Default {NameData.DefaultState}: {NameData.GetStateName(NameData.DefaultState)}", "State to be used on load", false);
                     if (Button("<", "Decrease Default State", expandwidth: false))
                     {
                         NameData.DefaultState--;
                         if (NameData.DefaultState < 0)
                             NameData.DefaultState = NameData.StateLength - 1;
                     }
-                    _currentState.Draw(NameData.CurrentState);
-                    if (Button(">", "Decrease Default State", expandwidth: false))
+                    _defaultState.Draw(NameData.DefaultState);
+                    if (Button(">", "Increase Default State", expandwidth: false))
                     {
                         NameData.DefaultState++;
                         if (NameData.DefaultState >= NameData.StateLength)
@@ -1076,13 +1096,13 @@ namespace Accessory_States
                     {
                         Label(j + ": ", "", false);
                         newStateName.ConfirmDraw();
+
                         if (j == NameData.StateLength - 1 && Button("Remove", expandwidth: false))
                         {
                             NameData.StateNames.Remove(j);
                             StatesRename.Remove(j);
                             Save();
                         }
-                        GL.FlexibleSpace();
                     }
                     GL.EndHorizontal();
                 }
@@ -1123,9 +1143,9 @@ namespace Accessory_States
                 {
                     StatesRename[state] = newStateName = new TextFieldGUI(NameData.GetStateName(state), GL.ExpandWidth(true), GL.MinWidth(30))
                     {
-                        newAction = (string input) =>
+                        OnValueChange = (oldValue, newValue) =>
                         {
-                            NameData.StateNames[state] = input;
+                            NameData.StateNames[state] = newValue;
                             Save();
                         }
                     };
@@ -1216,27 +1236,13 @@ namespace Accessory_States
             }
         }
 
-        private class PresetContols
+        internal class PresetContols
         {
             public readonly PresetData PresetData;
             private readonly TextFieldGUI Name;
             private readonly TextFieldGUI FileName;
             private readonly TextAreaGUI Description;
             private readonly List<PresetData> Container;
-
-            public GUIContent GUIContent
-            {
-                get
-                {
-                    if (_guiContent == null)
-                    {
-                        _guiContent = new GUIContent(Name.Text, Description.Text);
-                    }
-                    return _guiContent;
-                }
-            }
-            private GUIContent _guiContent;
-
             public PresetContols(PresetData presetData, List<PresetData> container)
             {
                 PresetData = presetData;
@@ -1244,12 +1250,12 @@ namespace Accessory_States
 
                 Name = new TextFieldGUI(presetData.Name, GL.ExpandWidth(true))
                 {
-                    newAction = (val) => { presetData.Name = val; }
+                    OnValueChange = (oldValue, newValue) => { presetData.Name = newValue; }
                 };
 
                 FileName = new TextFieldGUI(presetData.FileName)
                 {
-                    oldAction = (oldVal, newVal) =>
+                    OnValueChange = (oldVal, newVal) =>
                     {
                         if (newVal.IsNullOrWhiteSpace())
                             newVal = PresetData.Name;
@@ -1269,6 +1275,11 @@ namespace Accessory_States
                 {
                     action = (val) => { presetData.Description = val; }
                 };
+            }
+
+            public bool Filter(string filter)
+            {
+                return PresetData.Filter(filter);
             }
 
             public void Draw()
@@ -1400,7 +1411,7 @@ namespace Accessory_States
             }
         }
 
-        private class PresetFolderContols
+        internal class PresetFolderContols
         {
             public readonly PresetFolder PresetFolder;
             private readonly TextFieldGUI Name;
@@ -1408,6 +1419,7 @@ namespace Accessory_States
             private readonly TextAreaGUI Description;
             private readonly List<PresetFolder> Container;
             public bool ShowContents;
+
             public PresetFolderContols(PresetFolder presetFolder, List<PresetFolder> container)
             {
                 PresetFolder = presetFolder;
@@ -1415,14 +1427,13 @@ namespace Accessory_States
 
                 Name = new TextFieldGUI(presetFolder.Name, GL.ExpandWidth(true))
                 {
-                    newAction = (val) => { PresetFolder.Name = val; }
+                    OnValueChange = (oldValue, newValue) => { PresetFolder.Name = newValue; }
                 };
 
                 FileName = new TextFieldGUI(presetFolder.FileName)
                 {
-                    oldAction = (oldVal, newVal) =>
+                    OnValueChange = (oldVal, newVal) =>
                     {
-
                         if (newVal.IsNullOrWhiteSpace())
                             newVal = PresetFolder.Name;
                         if (newVal.Length == 0)
@@ -1441,6 +1452,11 @@ namespace Accessory_States
                 {
                     action = (val) => { PresetFolder.Description = val; }
                 };
+            }
+
+            public bool Filter(string filter)
+            {
+                return PresetFolder.Filter(filter);
             }
 
             public void Draw(SlotData slotData, int slot)

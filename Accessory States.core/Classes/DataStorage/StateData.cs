@@ -7,7 +7,7 @@ namespace Accessory_States
     [MessagePackObject(true)]
     public class StateInfo
     {
-        //unused
+        //unused saved directly on slot
         public int Slot { get; set; }
 
         //No ASS equiv

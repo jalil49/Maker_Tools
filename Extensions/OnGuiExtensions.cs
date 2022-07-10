@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
+using static KKAPI.Utilities.IMGUIUtils;
 
 namespace Extensions
 {
     public static class OnGUIExtensions
     {
+        public static int FontSize { get; set; } = 16;
         public static GUIStyle LabelStyle { get; set; }
         public static GUIStyle ButtonStyle { get; set; }
         public static GUIStyle TextFieldStyle { get; set; }
@@ -13,6 +15,7 @@ namespace Extensions
         public static GUIStyle SliderThumbStyle { get; set; }
 
         public static GUIStyle WindowStyle { get; set; }
+
         /// <summary>
         /// Initialize all files and set a default font size
         /// </summary>
@@ -20,23 +23,21 @@ namespace Extensions
         {
             if (LabelStyle == null)
             {
-
-                LabelStyle = new GUIStyle(GUI.skin.label)
+                LabelStyle = new GUIStyle(SolidBackgroundGuiSkin.label)
                 {
                     wordWrap = true
                 };
-                ButtonStyle = new GUIStyle(GUI.skin.button);
-                TextFieldStyle = new GUIStyle(GUI.skin.textField);
-                TextAreaStyle = new GUIStyle(GUI.skin.textArea);
-                ToggleStyle = new GUIStyle(GUI.skin.toggle);
-                SliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
-                SliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
-                WindowStyle = new GUIStyle(GUI.skin.window);
-
+                ButtonStyle = new GUIStyle(SolidBackgroundGuiSkin.button);
+                TextFieldStyle = new GUIStyle(SolidBackgroundGuiSkin.textField);
+                TextAreaStyle = new GUIStyle(SolidBackgroundGuiSkin.textArea);
+                ToggleStyle = new GUIStyle(SolidBackgroundGuiSkin.toggle);
+                SliderStyle = new GUIStyle(SolidBackgroundGuiSkin.horizontalSlider);
+                SliderThumbStyle = new GUIStyle(SolidBackgroundGuiSkin.horizontalSliderThumb);
+                WindowStyle = new GUIStyle(SolidBackgroundGuiSkin.window);
                 ButtonStyle.hover.textColor = Color.red;
                 ButtonStyle.onNormal.textColor = Color.red;
 
-                SetFontSize(Screen.height / 108);
+                SetFontSize(FontSize);
             }
         }
 
@@ -103,29 +104,11 @@ namespace Extensions
 
         public static void IncrementFontSize()
         {
-            SetFontSize(LabelStyle.fontSize + 1);
+            SetFontSize(FontSize + 1);
         }
         public static void DecrementFontSize()
         {
-            SetFontSize(System.Math.Max(0, LabelStyle.fontSize - 1));
-        }
-
-        private static void DarkenPixels(Texture2D texture)
-        {
-            var width = texture.width;
-            var height = texture.height;
-            var colorVal = 0.4f;
-            var reference = new Color(colorVal, colorVal, colorVal, 0);
-            for (var x = 0; x < width; x++)
-            {
-                for (var y = 0; y < height; y++)
-                {
-                    var pixel = texture.GetPixel(x, y);
-                    pixel -= reference;
-                    texture.SetPixel(x, y, pixel);
-                }
-            }
-            texture.Apply();
+            SetFontSize(System.Math.Max(1, FontSize - 1));
         }
     }
 }

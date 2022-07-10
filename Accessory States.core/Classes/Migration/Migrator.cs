@@ -87,6 +87,7 @@ namespace Accessory_States.Migration
             {
                 if (parts.Length <= item.Key)
                     continue;
+
                 var slotdata = new SlotData
                 {
                     Parented = item.Value.Parented

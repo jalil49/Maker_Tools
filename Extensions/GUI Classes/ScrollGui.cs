@@ -4,17 +4,17 @@ using UnityEngine;
 
 namespace Extensions.GUI_Classes
 {
-    public class ScrollGUI<T>
+    public class ScrollGUI
     {
         public GUILayoutOption[] layoutOptions;
-        public Action<T> action;
+        public Action action;
 
         private Vector2 Scrolling = new Vector2();
 
-        public void Draw(T actionObj)
+        public void Draw()
         {
             Scrolling = GUILayout.BeginScrollView(Scrolling, layoutOptions);
-            action.Invoke(actionObj);
+            action.Invoke();
             GUILayout.EndScrollView();
         }
     }

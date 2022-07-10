@@ -60,6 +60,18 @@ namespace Accessory_States
                 Visible = stateInfo.Show;
                 Priority = stateInfo.Priority;
             }
+            public StateInfo ToStateInfo()
+            {
+                return new StateInfo()
+                {
+                    Priority = Priority,
+                    State = RefState,
+                    Show = Visible,
+                    Slot = Slot,
+                    ShoeType = 2,
+                    Binding = RefKind
+                };
+            }
         }
 
         [Serializable]

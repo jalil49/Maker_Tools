@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\AreaGui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\Config\WindowConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ScrollGui.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IntTextFieldGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextAreaGUI.cs" />

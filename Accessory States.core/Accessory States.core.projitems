@@ -35,8 +35,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Classes\MakerGUI\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Classes\StudioGUI\" />
-  </ItemGroup>
 </Project>

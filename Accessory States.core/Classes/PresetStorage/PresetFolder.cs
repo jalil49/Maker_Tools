@@ -1,7 +1,5 @@
 ﻿using MessagePack;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Accessory_States.Classes.PresetStorage
 {
@@ -46,6 +44,19 @@ namespace Accessory_States.Classes.PresetStorage
             FileName = "Default File Name";
             Description = "Default Description";
             SavedOnDisk = false;
+        }
+        public bool Filter(string filter)
+        {
+            if (Name.Contains(filter) || FileName.Contains(filter) || Description.Contains(filter))
+                return false;
+
+            foreach (var item in PresetDatas)
+            {
+                if (item.Filter(filter))
+                    return false;
+            }
+
+            return true;
         }
 
         public void SaveFile()

@@ -1,9 +1,5 @@
-﻿using Extensions;
-using MessagePack;
+﻿using MessagePack;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
 
 namespace Accessory_States
 {
@@ -28,7 +24,15 @@ namespace Accessory_States
 
         private int _assShowPreference;
 
-        public CoordinateData() { NullCheck(); }
+        public CoordinateData()
+        {
+#if KKS
+            _assShowPreference = 1;
+#else
+            _assShowPreference = 0;
+#endif
+            NullCheck();
+        }
 
         public void Clear()
         {

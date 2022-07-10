@@ -11,7 +11,7 @@ namespace Accessory_States
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        // TODO: Implement ASS support
+        // TODO: Confirm ASS support
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
             var insidermaker = currentGameMode == GameMode.Maker;
@@ -120,16 +120,58 @@ namespace Accessory_States
             ExtendedSave.SetExtendedDataById(coordinate, "madevil.kk.ass", pluginData);
         }
 
-        // TODO: Implement ASS support
+        // TODO: Confirm ASS support
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            var Extended_Data = GetCoordinateExtendedData(coordinate);
-            if (Extended_Data != null)
+            var extendedData = GetCoordinateExtendedData(coordinate);
+            if (extendedData != null)
             {
-                if (Extended_Data.version < 2)
+                if (extendedData.version < 2)
                 {
-                    Migration.Migrator.StandardCoordMigrator(coordinate, Extended_Data);
+                    Migration.Migrator.StandardCoordMigrator(coordinate, extendedData);
                 }
+            }
+            else if ((extendedData = ExtendedSave.GetExtendedDataById(coordinate, "madevil.kk.ass")) != null)
+            {
+                var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+                if (extendedData.version > 6)
+                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
+                else if (extendedData.version < 6)
+                {
+                    AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
+                }
+                else
+                {
+                    if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                    {
+                        var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+                        if (_tempTriggerProperty?.Count > 0)
+                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+
+                        if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                        {
+                            var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                            if (_tempTriggerGroup?.Count > 0)
+                            {
+                                foreach (var _group in _tempTriggerGroup)
+                                {
+                                    if (_group.GUID.IsNullOrEmpty())
+                                        _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
+                                }
+                                TriggerGroupList.AddRange(_tempTriggerGroup);
+                            }
+                        }
+                    }
+                }
+
+                if (TriggerPropertyList == null)
+                    TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                if (TriggerGroupList == null)
+                    TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+
+                ConvertAssCoordinate(coordinate, TriggerPropertyList, TriggerGroupList);
             }
 
             UpdatePluginData();
@@ -181,9 +223,10 @@ namespace Accessory_States
             {
                 if (slotData.Key >= PartsArray.Length)
                     return;
-
-                var show = ShouldShow(slotData.Value);
                 var partsInfo = PartsArray[slotData.Key];
+                if (partsInfo.type == 120)
+                    continue;
+                var show = ShouldShow(slotData.Value);
                 if (slotData.Value.Parented && ParentedNameDictionary.TryGetValue(partsInfo.parentKey, out var parentingState))
                 {
                     show &= parentingState;

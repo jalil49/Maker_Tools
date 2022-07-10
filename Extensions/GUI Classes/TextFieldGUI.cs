@@ -11,8 +11,7 @@ namespace Extensions.GUI_Classes
         private string newText;
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
-        public Action<string> newAction;
-        public Action<string, string> oldAction;
+        public Action<string, string> OnValueChange;
         public TextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
         {
             style = TextFieldStyle;
@@ -26,15 +25,11 @@ namespace Extensions.GUI_Classes
             var newText = GUILayout.TextField(Text, style, layoutOptions);
             if (newText != Text)
             {
-                if (oldAction != null)
+                if (OnValueChange != null)
                 {
-                    oldAction.Invoke(Text, newText);
+                    OnValueChange.Invoke(Text, newText);
                 }
                 Text = newText;
-                if (newAction != null)
-                {
-                    newAction.Invoke(Text);
-                }
             }
         }
 
@@ -44,17 +39,12 @@ namespace Extensions.GUI_Classes
 
             if (newText != Text && Button(ButtonText, expandwidth: false))
             {
-                if (oldAction != null)
+                if (OnValueChange != null)
                 {
-                    oldAction.Invoke(Text, newText);
+                    OnValueChange.Invoke(Text, newText);
                 }
 
                 Text = newText;
-
-                if (newAction != null)
-                {
-                    newAction.Invoke(Text);
-                }
             }
         }
 
