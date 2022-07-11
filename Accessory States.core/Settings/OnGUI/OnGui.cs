@@ -12,7 +12,9 @@ namespace Accessory_States
         #endregion
 
         #region Studio
+#if Studio
         internal static Studio _studio;
+#endif
         #endregion
 
         public void OnGUI()
@@ -52,7 +54,7 @@ namespace Accessory_States
 
         internal void Update()
         {
-            if (UnityEngine.Input.GetKeyDown(SlotWindowHotKey.Value))
+            if (SlotWindowHotKey.Value.IsDown())
             {
                 if (_maker != null)
                     _maker.ToggleSlotWindow();
@@ -62,7 +64,7 @@ namespace Accessory_States
 #endif
             }
 
-            if (UnityEngine.Input.GetKeyDown(PreviewWindowHotKey.Value))
+            if (PreviewWindowHotKey.Value.IsDown())
             {
                 if (_maker != null)
                     _maker.TogglePreviewWindow();
