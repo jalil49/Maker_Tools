@@ -5,7 +5,7 @@ namespace Accessory_States
 {
     [Serializable]
     [MessagePackObject(true)]
-    public class CoordinateData
+    public class CoordinateData : IMessagePackSerializationCallbackReceiver
     {
         public bool[] ClothingNotData;
 
@@ -27,24 +27,35 @@ namespace Accessory_States
         public CoordinateData()
         {
 #if KKS
-            _assShowPreference = 1;
+            _assShowPreference = 1;//KKS Only has outdoor shoes
 #else
             _assShowPreference = 0;
 #endif
-            NullCheck();
+            ClothingNotData = new bool[3] { false, false, false };
         }
 
         public void Clear()
         {
             ClothingNotData = null;
             NullCheck();
-            AssShowPreference = 0;
+#if KKS
+            _assShowPreference = 1;//KKS Only has outdoor shoes
+#else
+            _assShowPreference = 0;
+#endif
         }
 
         internal void NullCheck()
         {
-            if (ClothingNotData == null)
-                ClothingNotData = new bool[3] { false, false, false };
+            ClothingNotData = ClothingNotData ?? new bool[3] { false, false, false };
+            if (_assShowPreference < 0 || _assShowPreference > 1)
+            {
+#if KKS
+                _assShowPreference = 1;//KKS Only has outdoor shoes
+#else
+                _assShowPreference = 0;
+#endif
+            }
         }
 
         public ExtensibleSaveFormat.PluginData Serialize()
@@ -53,5 +64,9 @@ namespace Accessory_States
             data.data.Add(Constants.CoordinateKey, MessagePackSerializer.Serialize(this));
             return data;
         }
+
+        public void OnBeforeSerialize() { }
+
+        public void OnAfterDeserialize() { NullCheck(); }
     }
 }

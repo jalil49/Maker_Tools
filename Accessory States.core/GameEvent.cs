@@ -3,7 +3,6 @@ using KKAPI.MainGame;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -90,7 +89,8 @@ namespace Accessory_States
             var shoetype = Heroine_Ctrl.fileStatus.shoesType;
             foreach (var nameData in nameDataList)
             {
-                if (nameData.Binding < Constants.ClothingLength) continue; // skip default clothing buttons.
+                if (nameData.Binding < Constants.ClothingLength)
+                    continue; // skip default clothing buttons.
 
                 if (slotinfo.Any(x => x.Value.BindingExists(nameData.Binding, shoetype))) //hide binding in-case its outdoor/indoor specific
                 {
@@ -100,23 +100,23 @@ namespace Accessory_States
                         button.onClick.AddListener(delegate ()
                         {
                             nameData.IncrementCurrentState();
-                            controller.RefreshSlots();
+                            controller.RefreshSlots(nameData.AssociatedSlots);
                             Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                         });
                     }
                 }
             }
 
-            foreach (var item in controller.ParentedNameDictionary.Keys)
+            foreach (var item in controller.ParentedNameDictionary)
             {
                 foreach (var sprite in HSprites)
                 {
-                    var button = Createbutton(Female, Harem, item, 0, sprite);
+                    var button = Createbutton(Female, Harem, item.Key, 0, sprite);
 
                     button.onClick.AddListener(delegate ()
                     {
-                        controller.ParentedNameDictionary[item] = !controller.ParentedNameDictionary[item];
-                        controller.RefreshSlots();
+                        item.Value.Toggle();
+                        controller.RefreshSlots(item.Value.AssociateSlots);
                         Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
                     });
                 }

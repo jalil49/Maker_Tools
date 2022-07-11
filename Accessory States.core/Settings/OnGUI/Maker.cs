@@ -40,9 +40,8 @@ namespace Accessory_States
         private readonly ToolbarGUI _AssPreference;
         #endregion
 
-        private static int ShoeTypeView = 2;
+        private readonly ToolbarGUI ShoeTypeGUI;
         private readonly ToolbarGUI PresetView;
-        private readonly GUIContent[] shoeTypeGUIContext;
         private SidebarToggle SidebarToggle;
         int SelectedDropDown;
 
@@ -78,7 +77,6 @@ namespace Accessory_States
 
         Maker(RegisterSubCategoriesEvent e)
         {
-            ShoeTypeView = 2;
             SelectedDropDown = 0;
 
             #region Windows
@@ -146,7 +144,7 @@ namespace Accessory_States
             #endregion
 
 
-            shoeTypeGUIContext = new GUIContent[3];
+            var shoeTypeGUIContext = new GUIContent[3];
 #if KK
             shoeTypeGUIContext[0] = new GUIContent("Indoor", "Story/FreeH: Applies when inside buildings");
             shoeTypeGUIContext[1] = new GUIContent("Outdoor", "Story/FreeH: Applies when outside buildings");
@@ -163,19 +161,37 @@ namespace Accessory_States
                 new GUIContent("Outdoor","Save Accessory State Sync format with Outdoor Values if not both")
             };
 
-            _AssPreference = new ToolbarGUI(assContent);
+#if KK
+            _AssPreference = new ToolbarGUI(0,assContent);
+#else
+            _AssPreference = new ToolbarGUI(1, assContent);
+#endif
 
             var PresetContent = new GUIContent[]
             {
                 new GUIContent("Folder","Show Folder Presets"),
                 new GUIContent("Single","Show invididual Presets")
             };
-            PresetView = new ToolbarGUI(PresetContent);
+            PresetView = new ToolbarGUI(0, PresetContent);
 
             CreateMakerGUI(e);
             DiskLoad();
 
-            PresetFilter = new TextFieldGUI("");
+            PresetFilter = new TextFieldGUI(new GUIContent("", "Search among presets"));
+            ShoeTypeGUI = new ToolbarGUI(2, shoeTypeGUIContext)
+            {
+                OnValueChange = (oldValue, newValue) =>
+                {
+                    var control = GetController.ChaControl;
+                    if (newValue < 2)
+                    {
+#if KK
+                        control.fileStatus.shoesType = (byte)newValue;
+#endif
+                        control.SetClothesState(7, control.fileStatus.clothesState[7]);
+                    }
+                }
+            };
         }
 
         #region KKAPI Events
@@ -350,6 +366,17 @@ namespace Accessory_States
             return slotData.bindingDatas[SelectedDropDown];
         }
 
+        internal void TogglePreviewWindow()
+        {
+            _previewWindow.ToggleShow();
+            SidebarToggle.SetValue(_previewWindow.Show);
+        }
+
+        internal void ToggleSlotWindow()
+        {
+            _slotWindow.ToggleShow();
+        }
+
         private void SlotWindowDraw(int id)
         {
             _slotWindow.SetWindowName("Slot " + (SelectedSlot + 1));
@@ -361,8 +388,7 @@ namespace Accessory_States
                 GL.FlexibleSpace();
                 if (Button("Preview", "Open preview window to modify states", false))
                 {
-                    _previewWindow.ToggleShow();
-                    SidebarToggle.SetValue(_previewWindow.Show);
+                    TogglePreviewWindow();
                 }
 
                 if (Button("Settings", "Open Settings", false))
@@ -377,7 +403,7 @@ namespace Accessory_States
 
             GL.BeginHorizontal();
             {
-                ShoeTypeView = GL.Toolbar(ShoeTypeView, shoeTypeGUIContext, ButtonStyle);
+                ShoeTypeGUI.Draw();
                 if (Toggle(slotData.Parented, "Enable Hide by Parent", "Enable Toggle to hide by parent") ^ slotData.Parented)
                 {
                     slotData.Parented = !slotData.Parented;
@@ -387,7 +413,7 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 #if !KK
-            if (ShoeTypeView != 2)
+            if (ShoeTypeGUI.Value != 2)
             {
 #if KKS
                 Label("KK Functionality, KKS only uses Outdoor ATM by default");
@@ -397,7 +423,7 @@ namespace Accessory_States
 
                 GL.BeginHorizontal();
                 {
-                    if (ShoeTypeView == 0)
+                    if (ShoeTypeGUI.Value == 0)
                     {
 #if KKS
                         Label("Non-functioning: May be implemented in the future");
@@ -405,7 +431,7 @@ namespace Accessory_States
                         Label("Unknown functionality");
 #endif
                     }
-                    if (ShoeTypeView == 1)
+                    if (ShoeTypeGUI.Value == 1)
                     {
 #if KKS
                         Label("Default State: May implement Indoor in the future");
@@ -472,7 +498,7 @@ namespace Accessory_States
             for (var i = 0; i < bData.States.Count; i++)
             {
                 var item = bData.States[i];
-                if (!(ShoeTypeView == 2 || item.ShoeType == ShoeTypeView || item.ShoeType == 2))
+                if (!(ShoeTypeGUI.Value == 2 || item.ShoeType == ShoeTypeGUI.Value || item.ShoeType == 2))
                     continue;
 
                 if (!StateControls.TryGetValue(item, out var controls))
@@ -556,7 +582,12 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 
-            PresetFilter.ActiveDraw();
+            GL.BeginHorizontal();
+            {
+                Label("Search:", "Filter lists by Search", false);
+                PresetFilter.ActiveDraw();
+            }
+            GL.EndHorizontal();
 
             switch (PresetView.Value)
             {
@@ -569,8 +600,6 @@ namespace Accessory_States
                 default:
                     break;
             }
-
-            //apply presets to selected slot
             //TODO: Remember to make presets
         }
 
@@ -605,7 +634,6 @@ namespace Accessory_States
             GL.EndHorizontal();
             GL.BeginHorizontal();
             {
-                Label("Preset Filter: ", "Filter Presets for easier searching", false);
                 _singlePresetScroll.Draw();
             }
             GL.EndHorizontal();
@@ -613,7 +641,7 @@ namespace Accessory_States
 
         private void PresetSingleScroll()
         {
-            var filter = PresetFilter.Text.Trim();
+            var filter = PresetFilter.GUIContent.text.Trim();
             var validfilter = filter.Length > 0;
             for (var i = 0; i < SinglePresetDatas.Count; i++)
             {
@@ -635,7 +663,7 @@ namespace Accessory_States
 
         private void PresetFolderScroll()
         {
-            var filter = PresetFilter.Text.Trim();
+            var filter = PresetFilter.GUIContent.text.Trim();
             var validfilter = filter.Length > 0;
 
             for (var i = 0; i < presetFolders.Count; i++)
@@ -786,17 +814,17 @@ namespace Accessory_States
             var dict = GetController.ParentedNameDictionary;
             for (var i = 0; i < dict.Count; i++)
             {
-                var keyvalue = dict.ElementAt(i);
-                if (currentParent == keyvalue.Key)
+                var keyValue = dict.ElementAt(i);
+                if (currentParent == keyValue.Key)
                     GL.BeginHorizontal(GUI.skin.box);
                 else
                     GL.BeginHorizontal();
                 {
-                    Label(keyvalue.Key, "Display accessory if parented toggle is also enabled", false);
-                    if (Button(keyvalue.Value ? "Show" : "Hide", "If accessory should be shown or hidden with current state"))
+                    Label(keyValue.Key, "Display accessory if parented toggle is also enabled", false);
+                    if (Button(keyValue.Value.Show ? "Show" : "Hide", "If accessory should be shown or hidden with current state"))
                     {
-                        dict[keyvalue.Key] = !keyvalue.Value;
-                        GetController.RefreshSlots();
+                        keyValue.Value.Toggle();
+                        GetController.RefreshSlots(keyValue.Value.AssociateSlots);
                     }
                 }
                 GL.EndHorizontal();
@@ -1141,7 +1169,7 @@ namespace Accessory_States
             {
                 if (!StatesRename.TryGetValue(state, out var newStateName))
                 {
-                    StatesRename[state] = newStateName = new TextFieldGUI(NameData.GetStateName(state), GL.ExpandWidth(true), GL.MinWidth(30))
+                    StatesRename[state] = newStateName = new TextFieldGUI(new GUIContent(NameData.GetStateName(state), ""), GL.ExpandWidth(true), GL.MinWidth(30))
                     {
                         OnValueChange = (oldValue, newValue) =>
                         {
@@ -1187,7 +1215,7 @@ namespace Accessory_States
                 {
                     GL.Space(20);
                     Label(StateInfo.State + ": " + bData.NameData.GetStateName(StateInfo.State) + nameAppend);
-                    if (ShoeTypeView != 2)
+                    if (Settings._maker.ShoeTypeGUI.Value != 2)
                     {
                         if (StateInfo.ShoeType == 2 && Button("Shoe Split", "Make this slot distinguish between being indoors and outdoors", false))
                         {
@@ -1248,12 +1276,12 @@ namespace Accessory_States
                 PresetData = presetData;
                 Container = container;
 
-                Name = new TextFieldGUI(presetData.Name, GL.ExpandWidth(true))
+                Name = new TextFieldGUI(new GUIContent(presetData.Name), GL.ExpandWidth(true))
                 {
                     OnValueChange = (oldValue, newValue) => { presetData.Name = newValue; }
                 };
 
-                FileName = new TextFieldGUI(presetData.FileName)
+                FileName = new TextFieldGUI(new GUIContent(presetData.FileName))
                 {
                     OnValueChange = (oldVal, newVal) =>
                     {
@@ -1318,7 +1346,7 @@ namespace Accessory_States
                         PresetData.Data = GetController.SlotBindingData[SelectedSlot].DeepClone();
                     }
 
-                    if (Button("↑", "Move Up", false) && index > 0)
+                    if (Button("↑", $"Move Up: Index {index}", false) && index > 0)
                     {
                         {
                             Container.RemoveAt(index);
@@ -1326,7 +1354,7 @@ namespace Accessory_States
                         }
                     }
 
-                    if (Button("↓", "Move Down", false) && index < Container.Count - 1)
+                    if (Button("↓", $"Move Down: Index {index}", false) && index < Container.Count - 1)
                     {
                         {
                             Container.RemoveAt(index);
@@ -1341,7 +1369,7 @@ namespace Accessory_States
                 {
                     GL.FlexibleSpace();
 
-                    if (FileName.Text.Length > 0 && Button("Save", "Save Preset to disk", false))
+                    if (FileName.GUIContent.text.Length > 0 && Button("Save", "Save Preset to disk", false))
                     {
                         PresetData.SaveFile();
                     }
@@ -1425,12 +1453,12 @@ namespace Accessory_States
                 PresetFolder = presetFolder;
                 Container = container;
 
-                Name = new TextFieldGUI(presetFolder.Name, GL.ExpandWidth(true))
+                Name = new TextFieldGUI(new GUIContent(presetFolder.Name), GL.ExpandWidth(true))
                 {
                     OnValueChange = (oldValue, newValue) => { PresetFolder.Name = newValue; }
                 };
 
-                FileName = new TextFieldGUI(presetFolder.FileName)
+                FileName = new TextFieldGUI(new GUIContent(presetFolder.FileName))
                 {
                     OnValueChange = (oldVal, newVal) =>
                     {
@@ -1472,13 +1500,13 @@ namespace Accessory_States
 
                     var index = Container.IndexOf(PresetFolder);
 
-                    if (Button("↑", "Move Up", false) && index > 0)
+                    if (Button("↑", $"Move Up: Index {index}", false) && index > 0)
                     {
                         Container.RemoveAt(index);
                         Container.Insert(index - 1, PresetFolder);
                     }
 
-                    if (Button("↓", "Move Down", false) && index < Container.Count - 1)
+                    if (Button("↓", $"Move Down: Index {index}", false) && index < Container.Count - 1)
                     {
                         Container.RemoveAt(index);
                         Container.Insert(index + 1, PresetFolder);
@@ -1495,7 +1523,7 @@ namespace Accessory_States
                         PresetFolder.PresetDatas.Add(PresetData.ConvertSlotData(slotData, slot));
                     }
 
-                    if (FileName.Text.Length > 0 && Button("Save", "", false))
+                    if (FileName.GUIContent.text.Length > 0 && Button("Save", "", false))
                     {
                         PresetFolder.SaveFile();
                     }

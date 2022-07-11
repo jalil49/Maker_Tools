@@ -52,15 +52,26 @@ namespace Accessory_States
 
         internal void Update()
         {
-#if Studio
-            if (KKAPI.Studio.StudioAPI.InsideStudio)//disable OnGui and Update calls when not in maker for main game Initialize styles first, if in studio don't disable
+            if (UnityEngine.Input.GetKeyDown(SlotWindowShortcut.Value))
             {
-                if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.N))
-                {
-                    _studio._slotWindow.ToggleShow();
-                }
-            }
+                if (_maker != null)
+                    _maker.ToggleSlotWindow();
+#if Studio
+                if (_studio != null)
+                    _studio.ToggleSlotWindow();
 #endif
+            }
+
+            if (UnityEngine.Input.GetKeyDown(PreviewWindowShortcut.Value))
+            {
+                if (_maker != null)
+                    _maker.TogglePreviewWindow();
+#if Studio
+                if (_studio != null)
+                    _studio.TogglePreviewWindow();
+#endif
+            }
         }
     }
 }
+

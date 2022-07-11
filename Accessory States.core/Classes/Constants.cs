@@ -56,10 +56,6 @@ namespace Accessory_States
         public const string CoordinateKey = "CoordinateData";
         public const string AccessoryKey = "SlotData";
         public const int SaveVersion = 2;
-#if KK || KKS
         public const int ClothingLength = 8;
-#else
-        public const int ClothingLength = 8;
-#endif
     }
 }

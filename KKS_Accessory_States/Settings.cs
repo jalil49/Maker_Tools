@@ -5,6 +5,7 @@ using ExtensibleSaveFormat;
 using MessagePack;
 using System;
 using System.Collections.Generic;
+using static ExtensibleSaveFormat.Extensions;
 
 namespace Accessory_States
 {
@@ -14,42 +15,66 @@ namespace Accessory_States
         private void GameUnique()
         {
             ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported;
+            ExtendedSave.CardBeingSaved += ExtendedSave_CardBeingSaved;
+        }
+
+        private void ExtendedSave_CardBeingSaved(ChaFile file)
+        {
+            var pluginData = ExtendedSave.GetExtendedDataById(file, GUID);
+            if (pluginData == null || pluginData.version != -1)
+                return;
+
+            if (pluginData.data.TryGetValue("TempMigration", out var byteArray) && byteArray != null)
+            {
+                var temp = MessagePackSerializer.Deserialize<Dictionary<int, TempMigration>>((byte[])byteArray);
+
+                foreach (var item in temp)
+                {
+                    var accessory = file.coordinate[item.Key].accessory;
+                    accessory.SetExtendedDataById(GUID, item.Value.CoordinateData.Serialize());
+                    var parts = accessory.parts;
+                    foreach (var slotData in item.Value.SlotData)
+                    {
+                        if (slotData.Key >= parts.Length)
+                            continue;
+
+                        var part = parts[slotData.Key];
+                        if (part.type == 120)
+                            continue;
+
+                        part.SetExtendedDataById(GUID, slotData.Value.Serialize());
+                    }
+                }
+            }
         }
 
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
             var attemptASS = false;
-            var Coordinate = new Dictionary<int, CoordinateDataV1>();
-            foreach (var item in coordinateMapping)
-            {
-                Coordinate[item.Key] = new CoordinateDataV1();
-            }
-
             if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null)
                 attemptASS = true;
 
+            Dictionary<int, TempMigration> DataStore;
+
             if (!attemptASS)
             {
-                if (Data.version == 1)
+                var Coordinate = new Dictionary<int, CoordinateDataV1>();
+                foreach (var item in coordinateMapping)
                 {
-                    if (Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                    {
-                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateDataV1>>((byte[])ByteData);
-                    }
+                    Coordinate[item.Key] = new CoordinateDataV1();
                 }
-                else if (Data.version == 0)
+
+                if (Data.version >= 0 && Data.version < 2)
                 {
-                    Migrator.CharaMigrateV0(Data, Coordinate, coordinateMapping.Count);
+                    ImportMigrator.StandardCharaMigrator(Data, out DataStore);
                 }
                 else
                 {
-                    Logger.LogWarning("New plugin version found on card please update");
                     return;
                 }
             }
             else
             {
-                //TODO: Reimplement ASS
                 if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null)
                     return;
 
@@ -57,7 +82,10 @@ namespace Accessory_States
                 var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
                 if (ASSData.version > 6)
+                {
                     Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
+                    return;
+                }
                 else if (ASSData.version < 6)
                 {
                     AccStateSync.Migration.ConvertCharaPluginData(ASSData, ref TriggerPropertyList, ref TriggerGroupList);
@@ -91,23 +119,20 @@ namespace Accessory_States
                 if (TriggerGroupList == null)
                     TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                foreach (var item in Coordinate)
-                {
-                    //item.Value.AccStateSyncConvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
-                }
+                ImportMigrator.FullAssCardLoad(TriggerPropertyList, TriggerGroupList, out DataStore);
             }
 
-            var transfer = new Dictionary<int, CoordinateDataV1>();
+            var transfer = new Dictionary<int, TempMigration>();
 
             foreach (var item in coordinateMapping)
             {
-                if (!Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue)
+                if (!item.Value.HasValue || !DataStore.TryGetValue(item.Key, out var coord))
                     continue;
                 transfer[item.Value.Value] = coord;
             }
 
-            Data = importedExtendedData[GUID] = new PluginData() { version = 1 };
-            Data.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
+            Data = importedExtendedData[GUID] = new PluginData() { version = -1 };
+            Data.data["TempMigration"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

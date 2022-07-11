@@ -18,14 +18,14 @@ namespace Accessory_States
     public class Studio
     {
         #region Windows
-        internal readonly WindowGUI _slotWindow;//main SelectedSlot window
+        private readonly WindowGUI _slotWindow;//main SelectedSlot window
         private readonly WindowGUI _groupGUI;//General NameData window, add, change, remove Namedata and other modifications
         private readonly WindowGUI _presetWindow;
         private readonly WindowGUI _bindingSelect;
         private readonly WindowGUI _previewWindow;
         private readonly WindowGUI _settingWindow;
         private readonly WindowGUI _characterSelect;
-        private readonly WindowGUI _accessorySelect;
+        private readonly WindowGUI _accessorySelectWindow;
         #endregion
 
         #region Scrolls for windows
@@ -45,9 +45,10 @@ namespace Accessory_States
         private readonly ToolbarGUI _AssPreference;
         #endregion
 
-        private static int ShoeTypeView = 2;
+        private readonly ToolbarGUI ShoeTypeGUI;
         private readonly ToolbarGUI PresetView;
-        private readonly GUIContent[] shoeTypeGUIContext;
+        private readonly TextFieldGUI PresetFilter;
+
 
         #region Properties
 
@@ -66,6 +67,7 @@ namespace Accessory_States
                 SelectedCharaEventControls.SelectedDropDown = value;
             }
         }
+
         private int SelectedSlot
         {
             get
@@ -81,7 +83,6 @@ namespace Accessory_States
                 SelectedCharaEventControls.SelectedSlot = value;
             }
         }
-
 
         private SlotData SelectedSlotData
         {
@@ -158,8 +159,6 @@ namespace Accessory_States
 
         public Studio()
         {
-            ShoeTypeView = 2;
-
             #region Windows
             var windowcount = 1;
             _slotWindow = new WindowGUI(windowcount++, Settings.SlotWindowRectStudio, Settings.SlotWindowTransparencyStudio, SlotWindowDraw, new GUIContent("Slot 0", "Modify data attached to this Accessory"));
@@ -176,7 +175,7 @@ namespace Accessory_States
 
             _characterSelect = new WindowGUI(windowcount++, Settings.CharaSelectWindowRectStudio, Settings.CharaSelectWindowTransparencyStudio, CharaSelectWindowDraw, new GUIContent("Character Select", "Select from selected Characters"));
 
-            _accessorySelect = new WindowGUI(windowcount++, Settings.AccessorySelectWindowRectStudio, Settings.AccessorySelectWindowTransparencyStudio, AccessorySelectWindowDraw, new GUIContent("Accessory Select", "Select Accessories"));
+            _accessorySelectWindow = new WindowGUI(windowcount++, Settings.AccessorySelectWindowRectStudio, Settings.AccessorySelectWindowTransparencyStudio, AccessorySelectWindowDraw, new GUIContent("Accessory Select", "Select Accessories"));
             #endregion
 
             #region Scrolls
@@ -240,7 +239,7 @@ namespace Accessory_States
             #endregion
 
 
-            shoeTypeGUIContext = new GUIContent[3];
+            var shoeTypeGUIContext = new GUIContent[3];
 #if KK
             shoeTypeGUIContext[0] = new GUIContent("Indoor", "Story/FreeH: Applies when inside buildings");
             shoeTypeGUIContext[1] = new GUIContent("Outdoor", "Story/FreeH: Applies when outside buildings");
@@ -257,15 +256,36 @@ namespace Accessory_States
                 new GUIContent("Outdoor","Save Accessory State Sync format with Outdoor Values if not both")
             };
 
-            _AssPreference = new ToolbarGUI(assContent);
+#if KK
+            _AssPreference = new ToolbarGUI(0, assContent);
+#else
+            _AssPreference = new ToolbarGUI(1, assContent);
+#endif
 
             var PresetContent = new GUIContent[]
             {
                 new GUIContent("Folder","Show Folder Presets"),
                 new GUIContent("Single","Show invididual Presets")
             };
-            PresetView = new ToolbarGUI(PresetContent);
 
+            PresetView = new ToolbarGUI(0, PresetContent);
+
+            ShoeTypeGUI = new ToolbarGUI(2, shoeTypeGUIContext)
+            {
+                OnValueChange = (oldValue, newValue) =>
+                {
+                    var control = GetController.ChaControl;
+                    if (newValue < 2)
+                    {
+#if KK
+                        control.fileStatus.shoesType = (byte)newValue;
+#endif
+                        control.SetClothesState(7, control.fileStatus.clothesState[7]);
+                    }
+                }
+            };
+
+            PresetFilter = new TextFieldGUI(new GUIContent(""));
             CreateStudioGUI();
             DiskLoad();
         }
@@ -338,6 +358,153 @@ namespace Accessory_States
             CharaControls.Remove(charaEvent);
         }
 
+        private void PresetWindowDraw(int id)
+        {
+            GL.BeginHorizontal();
+            {
+                PresetView.Draw();
+
+                GL.FlexibleSpace();
+                if (Button("Settings", "Open Settings", false))
+                    _settingWindow.ToggleShow();
+                GL.Space(10);
+                if (Button("X", "Close this window", false))
+                    _presetWindow.ToggleShow();
+            }
+            GL.EndHorizontal();
+
+            GL.BeginHorizontal();
+            {
+                Label("Search:", "Filter lists by Search", false);
+                PresetFilter.ActiveDraw();
+            }
+            GL.EndHorizontal();
+
+            switch (PresetView.Value)
+            {
+                case 0:
+                    PresetFolderDraw();
+                    break;
+                case 1:
+                    PresetSingleDraw();
+                    break;
+                default:
+                    break;
+            }
+            //TODO: Remember to make presets
+        }
+
+        private void PresetFolderDraw()
+        {
+            GL.BeginHorizontal();
+            {
+                if (Button("New Preset Folder", "Create new folder group"))
+                {
+                    var presetFolder = new PresetFolder()
+                    {
+                        Name = $"Slot {SelectedSlot} Folder Preset"
+                    };
+                    presetFolders.Add(presetFolder);
+                }
+            }
+            GL.EndHorizontal();
+
+            _folderPresetScroll.Draw();
+        }
+
+        private void PresetSingleDraw()
+        {
+            GL.BeginHorizontal();
+            {
+                if (Button("New Preset"))
+                {
+                    var presetData = PresetData.ConvertSlotData(SelectedSlotData, SelectedSlot);
+                    SinglePresetDatas.Add(presetData);
+                }
+            }
+            GL.EndHorizontal();
+            GL.BeginHorizontal();
+            {
+                _singlePresetScroll.Draw();
+            }
+            GL.EndHorizontal();
+        }
+
+        private void PresetSingleScroll()
+        {
+            var filter = PresetFilter.GUIContent.text.Trim();
+            var validfilter = filter.Length > 0;
+            for (var i = 0; i < SinglePresetDatas.Count; i++)
+            {
+                if (!SingleControls.TryGetValue(SinglePresetDatas[i], out var preset))
+                {
+                    preset = SingleControls[SinglePresetDatas[i]] = new PresetContols(SinglePresetDatas[i], SinglePresetDatas);
+                }
+
+                if (validfilter && preset.Filter(filter))
+                    continue;
+
+                GL.BeginVertical(GUI.skin.box);
+                {
+                    preset.Draw(GetController, SelectedSlot);
+                }
+                GL.EndVertical();
+            }
+        }
+
+        private void PresetFolderScroll()
+        {
+            var filter = PresetFilter.GUIContent.text.Trim();
+            var validfilter = filter.Length > 0;
+
+            for (var i = 0; i < presetFolders.Count; i++)
+            {
+                var folder = presetFolders[i];
+                if (!PresetFolderControls.TryGetValue(folder, out var folderPreset))
+                {
+                    folderPreset = PresetFolderControls[folder] = new PresetFolderContols(folder, presetFolders);
+                }
+
+                if (validfilter && folderPreset.Filter(filter))
+                    continue;
+
+                GL.BeginVertical(GUI.skin.box);
+                {
+                    folderPreset.Draw(SelectedSlotData, SelectedSlot);
+                    if (folderPreset.ShowContents)
+                    {
+                        var presets = folder.PresetDatas;
+                        for (var j = 0; j < presets.Count; j++)
+                        {
+                            var singlePreset = presets[j];
+                            if (!SingleControls.TryGetValue(singlePreset, out var singlePresetControl))
+                            {
+                                singlePresetControl = new PresetContols(singlePreset, presets);
+                                SingleControls[singlePreset] = singlePresetControl;
+                            }
+                            if (singlePreset.Filter(filter))
+                                continue;
+                            GL.BeginHorizontal(GUI.skin.box);
+                            {
+                                GL.Space(10);
+                                GL.BeginVertical();
+                                {
+                                    singlePresetControl.Draw(GetController, SelectedSlot);
+                                }
+                                GL.EndVertical();
+                            }
+                            GL.EndHorizontal();
+                        }
+                    }
+                    else
+                    {
+                        GL.Space(10);
+                    }
+                }
+                GL.EndVertical();
+            }
+        }
+
         private void DrawCharaSelectMenu()
         {
             if (CharaEvents.Length < 2)
@@ -371,8 +538,6 @@ namespace Accessory_States
                 }
             }
             GL.EndHorizontal();
-
-            _characterSelect.Draw();
         }
 
         private void CharaSelectWindowDraw(int id)
@@ -381,6 +546,13 @@ namespace Accessory_States
             {
                 _characterSelect.ToggleShow(false);
             }
+            GL.BeginHorizontal();
+            {
+                GL.FlexibleSpace();
+                if (Button("X", "Close this window", false))
+                    _characterSelect.ToggleShow();
+            }
+            GL.EndHorizontal();
             DrawCharaSelectMenu();
             _charaSelectScroll.Draw();
         }
@@ -390,15 +562,20 @@ namespace Accessory_States
             for (var i = 0; i < CharaEvents.Length; i++)
             {
                 var charaEvent = CharaEvents[i];
-                GL.BeginHorizontal();
+                var selected = selectedChara == i;
+                if (selected)
+                    GL.BeginHorizontal(GUI.skin.box);
+                else
+                    GL.BeginHorizontal();
                 {
-                    if (selectedChara != i && Button("Select"))
+                    GL.FlexibleSpace();
+                    if (!selected && Button("Select", "Select this Character", false))
                     {
                         selectedChara = i;
                         GetController = charaEvent;
                         SelectedCharaEventControls = GetCharaEventControl();
                     }
-                    Label(charaEvent.ChaFileControl.parameter.fullname);
+                    Label(charaEvent.ChaFileControl.parameter.fullname, "", false);
                 }
                 GL.EndHorizontal();
             }
@@ -423,63 +600,74 @@ namespace Accessory_States
 
                 }
 
-                if (Button("<", "Previous Accessory") && CharaEvents.Length > 0)
+                if (Button("<", "Previous Accessory"))
                 {
                     var parts = GetController.PartsArray;
                     var slot = -1;
-
-                    for (var i = SelectedCharaEventControls.SelectedDropDown - 1; i >= 0; i--)
+                    Settings.Logger.LogMessage("Previous clicked");
+                    for (var i = SelectedCharaEventControls.SelectedSlot - 1; i >= 0; i--)
                     {
+                        Settings.Logger.LogMessage("Previous " + i);
                         if (parts[i].type != 120)
                         {
                             slot = i;
+                            Settings.Logger.LogMessage("Previous found " + i);
                             break;
                         }
                     }
 
                     if (slot == -1) //wrap around
                     {
+                        Settings.Logger.LogMessage("Previous Wrap");
                         for (var i = parts.Length - 1; i >= SelectedCharaEventControls.SelectedSlot; i--)
                         {
+                            Settings.Logger.LogMessage("Previous " + i);
                             if (parts[i].type != 120)
                             {
                                 slot = i;
+                                Settings.Logger.LogMessage("Previous found " + i);
                                 break;
                             }
                         }
                     }
-                    SelectedCharaEventControls.SelectedDropDown = Math.Max(slot, 0);
+                    SelectedCharaEventControls.SelectedSlot = Math.Max(slot, 0);
                 }
 
                 if (Button(dropDownName, "Click to open Accessory Select window"))
-                    _accessorySelect.ToggleShow();
+                    _accessorySelectWindow.ToggleShow();
 
-                if (Button(">", "Next Accessory") && CharaEvents.Length > 0)
+                if (Button(">", "Next Accessory"))
                 {
                     var parts = GetController.PartsArray;
                     var slot = -1;
-
-                    for (var i = SelectedCharaEventControls.SelectedDropDown; i < parts.Length; i++)
+                    Settings.Logger.LogMessage("Next clicked");
+                    for (var i = SelectedCharaEventControls.SelectedSlot + 1; i < parts.Length; i++)
                     {
+                        Settings.Logger.LogMessage("next " + i);
                         if (parts[i].type != 120)
                         {
                             slot = i;
+                            Settings.Logger.LogMessage("next found " + i);
                             break;
                         }
                     }
 
                     if (slot == -1) //wrap around
                     {
+                        Settings.Logger.LogMessage("next wrap ");
                         for (var i = 0; i <= SelectedCharaEventControls.SelectedSlot; i++)
                         {
+                            Settings.Logger.LogMessage("next " + i);
+
                             if (parts[i].type != 120)
                             {
                                 slot = i;
+                                Settings.Logger.LogMessage("next found" + i);
                                 break;
                             }
                         }
                     }
-                    SelectedCharaEventControls.SelectedDropDown = Math.Max(slot, 0);
+                    SelectedCharaEventControls.SelectedSlot = Math.Max(slot, 0);
                 }
             }
             GL.EndHorizontal();
@@ -487,6 +675,13 @@ namespace Accessory_States
 
         private void AccessorySelectWindowDraw(int id)
         {
+            GL.BeginHorizontal();
+            {
+                GL.FlexibleSpace();
+                if (Button("X", "Close this window", false))
+                    _accessorySelectWindow.ToggleShow();
+            }
+            GL.EndHorizontal();
             DrawAccessorySelectMenu();
 
             _accessorySelectScroll.Draw();
@@ -503,14 +698,17 @@ namespace Accessory_States
                     continue;
                 }
                 var listInfoBase = listInfoBases[i];
-
-                GL.BeginHorizontal();
+                var selected = SelectedCharaEventControls.SelectedSlot == i;
+                if (selected)
+                    GL.BeginHorizontal(GUI.skin.box);
+                else
+                    GL.BeginHorizontal();
                 {
                     var name = listInfoBase != null ? listInfoBase.Name : "Unknown";
                     Label($"SLOT {i + 1}: ", "", false);
                     Label(name);
 
-                    if (SelectedCharaEventControls.SelectedSlot != i && Button("Select", "Select this Accessory", false))
+                    if (!selected && Button("Select", "Select this Accessory", false))
                     {
                         SelectedCharaEventControls.SelectedSlot = i;
                     }
@@ -528,12 +726,14 @@ namespace Accessory_States
                 return;
             }
 
-            _slotWindow.SetWindowName($"{GetController.ChaControl.fileParam.fullname} Slot {SelectedSlot + 1}");
+
+            _slotWindow.SetWindowName($"Slot {SelectedSlot + 1}");
 
             var bData = GetSelectedBindingData(slotData);
-
             GL.BeginHorizontal();
             {
+                Label(GetController.ChaControl.fileParam.fullname, "", false);
+
                 GL.FlexibleSpace();
                 if (Button("Preview", "Open preview window to modify states", false))
                 {
@@ -553,7 +753,7 @@ namespace Accessory_States
 
             GL.BeginHorizontal();
             {
-                ShoeTypeView = GL.Toolbar(ShoeTypeView, shoeTypeGUIContext, ButtonStyle);
+                ShoeTypeGUI.Draw();
                 if (Toggle(slotData.Parented, "Enable Hide by Parent", "Enable Toggle to hide by parent") ^ slotData.Parented)
                 {
                     slotData.Parented = !slotData.Parented;
@@ -563,7 +763,7 @@ namespace Accessory_States
             }
             GL.EndHorizontal();
 #if !KK
-            if (ShoeTypeView != 2)
+            if (ShoeTypeGUI.Value != 2)
             {
 #if KKS
                 Label("KK Functionality, KKS only uses Outdoor ATM by default");
@@ -573,7 +773,7 @@ namespace Accessory_States
 
                 GL.BeginHorizontal();
                 {
-                    if (ShoeTypeView == 0)
+                    if (ShoeTypeGUI.Value == 0)
                     {
 #if KKS
                         Label("Non-functioning: May be implemented in the future");
@@ -581,7 +781,7 @@ namespace Accessory_States
                         Label("Unknown functionality");
 #endif
                     }
-                    if (ShoeTypeView == 1)
+                    if (ShoeTypeGUI.Value == 1)
                     {
 #if KKS
                         Label("Default State: May implement Indoor in the future");
@@ -653,7 +853,7 @@ namespace Accessory_States
             for (var i = 0; i < bData.States.Count; i++)
             {
                 var item = bData.States[i];
-                if (!(ShoeTypeView == 2 || item.ShoeType == ShoeTypeView || item.ShoeType == 2))
+                if (!(ShoeTypeGUI.Value == 2 || item.ShoeType == ShoeTypeGUI.Value || item.ShoeType == 2))
                     continue;
 
                 if (!StateControls.TryGetValue(item, out var controls))
@@ -727,125 +927,6 @@ namespace Accessory_States
                     controls.DrawGroupSetting();
 
                     controls.DrawStateRename();
-                }
-                GL.EndVertical();
-            }
-        }
-
-        private void PresetWindowDraw(int id)
-        {
-            GL.BeginHorizontal();
-            {
-                PresetView.Draw();
-
-                GL.FlexibleSpace();
-                if (Button("Settings", "Open Settings", false))
-                    _settingWindow.ToggleShow();
-                GL.Space(10);
-                if (Button("X", "Close this window", false))
-                    _presetWindow.ToggleShow();
-            }
-            GL.EndHorizontal();
-
-            switch (PresetView.Value)
-            {
-                case 0:
-                    PresetFolderDraw();
-                    break;
-                case 1:
-                    PresetSingleDraw();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void PresetFolderDraw()
-        {
-            GL.BeginHorizontal();
-            {
-                if (Button("New Preset Folder", "Create new folder group"))
-                {
-                    var presetFolder = new PresetFolder()
-                    {
-                        Name = $"Slot {SelectedSlot} Folder Preset"
-                    };
-                    presetFolders.Add(presetFolder);
-                }
-            }
-            GL.EndHorizontal();
-            _folderPresetScroll.Draw();
-        }
-
-        private void PresetSingleDraw()
-        {
-            GL.BeginHorizontal();
-            {
-                if (Button("New Preset"))
-                {
-                    var presetData = PresetData.ConvertSlotData(SelectedSlotData, SelectedSlot);
-                    SinglePresetDatas.Add(presetData);
-                }
-            }
-            GL.EndHorizontal();
-            _singlePresetScroll.Draw();
-        }
-
-        private void PresetSingleScroll()
-        {
-            for (var i = 0; i < SinglePresetDatas.Count; i++)
-            {
-                if (!SingleControls.TryGetValue(SinglePresetDatas[i], out var preset))
-                {
-                    preset = SingleControls[SinglePresetDatas[i]] = new PresetContols(SinglePresetDatas[i], SinglePresetDatas);
-                }
-                GL.BeginVertical(GUI.skin.box);
-                {
-                    preset.Draw(GetController, SelectedCharaEventControls.SelectedSlot);
-                }
-                GL.EndVertical();
-            }
-        }
-
-        private void PresetFolderScroll()
-        {
-            for (var i = 0; i < presetFolders.Count; i++)
-            {
-                var folder = presetFolders[i];
-                if (!PresetFolderControls.TryGetValue(folder, out var folderPreset))
-                {
-                    folderPreset = PresetFolderControls[folder] = new PresetFolderContols(folder, presetFolders);
-                }
-                GL.BeginVertical(GUI.skin.box);
-                {
-                    folderPreset.Draw(SelectedSlotData, SelectedSlot);
-                    if (folderPreset.ShowContents)
-                    {
-                        var presets = folder.PresetDatas;
-                        for (var j = 0; j < presets.Count; j++)
-                        {
-                            var singlePreset = presets[j];
-                            if (!SingleControls.TryGetValue(singlePreset, out var singlePresetControl))
-                            {
-                                singlePresetControl = new PresetContols(singlePreset, presets);
-                                SingleControls[singlePreset] = singlePresetControl;
-                            }
-                            GL.BeginHorizontal(GUI.skin.box);
-                            {
-                                GL.Space(10);
-                                GL.BeginVertical();
-                                {
-                                    singlePresetControl.Draw(GetController, SelectedSlot);
-                                }
-                                GL.EndVertical();
-                            }
-                            GL.EndHorizontal();
-                        }
-                    }
-                    else
-                    {
-                        GL.Space(10);
-                    }
                 }
                 GL.EndVertical();
             }
@@ -962,10 +1043,10 @@ namespace Accessory_States
                     GL.BeginHorizontal();
                 {
                     Label(keyvalue.Key, "Display accessory if parented toggle is also enabled", false);
-                    if (Button(keyvalue.Value ? "Show" : "Hide", "If accessory should be shown or hidden with current state"))
+                    if (Button(keyvalue.Value.Show ? "Show" : "Hide", "If accessory should be shown or hidden with current state"))
                     {
-                        dict[keyvalue.Key] = !keyvalue.Value;
-                        GetController.RefreshSlots();
+                        keyvalue.Value.Toggle();
+                        GetController.RefreshSlots(keyvalue.Value.AssociateSlots);
                     }
                 }
                 GL.EndHorizontal();
@@ -1113,8 +1194,18 @@ namespace Accessory_States
             _presetWindow.Draw();
             _bindingSelect.Draw();
             _settingWindow.Draw();
-            _accessorySelect.Draw();
+            _accessorySelectWindow.Draw();
             _characterSelect.Draw();
+        }
+
+        internal void ToggleSlotWindow()
+        {
+            _slotWindow.ToggleShow();
+        }
+
+        internal void TogglePreviewWindow()
+        {
+            _previewWindow.ToggleShow();
         }
 
         internal class NameDataControls
@@ -1305,7 +1396,7 @@ namespace Accessory_States
             {
                 if (!StatesRename.TryGetValue(state, out var newStateName))
                 {
-                    StatesRename[state] = newStateName = new TextFieldGUI(NameData.GetStateName(state), GL.ExpandWidth(true), GL.MinWidth(30))
+                    StatesRename[state] = newStateName = new TextFieldGUI(new GUIContent(NameData.GetStateName(state)), GL.ExpandWidth(true), GL.MinWidth(30))
                     {
                         OnValueChange = (oldValue, newValue) =>
                          {
@@ -1354,7 +1445,7 @@ namespace Accessory_States
                 {
                     GL.Space(20);
                     Label(StateInfo.State + ": " + bData.NameData.GetStateName(StateInfo.State) + nameAppend);
-                    if (ShoeTypeView != 2)
+                    if (Settings._studio.ShoeTypeGUI.Value != 2)
                     {
                         if (StateInfo.ShoeType == 2 && Button("Shoe Split", "Make this slot distinguish between being indoors and outdoors", false))
                         {
@@ -1416,12 +1507,12 @@ namespace Accessory_States
                 PresetData = presetData;
                 Container = container;
 
-                Name = new TextFieldGUI(presetData.Name, GL.ExpandWidth(true))
+                Name = new TextFieldGUI(new GUIContent(presetData.Name), GL.ExpandWidth(true))
                 {
                     OnValueChange = (oldValue, newValue) => { presetData.Name = newValue; }
                 };
 
-                FileName = new TextFieldGUI(presetData.FileName)
+                FileName = new TextFieldGUI(new GUIContent(presetData.FileName))
                 {
                     OnValueChange = (oldVal, newVal) =>
                     {
@@ -1444,6 +1535,12 @@ namespace Accessory_States
                     action = (val) => { presetData.Description = val; }
                 };
             }
+
+            public bool Filter(string filter)
+            {
+                return PresetData.Filter(filter);
+            }
+
 
             public void Draw(CharaEvent chara, int SelectedSlot)
             {
@@ -1480,7 +1577,7 @@ namespace Accessory_States
                         PresetData.Data = chara.SlotBindingData[SelectedSlot].DeepClone();
                     }
 
-                    if (Button("↑", "Move Up", false) && index > 0)
+                    if (Button("↑", $"Move Up: Index {index}", false) && index > 0)
                     {
                         {
                             Container.RemoveAt(index);
@@ -1488,7 +1585,7 @@ namespace Accessory_States
                         }
                     }
 
-                    if (Button("↓", "Move Down", false) && index < Container.Count - 1)
+                    if (Button("↓", $"Move Down: Index {index}", false) && index < Container.Count - 1)
                     {
                         {
                             Container.RemoveAt(index);
@@ -1502,7 +1599,7 @@ namespace Accessory_States
                 {
                     GL.FlexibleSpace();
 
-                    if (FileName.Text.Length > 0 && Button("Save", "Save Preset to disk", false))
+                    if (FileName.GUIContent.text.Length > 0 && Button("Save", "Save Preset to disk", false))
                     {
                         PresetData.SaveFile();
                     }
@@ -1585,12 +1682,12 @@ namespace Accessory_States
                 PresetFolder = presetFolder;
                 Container = container;
 
-                Name = new TextFieldGUI(presetFolder.Name, GL.ExpandWidth(true))
+                Name = new TextFieldGUI(new GUIContent(presetFolder.Name), GL.ExpandWidth(true))
                 {
                     OnValueChange = (oldValue, newValue) => { PresetFolder.Name = newValue; }
                 };
 
-                FileName = new TextFieldGUI(presetFolder.FileName)
+                FileName = new TextFieldGUI(new GUIContent(presetFolder.FileName))
                 {
                     OnValueChange = (oldVal, newVal) =>
                     {
@@ -1615,6 +1712,11 @@ namespace Accessory_States
                 };
             }
 
+            public bool Filter(string filter)
+            {
+                return PresetFolder.Filter(filter);
+            }
+
             public void Draw(SlotData slotData, int slot)
             {
                 GL.BeginHorizontal();
@@ -1628,13 +1730,13 @@ namespace Accessory_States
 
                     var index = Container.IndexOf(PresetFolder);
 
-                    if (Button("↑", "Move Up", false) && index > 0)
+                    if (Button("↑", $"Move Up: Index {index}", false) && index > 0)
                     {
                         Container.RemoveAt(index);
                         Container.Insert(index - 1, PresetFolder);
                     }
 
-                    if (Button("↓", "Move Down", false) && index < Container.Count - 1)
+                    if (Button("↓", $"Move Down: Index {index}", false) && index < Container.Count - 1)
                     {
                         Container.RemoveAt(index);
                         Container.Insert(index + 1, PresetFolder);
@@ -1651,7 +1753,7 @@ namespace Accessory_States
                         PresetFolder.PresetDatas.Add(PresetData.ConvertSlotData(slotData, slot));
                     }
 
-                    if (FileName.Text.Length > 0 && Button("Save", "", false))
+                    if (FileName.GUIContent.text.Length > 0 && Button("Save", "", false))
                     {
                         PresetFolder.SaveFile();
                     }

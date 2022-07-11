@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Extensions
 {
     public static class Extensions
     {
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source?.IndexOf(toCheck, comp) >= 0;
+        }
         public static List<T> ToNewList<T>(this List<T> value)
         {
             if (value != null)
@@ -74,12 +79,16 @@ namespace Extensions
         public static bool ClothingUnlocker(this ChaControl chaControl, int select, ChaListDefine.KeyType value)
         {
             var lists = chaControl.infoClothes;
-            if (select >= lists.Length) return false;
+            if (select >= lists.Length)
+                return false;
             var listInfoBase = lists[select];
-            if (listInfoBase == null) return false;
-            if (!(listInfoBase.dictInfo.TryGetValue((int)value, out var stringValue) && int.TryParse(stringValue, out var intValue))) return false;
+            if (listInfoBase == null)
+                return false;
+            if (!(listInfoBase.dictInfo.TryGetValue((int)value, out var stringValue) && int.TryParse(stringValue, out var intValue)))
+                return false;
 
-            if (intValue == listInfoBase.GetInfoInt(value)) return false;
+            if (intValue == listInfoBase.GetInfoInt(value))
+                return false;
 
             return true;
         }

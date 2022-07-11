@@ -6,7 +6,7 @@ namespace Accessory_States
 {
     [Serializable]
     [MessagePackObject(true)]
-    public class BindingData
+    public class BindingData : IMessagePackSerializationCallbackReceiver
     {
         public NameData NameData { get; set; }
         public List<StateInfo> States { get; set; }
@@ -71,5 +71,14 @@ namespace Accessory_States
                 item.Slot = slot;
             }
         }
+
+        private void NullCheck()
+        {
+            NameData = NameData ?? new NameData() { Binding = -1, Name = "Unknown", StateNames = new Dictionary<int, string>() };
+            States = States ?? new List<StateInfo>();
+        }
+        public void OnBeforeSerialize() { }
+
+        public void OnAfterDeserialize() { NullCheck(); }
     }
 }

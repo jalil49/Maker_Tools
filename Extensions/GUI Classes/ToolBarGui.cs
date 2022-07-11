@@ -10,9 +10,10 @@ namespace Extensions.GUI_Classes
         public GUIContent[] Text;
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
-        public Action<int> action;
-        public ToolbarGUI(GUIContent[] _text, params GUILayoutOption[] options)
+        public Action<int, int> OnValueChange;
+        public ToolbarGUI(int defaultValue, GUIContent[] _text, params GUILayoutOption[] options)
         {
+            Value = defaultValue;
             Text = _text;
             style = ButtonStyle;
             layoutOptions = options;
@@ -23,10 +24,9 @@ namespace Extensions.GUI_Classes
             var newValue = GUILayout.Toolbar(Value, Text, style, layoutOptions);
             if (newValue != Value)//xor operator
             {
+                if (OnValueChange != null)
+                    OnValueChange.Invoke(Value, newValue);
                 Value = newValue;
-                if (action == null)
-                    return;
-                action.Invoke(Value);
             }
         }
     }

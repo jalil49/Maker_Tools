@@ -4,6 +4,7 @@ using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ExtensibleSaveFormat.Extensions;
 
 namespace Accessory_States
 {
@@ -22,21 +23,20 @@ namespace Accessory_States
 
         internal Dictionary<int, SlotData> SlotBindingData = new Dictionary<int, SlotData>();
 
-        internal Dictionary<string, bool> ParentedNameDictionary = new Dictionary<string, bool>();
-
-
-        #region Properties
-        internal ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
-
-        internal ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
+        internal Dictionary<string, ParentedData> ParentedNameDictionary = new Dictionary<string, ParentedData>();
 
         internal readonly List<NameData> NameDataList = new List<NameData>();
 
+        #region Properties
         public bool[] ClothNotData
         {
             get { return NowCoordinateData.ClothingNotData; }
             set { NowCoordinateData.ClothingNotData = value; }
         }
+
+        internal ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
+
+        internal ChaFileAccessory.PartsInfo[] PartsArray => ChaControl.nowCoordinate.accessory.parts;
 
         public int AssShoePreference
         {
@@ -98,7 +98,9 @@ namespace Accessory_States
             {
                 if (!item.Value.Parented)
                     continue;
-                ParentedNameDictionary[PartsArray[item.Key].parentKey] = true;
+                if (!ParentedNameDictionary.TryGetValue(PartsArray[item.Key].parentKey, out var parentedData))
+                { parentedData = ParentedNameDictionary[PartsArray[item.Key].parentKey] = new ParentedData(); }
+                parentedData.AssociateSlots.Add(item.Key);
             }
         }
 
@@ -132,16 +134,21 @@ namespace Accessory_States
                 return;
             }
             var pluginData = PartsArray[slot].type != 120 ? slotData.Serialize() : null;
-            SetAccessoryExtData(pluginData, slot);
             if (KKAPI.Maker.MakerAPI.InsideAndLoaded)
             {
                 SetAccessoryExtData(pluginData, slot, (int)CurrentCoordinate.Value);
             }
+            SetAccessoryExtData(pluginData, slot);
         }
 
         internal void SaveCoordinateData()
         {
-            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, NowCoordinateData.Serialize());
+            var pluginData = NowCoordinateData.Serialize();
+            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, pluginData);
+            if (KKAPI.Maker.MakerAPI.InsideAndLoaded)
+            {
+                ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.SetExtendedDataById(Settings.GUID, pluginData);
+            }
         }
 
         internal void LoadSlotData(int slot)
@@ -161,6 +168,7 @@ namespace Accessory_States
             if (extendedData.version > 2)
             {
                 Settings.Logger.LogMessage($"{ChaControl.fileParam.fullname}: New version of Accessory States detected");
+                return;
             }
 
             if (extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
@@ -189,15 +197,60 @@ namespace Accessory_States
                             item.NameData = nameDataReference;
                         }
 
+                        nameDataReference.AssociatedSlots.Add(slot);
                         continue;
                     }
 
                     if (binding < Constants.ClothingLength)
                     {
                         item.NameData = NameDataList.First(x => x.Binding == binding);
+                        item.NameData.AssociatedSlots.Add(slot);
                     }
                 }
             }
+        }
+
+        public class ParentedData
+        {
+            public bool Show = true;
+            public readonly HashSet<int> AssociateSlots = new HashSet<int>();
+
+            public bool Toggle()
+            {
+                Show = !Show;
+                return Show;
+            }
+        }
+
+        internal void ParentRemove(int slotNo, string parentStr)
+        {
+            if (!SlotBindingData.TryGetValue(slotNo, out var slotData) || !slotData.Parented)
+                return;
+
+            if (!ParentedNameDictionary.TryGetValue(parentStr, out var nameData))
+            {
+                ParentedNameDictionary[parentStr] = nameData = new ParentedData();
+            }
+
+            nameData.AssociateSlots.Remove(slotNo);
+
+            if (nameData.AssociateSlots.Count == 0)
+            {
+                ParentedNameDictionary.Remove(parentStr);
+            }
+        }
+
+        internal void ParentUpdate(int slotNo, string parentStr)
+        {
+            if (!SlotBindingData.TryGetValue(slotNo, out var slotData) || !slotData.Parented)
+                return;
+
+            if (!ParentedNameDictionary.TryGetValue(parentStr, out var nameData))
+            {
+                ParentedNameDictionary[parentStr] = nameData = new ParentedData();
+            }
+
+            nameData.AssociateSlots.Add(slotNo);
         }
     }
 }

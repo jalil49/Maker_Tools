@@ -1,14 +1,12 @@
 ﻿using MessagePack;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Accessory_States.Migration.Version1
 {
-    //TODO: Remove if effectively Redundant
     [Serializable]
     [MessagePackObject]
-    internal class NameDataV1
+    public class NameDataV1 : IMessagePackSerializationCallbackReceiver
     {
         [Key("_name")]
         public string Name { get; set; }
@@ -16,12 +14,12 @@ namespace Accessory_States.Migration.Version1
         [Key("_statenames")]
         public Dictionary<int, string> Statenames { get; set; }
 
-        public NameDataV1() { NullCheck(); }
+        public NameDataV1() { Name = "Default Name"; Statenames = new Dictionary<int, string>(); }
 
         private void NullCheck()
         {
-            if (Statenames == null) Statenames = new Dictionary<int, string>();
-            if (Name == null) Name = "";
+            Statenames = Statenames ?? new Dictionary<int, string>();
+            Name = Name ?? "Default Name";
         }
 
         public NameData ToNewNameData()
@@ -30,5 +28,9 @@ namespace Accessory_States.Migration.Version1
             nameData.NullCheck();
             return nameData;
         }
+
+        public void OnBeforeSerialize() { }
+
+        public void OnAfterDeserialize() { NullCheck(); }
     }
 }

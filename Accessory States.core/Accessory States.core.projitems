@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\AccStateSync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-Sync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\Migration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\StateData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs" />

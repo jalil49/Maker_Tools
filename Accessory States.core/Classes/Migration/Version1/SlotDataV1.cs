@@ -7,25 +7,32 @@ namespace Accessory_States.Migration.Version1
 {
     [Serializable]
     [MessagePackObject]
-    internal class SlotdataV1
+    public class SlotdataV1 : IMessagePackSerializationCallbackReceiver
     {
         [Key("_binding")]
-        public int Binding { get; set; } = -1;
+        public int Binding { get; set; }
 
         [Key("_state")]
         public List<int[]> States { get; set; }
 
         [Key("_shoetype")]
-        public byte Shoetype { get; set; } = 2;
+        public byte Shoetype { get; set; }
 
         [Key("_parented")]
         public bool Parented;
 
-        public SlotdataV1() { NullCheck(); }
+        public SlotdataV1()
+        {
+            Binding = -1;
+            States = new List<int[]>() { new int[] { 0, 3 } };
+            Shoetype = 2;
+        }
 
         private void NullCheck()
         {
-            if (States == null) States = new List<int[]>() { new int[] { 0, 3 } };
+            States = States ?? new List<int[]>() { new int[] { 0, 3 } };
+            if (Shoetype < 0 || Shoetype > 2)
+                Shoetype = 2;
         }
 
         public BindingData ToBindingData(NameData nameData, int slot)
@@ -36,7 +43,8 @@ namespace Accessory_States.Migration.Version1
 
             foreach (var state in States)
             {
-                if (state == null || state.Length != 2) continue;
+                if (state == null || state.Length != 2)
+                    continue;
                 max = Math.Max(max, state[1]);
             }
             max++;
@@ -50,5 +58,9 @@ namespace Accessory_States.Migration.Version1
 
             return bindingData;
         }
+
+        public void OnBeforeSerialize() { }
+
+        public void OnAfterDeserialize() { NullCheck(); }
     }
 }

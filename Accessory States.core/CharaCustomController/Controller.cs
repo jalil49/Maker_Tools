@@ -14,8 +14,6 @@ namespace Accessory_States
         // TODO: Confirm ASS support
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            var insidermaker = currentGameMode == GameMode.Maker;
-
             var chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
 
             var extendedData = GetExtendedData();
@@ -66,7 +64,7 @@ namespace Accessory_States
                 if (TriggerGroupList == null)
                     TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                FullAssCardLoad(chafile, TriggerPropertyList, TriggerGroupList);
+                AccStateSync.FullAssCardLoad(chafile.coordinate, ChaControl.nowCoordinate, (int)CurrentCoordinate.Value, TriggerPropertyList, TriggerGroupList);
             }
 
             CurrentCoordinate.Subscribe(x =>
@@ -74,8 +72,6 @@ namespace Accessory_States
                 StartCoroutine(ChangeOutfitCoroutine());
                 Settings.UpdateGUI(this);
             });
-
-
         }
 
         // TODO: Confirm ASS support
@@ -91,7 +87,7 @@ namespace Accessory_States
 
             var triggers = new List<AccStateSync.TriggerProperty>();
             var groups = new List<AccStateSync.TriggerGroup>();
-            FullAssCardSave(ref triggers, ref groups);
+            AccStateSync.FullAssCardSave(ChaFileControl.coordinate, AssShoePreference, ref triggers, ref groups);
             if (triggers.Count == 0)
                 return;
             var pluginData = new PluginData() { version = Constants.SaveVersion };
@@ -110,7 +106,7 @@ namespace Accessory_States
             }
             var triggers = new List<AccStateSync.TriggerProperty>();
             var groups = new List<AccStateSync.TriggerGroup>();
-            ConvertCoordinateToAss(-1, coordinate, ref triggers, ref groups);
+            AccStateSync.ConvertCoordinateToAss(-1, AssShoePreference, coordinate, ref triggers, ref groups);
             if (triggers.Count == 0)
                 return;
             var pluginData = new PluginData() { version = Constants.SaveVersion };
@@ -171,7 +167,7 @@ namespace Accessory_States
                 if (TriggerGroupList == null)
                     TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                ConvertAssCoordinate(coordinate, TriggerPropertyList, TriggerGroupList);
+                AccStateSync.ConvertAssCoordinate(coordinate, TriggerPropertyList, TriggerGroupList);
             }
 
             UpdatePluginData();
@@ -217,23 +213,48 @@ namespace Accessory_States
         /// <summary>
         /// Iterrate over whole list to deal with potentially cascading effects of one state affecting another which affects another
         /// </summary>
+        public void RefreshSlots(HashSet<int> slots)
+        {
+            var slotLength = PartsArray.Length;
+            foreach (var slot in slots)
+            {
+                if (slot >= slotLength)
+                    return;
+
+                if (!SlotBindingData.TryGetValue(slot, out var slotData))
+                { continue; }
+
+                RefreshSlots(slot, slotData);
+            }
+        }
+
+        private void RefreshSlots(int slot, SlotData slotData)
+        {
+            var partsInfo = PartsArray[slot];
+            if (partsInfo.type == 120)
+                return;
+
+            var show = ShouldShow(slotData);
+            if (slotData.Parented && ParentedNameDictionary.TryGetValue(partsInfo.parentKey, out var parentingState))
+            {
+                show &= parentingState.Show;
+            }
+            var isSub = partsInfo.hideCategory == 1;
+            show &= !isSub && ShowMain || isSub && ShowSub; //respect the hide/show main and sub buttons
+            ChaControl.SetAccessoryState(slot, show);
+        }
+
+        /// <summary>
+        /// Iterrate over whole list to deal with potentially cascading effects of one state affecting another which affects another
+        /// </summary>
         public void RefreshSlots()
         {
+            var slotLength = PartsArray.Length;
             foreach (var slotData in SlotBindingData)
             {
-                if (slotData.Key >= PartsArray.Length)
+                if (slotData.Key >= slotLength)
                     return;
-                var partsInfo = PartsArray[slotData.Key];
-                if (partsInfo.type == 120)
-                    continue;
-                var show = ShouldShow(slotData.Value);
-                if (slotData.Value.Parented && ParentedNameDictionary.TryGetValue(partsInfo.parentKey, out var parentingState))
-                {
-                    show &= parentingState;
-                }
-                var isSub = partsInfo.hideCategory == 1;
-                show &= !isSub && ShowMain || isSub && ShowSub; //respect the hide/show main and sub buttons
-                ChaControl.SetAccessoryState(slotData.Key, show);
+                RefreshSlots(slotData.Key, slotData.Value);
             }
         }
 
@@ -274,14 +295,19 @@ namespace Accessory_States
         internal void SetClothesState()
         {
             var clothstates = ChaControl.fileStatus.clothesState;
+            var refreshSet = new HashSet<int>();
             for (var i = 0; i < clothstates.Length; i++)
             {
                 var nameData = NameDataList.FirstOrDefault(x => x.Binding == i);
                 if (nameData == null)
                     continue;
-                nameData.CurrentState = clothstates[i];
+                if (nameData.CurrentState != clothstates[i])
+                {
+                    refreshSet.UnionWith(nameData.AssociatedSlots);
+                    nameData.CurrentState = clothstates[i];
+                }
             }
-            RefreshSlots();
+            RefreshSlots(refreshSet);
         }
     }
 }

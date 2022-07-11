@@ -1,5 +1,4 @@
-﻿using Extensions;
-using MessagePack;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 
@@ -16,9 +15,9 @@ namespace Accessory_States
         public Dictionary<int, string> StateNames { get; set; }
 
         /// <summary>
-        /// Should be discarded for none-clothing articles
+        /// Should be Recalculated for none accessory groups
         /// </summary>
-        public int Binding = 0;
+        public int Binding;
 
         /// <summary>
         /// Store for Studio Reference maybe EC
@@ -29,23 +28,23 @@ namespace Accessory_States
         [IgnoreMember]
         public int StateLength => StateNames.Count;
 
-        public NameData() { NullCheck(); }
+        [IgnoreMember]
+        public HashSet<int> AssociatedSlots = new HashSet<int>();
 
-        public void CopyData(NameData slotdata) => CopyData(slotdata.Name, slotdata.DefaultState, slotdata.StateNames);
-
-        public void CopyData(string _name, int _defaultstate, Dictionary<int, string> _statenames)
+        public NameData()
         {
-            Name = _name;
-            StateNames = _statenames.ToNewDictionary();
-            DefaultState = _defaultstate;
+            Name = "Default Name";
+            DefaultState = 0;
+            CurrentState = 0;
+            StateNames = new Dictionary<int, string>();
         }
 
         internal void NullCheck()
         {
-            if (StateNames == null)
-                StateNames = new Dictionary<int, string>();
-            if (Name == null)
-                Name = "";
+            StateNames = StateNames ?? new Dictionary<int, string>();
+            Name = Name ?? "";
+            DefaultState = DefaultState < 0 ? 0 : DefaultState;
+            CurrentState = CurrentState < 0 ? 0 : CurrentState;
         }
 
         public bool Equals(NameData other)
@@ -59,10 +58,10 @@ namespace Accessory_States
                 return;
             foreach (var item in other.StateNames)
             {
-                if (this.StateNames.ContainsKey(item.Key))
+                if (StateNames.ContainsKey(item.Key))
                     continue;
 
-                this.StateNames[item.Key] = item.Value;
+                StateNames[item.Key] = item.Value;
             }
         }
 
@@ -90,6 +89,7 @@ namespace Accessory_States
                 CurrentState = 0;
             return CurrentState;
         }
+
         public int DecrementCurrentState()
         {
             if (--CurrentState < 0)
@@ -97,12 +97,12 @@ namespace Accessory_States
             return CurrentState;
         }
 
-        public void OnBeforeSerialize()
-        { }
+        public void OnBeforeSerialize() { }
 
         public void OnAfterDeserialize()
         {
-            if (!KKAPI.Studio.StudioAPI.InsideStudio)
+            NullCheck();
+            if (!KKAPI.Studio.StudioAPI.InsideStudio) //Load Last State In Studio
                 CurrentState = DefaultState;
         }
     }

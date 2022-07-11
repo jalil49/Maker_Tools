@@ -6,30 +6,30 @@ namespace Extensions.GUI_Classes
 {
     public class TextFieldGUI
     {
-        public string Text = "Default Text";
+        public GUIContent GUIContent;
         public string ButtonText = "Rename";
         private string newText;
         public GUILayoutOption[] layoutOptions;
         public GUIStyle style;
         public Action<string, string> OnValueChange;
-        public TextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
+        public TextFieldGUI(GUIContent _text, params GUILayoutOption[] gUILayoutOptions)
         {
             style = TextFieldStyle;
-            Text = _text;
+            GUIContent = _text;
             layoutOptions = gUILayoutOptions;
-            newText = _text;
+            newText = _text.text;
         }
 
         public void ActiveDraw()
         {
-            var newText = GUILayout.TextField(Text, style, layoutOptions);
-            if (newText != Text)
+            var newText = GUILayout.TextField(GUIContent.text, style, layoutOptions);
+            if (newText != GUIContent.text)
             {
                 if (OnValueChange != null)
                 {
-                    OnValueChange.Invoke(Text, newText);
+                    OnValueChange.Invoke(GUIContent.text, newText);
                 }
-                Text = newText;
+                GUIContent.text = newText;
             }
         }
 
@@ -37,14 +37,14 @@ namespace Extensions.GUI_Classes
         {
             newText = GUILayout.TextField(newText, style, layoutOptions);
 
-            if (newText != Text && Button(ButtonText, expandwidth: false))
+            if (newText != GUIContent.text && Button(ButtonText, expandwidth: false))
             {
                 if (OnValueChange != null)
                 {
-                    OnValueChange.Invoke(Text, newText);
+                    OnValueChange.Invoke(GUIContent.text, newText);
                 }
 
-                Text = newText;
+                GUIContent.text = newText;
             }
         }
 

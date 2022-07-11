@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Extensions;
+using MessagePack;
 using System.Collections.Generic;
 
 namespace Accessory_States.Classes.PresetStorage
@@ -47,12 +48,13 @@ namespace Accessory_States.Classes.PresetStorage
         }
         public bool Filter(string filter)
         {
-            if (Name.Contains(filter) || FileName.Contains(filter) || Description.Contains(filter))
+
+            if (Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || FileName.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || Description.Contains(filter, System.StringComparison.OrdinalIgnoreCase))
                 return false;
 
             foreach (var item in PresetDatas)
             {
-                if (item.Filter(filter))
+                if (!item.Filter(filter))
                     return false;
             }
 

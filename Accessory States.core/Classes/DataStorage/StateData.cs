@@ -29,6 +29,9 @@ namespace Accessory_States
         [Key("Visible")]
         public bool Show { get; set; }
 
+        //Use to assume original ShoeType if inner or outer if reimplemented
+        public byte? ConvertedShoeType { get; set; }
+
         public StateInfo()
         {
             Slot = 0;

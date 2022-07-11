@@ -9,6 +9,7 @@ using KKAPI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using ExtensibleSaveFormat;
 #if Studio
 using KKAPI.Studio;
 #endif
@@ -53,7 +54,7 @@ namespace Accessory_States
         #endregion
 
         public static ConfigEntry<KeyCode> SlotWindowShortcut { get; private set; }
-        public static ConfigEntry<KeyCode> PreviewShortcut { get; private set; }
+        public static ConfigEntry<KeyCode> PreviewWindowShortcut { get; private set; }
 
 #if Studio
         #region Studio Data Save
@@ -91,7 +92,7 @@ namespace Accessory_States
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             ASS_SAVE = Config.Bind("Setting", "Accessory State Sync Save", true, "Save ASS format as well.");
-            PreviewShortcut = Config.Bind("Toggles", "Preview Window", KeyCode.None, "Toggle the visibility of the Preview Window");
+            PreviewWindowShortcut = Config.Bind("Toggles", "Preview Window", KeyCode.None, "Toggle the visibility of the Preview Window");
             SlotWindowShortcut = Config.Bind("Toggles", "Slot Window", KeyCode.None, "Toggle the visibility of the Slot Window");
 
             MakerAPI.MakerStartedLoading += (s, e) => Maker.Maker_started();
@@ -99,6 +100,9 @@ namespace Accessory_States
             MakerWindowSetup();
             GUISetup(MakerFontSize.Value);
             GameUnique();
+#if !KK
+            ExtendedSave.CardBeingSaved += ExtendedSave_CardBeingSaved;
+#endif
 #if Studio
             if (!StudioAPI.InsideStudio)
                 return;
@@ -107,8 +111,18 @@ namespace Accessory_States
             StudioAPI.StudioLoadedChanged += (val, val2) => { if (_studio == null) _studio = new Studio(); };
 #endif
         }
-
-
+#if !KK
+        private void ExtendedSave_CardBeingSaved(ChaFile file)
+        {
+            var pluginData = ExtendedSave.GetExtendedDataById(file, GUID);
+            if (pluginData == null || pluginData.version != -1)
+                return;
+            if (pluginData.data.TryGetValue("TempMigration", out var byteArray) && byteArray != null)
+            {
+                var temp = MessagePack.MessagePackSerializer.Deserialize<Dictionary<int, Migration.TempMigration>>((byte[])byteArray);
+            }
+        }
+#endif
         private void GUISetup(int fontsize)
         {
             Extensions.OnGUIExtensions.FontSize = fontsize;

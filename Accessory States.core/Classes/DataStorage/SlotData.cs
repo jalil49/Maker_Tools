@@ -31,6 +31,8 @@ namespace Accessory_States
 
         public bool ShouldSave()
         {
+            bindingDatas.RemoveAll(x => x.GetBinding() < 0);
+
             if (Parented)
                 return true;
             if (bindingDatas != null && bindingDatas.Count > 0)
@@ -84,15 +86,9 @@ namespace Accessory_States
             return false;
         }
 
-        public void OnBeforeSerialize()
-        {
-            bindingDatas.RemoveAll(x => x.GetBinding() < 0);
-        }
+        public void OnBeforeSerialize() { }
 
-        public void OnAfterDeserialize()
-        {
-
-        }
+        public void OnAfterDeserialize() { NullCheck(); }
 
         public SlotData DeepClone()
         {
