@@ -52,8 +52,8 @@ namespace Accessory_States
         internal static ConfigEntry<int> SettingWindowTransparencyMaker { get; set; }
         #endregion
 
-        public static ConfigEntry<KeyCode> SlotWindowShortcut { get; private set; }
-        public static ConfigEntry<KeyCode> PreviewWindowShortcut { get; private set; }
+        public static ConfigEntry<KeyCode> SlotWindowHotKey { get; private set; }
+        public static ConfigEntry<KeyCode> PreviewWindowHotKey { get; private set; }
 
 #if Studio
         #region Studio Data Save
@@ -91,8 +91,8 @@ namespace Accessory_States
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
             ASS_SAVE = Config.Bind("Setting", "Accessory State Sync Save", true, "Save ASS format as well.");
-            PreviewWindowShortcut = Config.Bind("Toggles", "Preview Window", KeyCode.None, "Toggle the visibility of the Preview Window");
-            SlotWindowShortcut = Config.Bind("Toggles", "Slot Window", KeyCode.None, "Toggle the visibility of the Slot Window");
+            PreviewWindowHotKey = Config.Bind("HotKeys", "Preview Window", KeyCode.None, "Toggle the visibility of the Preview Window");
+            SlotWindowHotKey = Config.Bind("HotKeys", "Slot Window", KeyCode.None, "Toggle the visibility of the Slot Window");
 
             MakerAPI.MakerStartedLoading += (s, e) => Maker.Maker_started();
             MakerAPI.RegisterCustomSubCategories += Maker.MakerAPI_RegisterCustomSubCategories;

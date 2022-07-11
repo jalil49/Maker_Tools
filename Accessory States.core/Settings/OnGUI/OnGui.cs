@@ -52,7 +52,7 @@ namespace Accessory_States
 
         internal void Update()
         {
-            if (UnityEngine.Input.GetKeyDown(SlotWindowShortcut.Value))
+            if (UnityEngine.Input.GetKeyDown(SlotWindowHotKey.Value))
             {
                 if (_maker != null)
                     _maker.ToggleSlotWindow();
@@ -62,7 +62,7 @@ namespace Accessory_States
 #endif
             }
 
-            if (UnityEngine.Input.GetKeyDown(PreviewWindowShortcut.Value))
+            if (UnityEngine.Input.GetKeyDown(PreviewWindowHotKey.Value))
             {
                 if (_maker != null)
                     _maker.TogglePreviewWindow();
