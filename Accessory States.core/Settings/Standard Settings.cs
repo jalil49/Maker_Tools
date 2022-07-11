@@ -9,7 +9,6 @@ using KKAPI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using ExtensibleSaveFormat;
 #if Studio
 using KKAPI.Studio;
 #endif
@@ -100,9 +99,6 @@ namespace Accessory_States
             MakerWindowSetup();
             GUISetup(MakerFontSize.Value);
             GameUnique();
-#if !KK
-            ExtendedSave.CardBeingSaved += ExtendedSave_CardBeingSaved;
-#endif
 #if Studio
             if (!StudioAPI.InsideStudio)
                 return;
@@ -111,18 +107,6 @@ namespace Accessory_States
             StudioAPI.StudioLoadedChanged += (val, val2) => { if (_studio == null) _studio = new Studio(); };
 #endif
         }
-#if !KK
-        private void ExtendedSave_CardBeingSaved(ChaFile file)
-        {
-            var pluginData = ExtendedSave.GetExtendedDataById(file, GUID);
-            if (pluginData == null || pluginData.version != -1)
-                return;
-            if (pluginData.data.TryGetValue("TempMigration", out var byteArray) && byteArray != null)
-            {
-                var temp = MessagePack.MessagePackSerializer.Deserialize<Dictionary<int, Migration.TempMigration>>((byte[])byteArray);
-            }
-        }
-#endif
         private void GUISetup(int fontsize)
         {
             Extensions.OnGUIExtensions.FontSize = fontsize;
