@@ -46,6 +46,8 @@ namespace Accessory_States
                     }
                 }
             }
+
+            ExtendedSave.SetExtendedDataById(file, GUID, new PluginData() { version = Constants.SaveVersion });
         }
 
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
@@ -81,7 +83,7 @@ namespace Accessory_States
                 var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                if (ASSData.version > 6)
+                if (ASSData.version > 7)
                 {
                     Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                     return;

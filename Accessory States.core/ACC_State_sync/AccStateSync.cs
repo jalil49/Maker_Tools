@@ -11,7 +11,7 @@ namespace Accessory_States
     {
         [Serializable]
         [MessagePackObject]
-        public class TriggerProperty
+        public class TriggerProperty : IMessagePackSerializationCallbackReceiver
         {
             [IgnoreMember]
             public const string SerializeKey = "TriggerPropertyList";
@@ -75,6 +75,14 @@ namespace Accessory_States
                     Binding = RefKind
                 };
             }
+
+            public void OnBeforeSerialize() { }
+
+            public void OnAfterDeserialize()
+            {
+                RenderShow = RenderShow ?? new HashSet<string>();
+                RenderHide = RenderHide ?? new HashSet<string>();
+            }
         }
 
         [Serializable]
@@ -110,8 +118,7 @@ namespace Accessory_States
             {
                 get
                 {
-                    if (_guid == null)
-                    { _guid = Guid.NewGuid().ToString("D").ToUpper(); }
+                    _guid = _guid ?? Guid.NewGuid().ToString("D").ToUpper();
                     return _guid;
                 }
                 set { _guid = value; }

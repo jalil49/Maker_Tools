@@ -26,45 +26,49 @@ namespace Accessory_States
             }
             else if ((extendedData = ExtendedSave.GetExtendedDataById(chafile, "madevil.kk.ass")) != null)
             {
-                var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
-
-                if (extendedData.version > 6)
-                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
-                else if (extendedData.version < 6)
+                if (extendedData.version > 7)
                 {
-                    AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
+                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                 }
                 else
                 {
-                    if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
-                    {
-                        var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                        if (_tempTriggerProperty?.Count > 0)
-                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+                    var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                    var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                        if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+
+                    if (extendedData.version < 6)
+                    {
+                        AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
+                    }
+                    else
+                    {
+                        if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
                         {
-                            var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                            if (_tempTriggerGroup?.Count > 0)
+                            var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+                            if (_tempTriggerProperty?.Count > 0)
+                                TriggerPropertyList.AddRange(_tempTriggerProperty);
+
+                            if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
                             {
-                                foreach (var _group in _tempTriggerGroup)
+                                var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                                if (_tempTriggerGroup?.Count > 0)
                                 {
-                                    if (_group.GUID.IsNullOrEmpty())
-                                        _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
+                                    foreach (var _group in _tempTriggerGroup)
+                                    {
+                                        if (_group.GUID.IsNullOrEmpty())
+                                            _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
+                                    }
+                                    TriggerGroupList.AddRange(_tempTriggerGroup);
                                 }
-                                TriggerGroupList.AddRange(_tempTriggerGroup);
                             }
                         }
                     }
+
+                    TriggerPropertyList = TriggerPropertyList ?? new List<AccStateSync.TriggerProperty>();
+                    TriggerGroupList = TriggerGroupList ?? new List<AccStateSync.TriggerGroup>();
+
+                    AccStateSync.FullAssCardLoad(chafile.coordinate, ChaControl.nowCoordinate, (int)CurrentCoordinate.Value, TriggerPropertyList, TriggerGroupList);
                 }
-
-                if (TriggerPropertyList == null)
-                    TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                if (TriggerGroupList == null)
-                    TriggerGroupList = new List<AccStateSync.TriggerGroup>();
-
-                AccStateSync.FullAssCardLoad(chafile.coordinate, ChaControl.nowCoordinate, (int)CurrentCoordinate.Value, TriggerPropertyList, TriggerGroupList);
             }
 
             CurrentCoordinate.Subscribe(x =>
@@ -90,7 +94,7 @@ namespace Accessory_States
             AccStateSync.FullAssCardSave(ChaFileControl.coordinate, AssShoePreference, ref triggers, ref groups);
             if (triggers.Count == 0)
                 return;
-            var pluginData = new PluginData() { version = Constants.SaveVersion };
+            var pluginData = new PluginData() { version = 7 };
             pluginData.data.Add("Modified", MessagePackSerializer.Serialize(new HashSet<string>() { "Accesory States" }));
             pluginData.data.Add(AccStateSync.TriggerProperty.SerializeKey, MessagePackSerializer.Serialize(triggers));
             pluginData.data.Add(AccStateSync.TriggerGroup.SerializeKey, MessagePackSerializer.Serialize(groups));
@@ -109,7 +113,7 @@ namespace Accessory_States
             AccStateSync.ConvertCoordinateToAss(-1, AssShoePreference, coordinate, ref triggers, ref groups);
             if (triggers.Count == 0)
                 return;
-            var pluginData = new PluginData() { version = Constants.SaveVersion };
+            var pluginData = new PluginData() { version = 7 };
             pluginData.data.Add("Modified", MessagePackSerializer.Serialize(new HashSet<string>() { "Accesory States" }));
             pluginData.data.Add(AccStateSync.TriggerProperty.SerializeKey, MessagePackSerializer.Serialize(triggers));
             pluginData.data.Add(AccStateSync.TriggerGroup.SerializeKey, MessagePackSerializer.Serialize(groups));
@@ -129,45 +133,49 @@ namespace Accessory_States
             }
             else if ((extendedData = ExtendedSave.GetExtendedDataById(coordinate, "madevil.kk.ass")) != null)
             {
-                var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
-
-                if (extendedData.version > 6)
-                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
-                else if (extendedData.version < 6)
+                if (extendedData.version > 7)
                 {
-                    AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
+                    Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                 }
                 else
                 {
-                    if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
-                    {
-                        var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                        if (_tempTriggerProperty?.Count > 0)
-                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+                    var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                    var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                        if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+
+                    if (extendedData.version < 6)
+                    {
+                        AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
+                    }
+                    else
+                    {
+                        if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
                         {
-                            var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                            if (_tempTriggerGroup?.Count > 0)
+                            var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
+                            if (_tempTriggerProperty?.Count > 0)
+                                TriggerPropertyList.AddRange(_tempTriggerProperty);
+
+                            if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
                             {
-                                foreach (var _group in _tempTriggerGroup)
+                                var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
+                                if (_tempTriggerGroup?.Count > 0)
                                 {
-                                    if (_group.GUID.IsNullOrEmpty())
-                                        _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
+                                    foreach (var _group in _tempTriggerGroup)
+                                    {
+                                        if (_group.GUID.IsNullOrEmpty())
+                                            _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
+                                    }
+                                    TriggerGroupList.AddRange(_tempTriggerGroup);
                                 }
-                                TriggerGroupList.AddRange(_tempTriggerGroup);
                             }
                         }
                     }
+
+                    TriggerPropertyList = TriggerPropertyList ?? new List<AccStateSync.TriggerProperty>();
+                    TriggerGroupList = TriggerGroupList ?? new List<AccStateSync.TriggerGroup>();
+
+                    AccStateSync.ConvertAssCoordinate(coordinate, TriggerPropertyList, TriggerGroupList);
                 }
-
-                if (TriggerPropertyList == null)
-                    TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                if (TriggerGroupList == null)
-                    TriggerGroupList = new List<AccStateSync.TriggerGroup>();
-
-                AccStateSync.ConvertAssCoordinate(coordinate, TriggerPropertyList, TriggerGroupList);
             }
 
             UpdatePluginData();

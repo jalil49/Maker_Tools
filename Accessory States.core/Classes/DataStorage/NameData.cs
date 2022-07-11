@@ -36,7 +36,7 @@ namespace Accessory_States
             Name = "Default Name";
             DefaultState = 0;
             CurrentState = 0;
-            StateNames = new Dictionary<int, string>();
+            StateNames = new Dictionary<int, string>() { [0] = "State 0", [1] = "State 1" };
         }
 
         internal void NullCheck()
