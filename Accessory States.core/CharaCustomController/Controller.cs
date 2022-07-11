@@ -193,6 +193,7 @@ namespace Accessory_States
                     Settings.Logger.LogWarning($"Unknown Accessory Category [{category}] set to {show}");
                     break;
             }
+            RefreshSlots();
         }
 
         internal void ChangeBindingSub(int hidesetting, NameData name)

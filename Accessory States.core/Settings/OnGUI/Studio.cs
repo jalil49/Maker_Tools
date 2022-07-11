@@ -604,28 +604,23 @@ namespace Accessory_States
                 {
                     var parts = GetController.PartsArray;
                     var slot = -1;
-                    Settings.Logger.LogMessage("Previous clicked");
+
                     for (var i = SelectedCharaEventControls.SelectedSlot - 1; i >= 0; i--)
                     {
-                        Settings.Logger.LogMessage("Previous " + i);
                         if (parts[i].type != 120)
                         {
                             slot = i;
-                            Settings.Logger.LogMessage("Previous found " + i);
                             break;
                         }
                     }
 
                     if (slot == -1) //wrap around
                     {
-                        Settings.Logger.LogMessage("Previous Wrap");
                         for (var i = parts.Length - 1; i >= SelectedCharaEventControls.SelectedSlot; i--)
                         {
-                            Settings.Logger.LogMessage("Previous " + i);
                             if (parts[i].type != 120)
                             {
                                 slot = i;
-                                Settings.Logger.LogMessage("Previous found " + i);
                                 break;
                             }
                         }
@@ -640,29 +635,22 @@ namespace Accessory_States
                 {
                     var parts = GetController.PartsArray;
                     var slot = -1;
-                    Settings.Logger.LogMessage("Next clicked");
                     for (var i = SelectedCharaEventControls.SelectedSlot + 1; i < parts.Length; i++)
                     {
-                        Settings.Logger.LogMessage("next " + i);
                         if (parts[i].type != 120)
                         {
                             slot = i;
-                            Settings.Logger.LogMessage("next found " + i);
                             break;
                         }
                     }
 
                     if (slot == -1) //wrap around
                     {
-                        Settings.Logger.LogMessage("next wrap ");
                         for (var i = 0; i <= SelectedCharaEventControls.SelectedSlot; i++)
                         {
-                            Settings.Logger.LogMessage("next " + i);
-
                             if (parts[i].type != 120)
                             {
                                 slot = i;
-                                Settings.Logger.LogMessage("next found" + i);
                                 break;
                             }
                         }
@@ -970,6 +958,7 @@ namespace Accessory_States
 
                         if (Button("Remove", "Remove data associated with this group from accessory", false))
                         {
+                            item.AssociatedSlots.Remove(SelectedSlot);
                             slotData.bindingDatas.RemoveAt(nameDataIndex);
                             GetController.SaveSlotData(SelectedSlot);
                             if (SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
@@ -981,6 +970,7 @@ namespace Accessory_States
                         GL.FlexibleSpace();
                         if (Button("Add", "Add this binding type to accessory", expandwidth: false))
                         {
+                            item.AssociatedSlots.Add(SelectedSlot);
                             slotData.bindingDatas.Add(new BindingData() { NameData = item, States = item.GetDefaultStates(SelectedSlot) });
                             GetController.SaveSlotData(SelectedSlot);
                         }
@@ -1210,13 +1200,15 @@ namespace Accessory_States
 
         internal class NameDataControls
         {
-            public NameData NameData;
-            public CharaEvent CharaEvent;
-            private string newName;
+            private readonly NameData NameData;
+            private readonly CharaEvent CharaEvent;
             private readonly Dictionary<int, TextFieldGUI> StatesRename = new Dictionary<int, TextFieldGUI>();
             private readonly IntTextFieldGUI _currentState;
             private readonly IntTextFieldGUI _defaultState;
             private readonly CharaEventControl eventControl;
+
+            private string newName;
+
             internal NameDataControls(NameData name, CharaEvent chara, CharaEventControl control)
             {
                 eventControl = control;
@@ -1411,9 +1403,9 @@ namespace Accessory_States
 
         internal class StateInfoControls
         {
-            public StateInfo StateInfo;
-            public CharaEvent CharaEvent;
-            public BindingData bData;
+            private readonly StateInfo StateInfo;
+            private readonly CharaEvent CharaEvent;
+            private readonly BindingData bData;
             private readonly IntTextFieldGUI PriorityField;
             private readonly string nameAppend;
             private readonly CharaEventControl eventControl;
@@ -1454,7 +1446,7 @@ namespace Accessory_States
                             bData.States.Add(new StateInfo() { Binding = bData.NameData.Binding, Slot = eventControl.SelectedSlot, Priority = StateInfo.Priority, Show = StateInfo.Show, State = StateInfo.State, ShoeType = 1 });
                             bData.Sort();
                             CharaEvent.SaveSlotData(eventControl.SelectedSlot);
-                            CharaEvent.RefreshSlots();
+                            CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                         }
 
                         if (StateInfo.ShoeType != 2 && Button("Shoe Merge", "Remove association between indoor and outdoors", false))
@@ -1463,7 +1455,7 @@ namespace Accessory_States
                             bData.States.Add(new StateInfo() { Binding = bData.NameData.Binding, Slot = eventControl.SelectedSlot, Priority = StateInfo.Priority, Show = StateInfo.Show, State = StateInfo.State, ShoeType = 2 });
                             bData.Sort();
                             CharaEvent.SaveSlotData(eventControl.SelectedSlot);
-                            CharaEvent.RefreshSlots();
+                            CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                         }
                     }
 
@@ -1471,14 +1463,14 @@ namespace Accessory_States
                     {
                         StateInfo.Show = !StateInfo.Show;
                         CharaEvent.SaveSlotData(eventControl.SelectedSlot);
-                        CharaEvent.RefreshSlots();
+                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                     }
 
                     if (Button("↑", "Increase the priority of this state when comparing", false))
                     {
                         StateInfo.Priority++;
                         CharaEvent.SaveSlotData(eventControl.SelectedSlot);
-                        CharaEvent.RefreshSlots();
+                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                     }
 
                     PriorityField.Draw(StateInfo.Priority);
@@ -1487,7 +1479,7 @@ namespace Accessory_States
                     {
                         StateInfo.Priority = Math.Max(0, StateInfo.Priority - 1);
                         CharaEvent.SaveSlotData(eventControl.SelectedSlot);
-                        CharaEvent.RefreshSlots();
+                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                     }
                 }
                 GL.EndHorizontal();
@@ -1553,6 +1545,13 @@ namespace Accessory_States
                     if (Button("Apply", "Apply this preset's data to slot", false))
                     {
 
+                        if (chara.SlotBindingData.TryGetValue(SelectedSlot, out var undoReference))
+                        {
+                            foreach (var item in undoReference.bindingDatas)
+                            {
+                                item.NameData.AssociatedSlots.Remove(SelectedSlot);
+                            }
+                        }
                         var slotData = chara.SlotBindingData[SelectedSlot] = PresetData.Data.DeepClone();
                         var names = chara.NameDataList;
                         foreach (var item in slotData.bindingDatas)
@@ -1561,11 +1560,13 @@ namespace Accessory_States
                             if (reference != null)
                             {
                                 item.NameData = reference;
+                                item.NameData.AssociatedSlots.Add(index);
                                 item.SetSlot(SelectedSlot);
                                 continue;
                             }
                             item.NameData.Binding = names.Max(x => x.Binding) + 1;
                             item.SetBinding();
+                            item.NameData.AssociatedSlots.Add(index);
                             names.Add(item.NameData);
                         }
                         Save(chara, slotData.bindingDatas, SelectedSlot);
@@ -1579,18 +1580,14 @@ namespace Accessory_States
 
                     if (Button("↑", $"Move Up: Index {index}", false) && index > 0)
                     {
-                        {
-                            Container.RemoveAt(index);
-                            Container.Insert(index - 1, PresetData);
-                        }
+                        Container.RemoveAt(index);
+                        Container.Insert(index - 1, PresetData);
                     }
 
                     if (Button("↓", $"Move Down: Index {index}", false) && index < Container.Count - 1)
                     {
-                        {
-                            Container.RemoveAt(index);
-                            Container.Insert(index + 1, PresetData);
-                        }
+                        Container.RemoveAt(index);
+                        Container.Insert(index + 1, PresetData);
                     }
                 }
                 GL.EndHorizontal();

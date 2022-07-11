@@ -263,6 +263,13 @@ namespace Accessory_States
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
             var controller = GetController;
+            if (controller.SlotBindingData.TryGetValue(e.DestinationSlotIndex, out var slotData))
+            {
+                foreach (var item in slotData.bindingDatas)
+                {
+                    item.NameData.AssociatedSlots.Remove(e.DestinationSlotIndex);
+                }
+            }
             controller.SlotBindingData.Remove(e.DestinationSlotIndex);
             controller.LoadSlotData(e.DestinationSlotIndex);
             controller.UpdateParentedDict();
@@ -273,10 +280,18 @@ namespace Accessory_States
             var controller = GetController;
             if (e.CopyDestination == controller.CurrentCoordinate.Value)
             {
-                foreach (var item in e.CopiedSlotIndexes)
+                foreach (var slot in e.CopiedSlotIndexes)
                 {
-                    controller.SlotBindingData.Remove(item);
-                    controller.LoadSlotData(item);
+                    if (controller.SlotBindingData.TryGetValue(slot, out var slotData))
+                    {
+                        foreach (var bindingData in slotData.bindingDatas)
+                        {
+                            bindingData.NameData.AssociatedSlots.Remove(slot);
+                        }
+                    }
+
+                    controller.SlotBindingData.Remove(slot);
+                    controller.LoadSlotData(slot);
                 }
             }
         }
@@ -750,6 +765,7 @@ namespace Accessory_States
 
                         if (Button("Remove", "Remove data associated with this group from accessory", false))
                         {
+                            item.AssociatedSlots.Remove(SelectedSlot);
                             slotData.bindingDatas.RemoveAt(nameDataIndex);
                             GetController.SaveSlotData(SelectedSlot);
                             if (SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
@@ -761,6 +777,7 @@ namespace Accessory_States
                         GL.FlexibleSpace();
                         if (Button("Add", "Add this binding type to accessory", expandwidth: false))
                         {
+                            item.AssociatedSlots.Add(SelectedSlot);
                             slotData.bindingDatas.Add(new BindingData() { NameData = item, States = item.GetDefaultStates(SelectedSlot) });
                             GetController.SaveSlotData(SelectedSlot);
                         }
@@ -1184,9 +1201,9 @@ namespace Accessory_States
 
         private class StateInfoControls
         {
-            public StateInfo StateInfo;
-            public CharaEvent CharaEvent;
-            public BindingData bData;
+            public readonly StateInfo StateInfo;
+            public readonly CharaEvent CharaEvent;
+            public readonly BindingData bData;
             private readonly IntTextFieldGUI PriorityField;
             private readonly string nameAppend;
             public StateInfoControls(BindingData bindingData, StateInfo name, CharaEvent chara)
@@ -1224,7 +1241,7 @@ namespace Accessory_States
                             bData.States.Add(new StateInfo() { Binding = bData.NameData.Binding, Slot = SelectedSlot, Priority = StateInfo.Priority, Show = StateInfo.Show, State = StateInfo.State, ShoeType = 1 });
                             bData.Sort();
                             CharaEvent.SaveSlotData(SelectedSlot);
-                            CharaEvent.RefreshSlots();
+                            CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                         }
 
                         if (StateInfo.ShoeType != 2 && Button("Shoe Merge", "Remove association between indoor and outdoors", false))
@@ -1233,7 +1250,7 @@ namespace Accessory_States
                             bData.States.Add(new StateInfo() { Binding = bData.NameData.Binding, Slot = SelectedSlot, Priority = StateInfo.Priority, Show = StateInfo.Show, State = StateInfo.State, ShoeType = 2 });
                             bData.Sort();
                             CharaEvent.SaveSlotData(SelectedSlot);
-                            CharaEvent.RefreshSlots();
+                            CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                         }
                     }
 
@@ -1241,7 +1258,7 @@ namespace Accessory_States
                     {
                         StateInfo.Show = !StateInfo.Show;
                         CharaEvent.SaveSlotData(SelectedSlot);
-                        CharaEvent.RefreshSlots();
+                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                     }
 
                     if (Button("↑", "Increase the priority of this state when comparing", false))
@@ -1257,7 +1274,7 @@ namespace Accessory_States
                     {
                         StateInfo.Priority = Math.Max(0, StateInfo.Priority - 1);
                         CharaEvent.SaveSlotData(SelectedSlot);
-                        CharaEvent.RefreshSlots();
+                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
                     }
                 }
                 GL.EndHorizontal();
@@ -1321,7 +1338,13 @@ namespace Accessory_States
                     if (Button("Apply", "Apply this preset's data to slot", false))
                     {
                         var chara = GetController;
-
+                        if (chara.SlotBindingData.TryGetValue(SelectedSlot, out var undoReference))
+                        {
+                            foreach (var item in undoReference.bindingDatas)
+                            {
+                                item.NameData.AssociatedSlots.Remove(SelectedSlot);
+                            }
+                        }
                         var slotData = chara.SlotBindingData[SelectedSlot] = PresetData.Data.DeepClone();
                         var names = chara.NameDataList;
                         foreach (var item in slotData.bindingDatas)
@@ -1330,12 +1353,14 @@ namespace Accessory_States
                             if (reference != null)
                             {
                                 item.NameData = reference;
+                                item.NameData.AssociatedSlots.Add(SelectedSlot);
                                 item.SetSlot(SelectedSlot);
                                 continue;
                             }
                             item.NameData.Binding = names.Max(x => x.Binding) + 1;
                             item.SetBinding();
                             names.Add(item.NameData);
+                            item.NameData.AssociatedSlots.Add(SelectedSlot);
                         }
                         Save(chara, slotData.bindingDatas);
                         chara.RefreshSlots();
@@ -1348,18 +1373,14 @@ namespace Accessory_States
 
                     if (Button("↑", $"Move Up: Index {index}", false) && index > 0)
                     {
-                        {
-                            Container.RemoveAt(index);
-                            Container.Insert(index - 1, PresetData);
-                        }
+                        Container.RemoveAt(index);
+                        Container.Insert(index - 1, PresetData);
                     }
 
                     if (Button("↓", $"Move Down: Index {index}", false) && index < Container.Count - 1)
                     {
-                        {
-                            Container.RemoveAt(index);
-                            Container.Insert(index + 1, PresetData);
-                        }
+                        Container.RemoveAt(index);
+                        Container.Insert(index + 1, PresetData);
                     }
 
                 }
