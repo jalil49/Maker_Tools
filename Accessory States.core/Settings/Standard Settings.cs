@@ -14,7 +14,6 @@ using Extensions.GUI_Classes.Config;
 using KKAPI.Studio;
 #endif
 
-
 namespace Accessory_States
 {
     [BepInIncompatibility("madevil.kk.ass")]
@@ -98,7 +97,7 @@ namespace Accessory_States
 
         private bool TryfindPluginInstance(string pluginName, Version minimumVersion = null)
         {
-            BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out PluginInfo target);
+            BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out var target);
             if(null != target)
             {
                 if(target.Metadata.Version >= minimumVersion)
@@ -106,6 +105,7 @@ namespace Accessory_States
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -118,7 +118,7 @@ namespace Accessory_States
         private IEnumerator<int> Wait()
         {
             yield return 0;
-            bool ASS_Exists = CharaEvent.ASSExists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
+            var ASS_Exists = CharaEvent.ASSExists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
             if(!ASS_Exists)
             {
                 //Create Dummy Controller to make data visible outside of maker

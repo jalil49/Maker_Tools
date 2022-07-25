@@ -85,14 +85,14 @@ namespace Extensions.GUI_Classes
 
         public void TransparencyBuild(float value)
         {
-            int height = WindowTexture.height;
-            int width = WindowTexture.width;
-            Texture2D newWindowTexture = new Texture2D(width, height);
-            for(int i = 0; i < width; i++)
+            var height = WindowTexture.height;
+            var width = WindowTexture.width;
+            var newWindowTexture = new Texture2D(width, height);
+            for(var i = 0; i < width; i++)
             {
-                for(int j = 0; j < height; j++)
+                for(var j = 0; j < height; j++)
                 {
-                    Color test = WindowTexture.GetPixel(i, j);
+                    var test = WindowTexture.GetPixel(i, j);
                     test.a = value;
                     newWindowTexture.SetPixel(i, j, test);
                 }
@@ -131,7 +131,7 @@ namespace Extensions.GUI_Classes
 
             GL.EndHorizontal();
 
-            WindowReturn windowReturn = WindowFunction();
+            var windowReturn = WindowFunction();
 
             if(ScrollGUIs.Length > 0)
             {
@@ -170,11 +170,11 @@ namespace Extensions.GUI_Classes
             if(modifiedRect.width > Screen.width)
                 modifiedRect.width = Screen.width * 0.9f;
 
-            float axisAdjust = modifiedRect.width * 0.95f;
+            var axisAdjust = modifiedRect.width * 0.95f;
 
             //**Horizontal adjustments**//
             //too far to the right
-            float adjustValue = modifiedRect.max.x - axisAdjust;
+            var adjustValue = modifiedRect.max.x - axisAdjust;
             if(adjustValue > Screen.width)
             {
                 modifiedRect.x -= adjustValue - Screen.width;

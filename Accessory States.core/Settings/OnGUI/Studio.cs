@@ -55,11 +55,11 @@ namespace Accessory_States
         {
             get
             {
-                CharaEvent control = GetController;
+                var control = GetController;
                 if(control == null || SelectedSlot < 0)
                     return null;
 
-                if(!control.SlotBindingData.TryGetValue(SelectedSlot, out SlotData slotData))
+                if(!control.SlotBindingData.TryGetValue(SelectedSlot, out var slotData))
                 {
                     slotData = GetController.SlotBindingData[SelectedSlot] = new SlotData();
                 }
@@ -84,8 +84,8 @@ namespace Accessory_States
         public Studio() : base("Studio")
         {
             #region Windows
-            string section = "Studio";
-            BepInEx.Configuration.ConfigFile config = Settings.Instance.Config;
+            var section = "Studio";
+            var config = Settings.Instance.Config;
 
             _characterSelect = new WindowGUI(config, section, "Character Select Window", new Rect(Screen.width * 0.57f, Screen.height * 0.1f, Screen.width * 0.14f, Screen.height * 0.2f), 1f, CharaSelectWindowDraw, new GUIContent("Character Select", "Select from selected Characters"), new ScrollGUI(CharaSelectScroll));
 
@@ -96,7 +96,7 @@ namespace Accessory_States
         #region KKAPI Events
         private void UpdateCharaEvents()
         {
-            CharaEvent[] charaevents = StudioAPI.GetSelectedControllers<CharaEvent>().ToArray();
+            var charaevents = StudioAPI.GetSelectedControllers<CharaEvent>().ToArray();
             if(Equals(CharaEvents, charaevents))
             {
                 return;
@@ -122,7 +122,7 @@ namespace Accessory_States
                 return null;
             }
 
-            if(!CharaControls.TryGetValue(GetController, out CharaEventControl charaEventControl))
+            if(!CharaControls.TryGetValue(GetController, out var charaEventControl))
             {
                 CharaControls[GetController] = charaEventControl = new CharaEventControl(GetController);
             }
@@ -146,7 +146,7 @@ namespace Accessory_States
 
             GL.BeginHorizontal();
             {
-                string dropDownName = "No Chara Selected";
+                var dropDownName = "No Chara Selected";
                 if(GetController != null)
                 {
                     dropDownName = GetController.ChaControl.fileParam.fullname;
@@ -160,7 +160,7 @@ namespace Accessory_States
                 }
 
                 if(Button(dropDownName, "Click to open Chara Select window"))
-                    _characterSelect.ToggleShow();
+                    ToggleCharacterSelectWindow();
 
                 if(Button(">", "Next Character") && CharaEvents.Length > 0)
                 {
@@ -172,7 +172,10 @@ namespace Accessory_States
 
             GL.EndHorizontal();
         }
-
+        private void ToggleCharacterSelectWindow()
+        {
+            _characterSelect.ToggleShow();
+        }
         private WindowReturn CharaSelectWindowDraw()
         {
             if(GetController == null || CharaEvents.Length < 2)
@@ -184,7 +187,7 @@ namespace Accessory_States
             {
                 GL.FlexibleSpace();
                 if(Button("X", "Close this window", false))
-                    _characterSelect.ToggleShow();
+                    ToggleCharacterSelectWindow();
             }
 
             GL.EndHorizontal();
@@ -194,10 +197,10 @@ namespace Accessory_States
 
         private void CharaSelectScroll()
         {
-            for(int i = 0; i < CharaEvents.Length; i++)
+            for(var i = 0; i < CharaEvents.Length; i++)
             {
-                CharaEvent charaEvent = CharaEvents[i];
-                bool selected = selectedChara == i;
+                var charaEvent = CharaEvents[i];
+                var selected = selectedChara == i;
                 if(selected)
                     GL.BeginHorizontal(GUI.skin.box);
                 else
@@ -226,11 +229,11 @@ namespace Accessory_States
 
             GL.BeginHorizontal();
             {
-                string dropDownName = "No Accessory Selected";
+                var dropDownName = "No Accessory Selected";
                 if(GetController != null)
                 {
-                    ListInfoBase listInfoBase = GetController.ChaControl.infoAccessory[GetControl.SelectedSlot];
-                    ChaFileAccessory.PartsInfo[] parts = GetController.PartsArray;
+                    var listInfoBase = GetController.ChaControl.infoAccessory[GetControl.SelectedSlot];
+                    var parts = GetController.PartsArray;
                     if(parts[GetControl.SelectedSlot].type != 120)
                         dropDownName = listInfoBase != null ? listInfoBase.Name : "Unknown";
 
@@ -238,10 +241,10 @@ namespace Accessory_States
 
                 if(Button("<", "Previous Accessory"))
                 {
-                    ChaFileAccessory.PartsInfo[] parts = GetController.PartsArray;
-                    int slot = -1;
+                    var parts = GetController.PartsArray;
+                    var slot = -1;
 
-                    for(int i = GetControl.SelectedSlot - 1; i >= 0; i--)
+                    for(var i = GetControl.SelectedSlot - 1; i >= 0; i--)
                     {
                         if(parts[i].type != 120)
                         {
@@ -252,7 +255,7 @@ namespace Accessory_States
 
                     if(slot == -1) //wrap around
                     {
-                        for(int i = parts.Length - 1; i >= GetControl.SelectedSlot; i--)
+                        for(var i = parts.Length - 1; i >= GetControl.SelectedSlot; i--)
                         {
                             if(parts[i].type != 120)
                             {
@@ -266,13 +269,13 @@ namespace Accessory_States
                 }
 
                 if(Button(dropDownName, "Click to open Accessory Select window"))
-                    _accessorySelectWindow.ToggleShow();
+                    ToggleAccessorySelectWindow();
 
                 if(Button(">", "Next Accessory"))
                 {
-                    ChaFileAccessory.PartsInfo[] parts = GetController.PartsArray;
-                    int slot = -1;
-                    for(int i = GetControl.SelectedSlot + 1; i < parts.Length; i++)
+                    var parts = GetController.PartsArray;
+                    var slot = -1;
+                    for(var i = GetControl.SelectedSlot + 1; i < parts.Length; i++)
                     {
                         if(parts[i].type != 120)
                         {
@@ -283,7 +286,7 @@ namespace Accessory_States
 
                     if(slot == -1) //wrap around
                     {
-                        for(int i = 0; i <= GetControl.SelectedSlot; i++)
+                        for(var i = 0; i <= GetControl.SelectedSlot; i++)
                         {
                             if(parts[i].type != 120)
                             {
@@ -298,6 +301,11 @@ namespace Accessory_States
             }
 
             GL.EndHorizontal();
+        }
+
+        private void ToggleAccessorySelectWindow()
+        {
+            _accessorySelectWindow.ToggleShow();
         }
 
         private WindowReturn AccessorySelectWindowDraw()
@@ -317,23 +325,23 @@ namespace Accessory_States
 
         private void AccessorySelectScroll()
         {
-            ChaFileAccessory.PartsInfo[] parts = GetController.PartsArray;
-            ListInfoBase[] listInfoBases = GetController.ChaControl.infoAccessory;
-            for(int i = 0; i < parts.Length; i++)
+            var parts = GetController.PartsArray;
+            var listInfoBases = GetController.ChaControl.infoAccessory;
+            for(var i = 0; i < parts.Length; i++)
             {
                 if(parts[i].type == 120)
                 {
                     continue;
                 }
 
-                ListInfoBase listInfoBase = listInfoBases[i];
-                bool selected = GetControl.SelectedSlot == i;
+                var listInfoBase = listInfoBases[i];
+                var selected = GetControl.SelectedSlot == i;
                 if(selected)
                     GL.BeginHorizontal(GUI.skin.box);
                 else
                     GL.BeginHorizontal();
                 {
-                    string name = listInfoBase != null ? listInfoBase.Name : "Unknown";
+                    var name = listInfoBase != null ? listInfoBase.Name : "Unknown";
                     Label($"SLOT {i + 1}: ", "", false);
                     Label(name);
 
@@ -349,7 +357,7 @@ namespace Accessory_States
 
         protected override WindowReturn SlotWindowDraw()
         {
-            SlotData slotData = SelectedSlotData;
+            var slotData = SelectedSlotData;
             if(slotData == null)
             {
                 Label("No Character Selected");
@@ -358,7 +366,7 @@ namespace Accessory_States
 
             _slotWindow.SetWindowName($"Slot {SelectedSlot + 1}");
 
-            BindingData bData = GetSelectedBindingData(slotData);
+            var bData = GetSelectedBindingData(slotData);
             GL.BeginHorizontal();
             {
                 Label(GetController.ChaControl.fileParam.fullname, "", false);
@@ -366,17 +374,16 @@ namespace Accessory_States
                 GL.FlexibleSpace();
                 if(Button("Preview", "Open preview window to modify states", false))
                 {
-                    _previewWindow.ToggleShow();
-                    //SidebarToggle.SetValue(_previewWindow.Show);
+                    TogglePreviewWindow();
                 }
 
                 if(Button("Settings", "Open Settings", false))
-                    _settingWindow.ToggleShow();
+                    ToggleSettingsWindow();
 
                 GL.Space(10);
 
                 if(Button("X", "Close this window", false))
-                    _slotWindow.ToggleShow();
+                    ToggleSlotWindow();
             }
 
             GL.EndHorizontal();
@@ -430,10 +437,10 @@ namespace Accessory_States
             GL.BeginHorizontal();
             {
                 if(Button("Group Data", "Create and Modify Custom Groups"))
-                    _groupGUI.ToggleShow();
+                    ToggleGroupWindow();
 
                 if(Button("Use Presets Bindings", "Create and Use Predefine Presets to apply common settings."))
-                    _presetWindow.ToggleShow();
+                    TogglePresetWindow();
             }
 
             GL.EndHorizontal();
@@ -444,7 +451,7 @@ namespace Accessory_States
 
             GL.BeginHorizontal();
             {
-                string dropDownName = "None";
+                var dropDownName = "None";
                 if(bData != null)
                 {
                     dropDownName = bData.NameData.Name;
@@ -453,7 +460,7 @@ namespace Accessory_States
                 if(Button("<", "Previous binding for this accessory") && slotData.bindingDatas.Count > 0)
                     SelectedDropDown = SelectedDropDown == 0 ? slotData.bindingDatas.Count - 1 : SelectedDropDown - 1;
                 if(Button(dropDownName, "Click to open window to apply binding groups"))
-                    _addBinding.ToggleShow();
+                    ToggleAddBindingWindow();
                 if(Button(">", "Next binding for this accessory") && slotData.bindingDatas.Count > 0)
                     SelectedDropDown = SelectedDropDown == slotData.bindingDatas.Count - 1 ? 0 : SelectedDropDown + 1;
             }
@@ -464,7 +471,7 @@ namespace Accessory_States
                 return new WindowReturn();
             ;
 
-            if(!NameControls.TryGetValue(bData.NameData, out NameDataControl controls))
+            if(!NameControls.TryGetValue(bData.NameData, out var controls))
             {
                 NameControls[bData.NameData] = controls = new NameDataControl(bData.NameData, GetControl);
             }
@@ -483,32 +490,11 @@ namespace Accessory_States
 
         protected override WindowReturn PreviewWindowDraw()
         {
-            GL.BeginHorizontal();
-            {
-                GL.FlexibleSpace();
-
-                GL.Space(10);
-                if(Button("X", "Close this window", false))
-                {
-                    _previewWindow.ToggleShow();
-                }
-            }
-
-            GL.EndHorizontal();
+            base.PreviewWindowDraw();
 
             DrawCharaSelectMenu();
 
             return new WindowReturn();
-        }
-
-        internal void ToggleSlotWindow()
-        {
-            _slotWindow.ToggleShow();
-        }
-
-        internal void TogglePreviewWindow()
-        {
-            _previewWindow.ToggleShow();
         }
 
         public override void OnGUI()

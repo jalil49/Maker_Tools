@@ -2,7 +2,6 @@
 using UnityEngine;
 using static Extensions.OnGUIExtensions;
 
-
 namespace Extensions.GUI_Classes
 {
     public class ButtonGUI<T>
@@ -20,9 +19,9 @@ namespace Extensions.GUI_Classes
 
         public void Draw(T invoke)
         {
-            if (GUILayout.Button(Text, style, layoutOptions))
+            if(GUILayout.Button(Text, style, layoutOptions))
             {
-                if (action == null)
+                if(action == null)
                     return;
                 action.Invoke(invoke);
             }

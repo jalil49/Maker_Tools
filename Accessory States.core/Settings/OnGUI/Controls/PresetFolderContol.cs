@@ -66,7 +66,7 @@ namespace Accessory_States.OnGUI
 
                 Name.ActiveDraw();
 
-                int index = Container.IndexOf(PresetFolder);
+                var index = Container.IndexOf(PresetFolder);
 
                 if(Button("↑", $"Move Up: Index {index}, Hold Shift to move to top", false) && index > 0)
                 {

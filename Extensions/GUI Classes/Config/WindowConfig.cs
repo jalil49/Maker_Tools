@@ -34,8 +34,8 @@ namespace Extensions.GUI_Classes.Config
 
         public static ConfigEntry<WindowConfig> GetConfigEntry(ConfigFile Config, string section, string key, WindowConfig DefaultWindow)
         {
-            KeyValuePair<string, string> keyval = new KeyValuePair<string, string>(section, key);
-            if(ConfigDictionary.TryGetValue(keyval, out ConfigEntry<WindowConfig> configEntry))
+            var keyval = new KeyValuePair<string, string>(section, key);
+            if(ConfigDictionary.TryGetValue(keyval, out var configEntry))
             {
                 return configEntry;
             }

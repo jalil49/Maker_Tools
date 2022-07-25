@@ -23,12 +23,13 @@ namespace Extensions.GUI_Classes
         public void ActiveDraw()
         {
             var newText = GUILayout.TextField(GUIContent.text, style, layoutOptions);
-            if (newText != GUIContent.text)
+            if(newText != GUIContent.text)
             {
-                if (OnValueChange != null)
+                if(OnValueChange != null)
                 {
                     OnValueChange.Invoke(GUIContent.text, newText);
                 }
+
                 GUIContent.text = newText;
             }
         }
@@ -37,9 +38,9 @@ namespace Extensions.GUI_Classes
         {
             newText = GUILayout.TextField(newText, style, layoutOptions);
 
-            if (newText != GUIContent.text && Button(ButtonText, expandwidth: false))
+            if(newText != GUIContent.text && Button(ButtonText, expandwidth: false))
             {
-                if (OnValueChange != null)
+                if(OnValueChange != null)
                 {
                     OnValueChange.Invoke(GUIContent.text, newText);
                 }

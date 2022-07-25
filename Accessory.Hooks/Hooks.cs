@@ -20,7 +20,7 @@ namespace Additional_Card_Info
         {
             Logger = Setting_Logger;
             Harmony.CreateAndPatchAll(typeof(Hooks));
-            if (TryfindPluginInstance("madevil.kk.MovUrAcc"))
+            if(TryfindPluginInstance("madevil.kk.MovUrAcc"))
                 Harmony.CreateAndPatchAll(typeof(MovUrACC));
 #if ACI || States
             ClothingNotPatch.Init();
@@ -56,7 +56,7 @@ namespace Additional_Card_Info
             [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
             public static void Hook_ChangeClothType(int index)
             {
-                if (index < 4)
+                if(index < 4)
                     Maker.ClothingTypeChange();
             }
 #endif

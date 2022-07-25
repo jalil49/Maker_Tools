@@ -15,7 +15,7 @@ namespace Accessory_States
         public Dictionary<int, string> StateNames { get; set; }
 
         /// <summary>
-        /// Should be Recalculated for none accessory groups
+        /// Should be Recalculated for non-accessory groups
         /// </summary>
         public int Binding;
 
@@ -23,9 +23,9 @@ namespace Accessory_States
         /// Store for Studio Reference maybe EC
         /// otherwise should be returned to default
         /// </summary>
-        public int CurrentState = 0;
+        public int CurrentState;
 
-        public bool StopColloision;
+        public bool StopCollision;
 
         public string CollisionString;
 
@@ -41,7 +41,7 @@ namespace Accessory_States
             DefaultState = 0;
             CurrentState = 0;
             StateNames = new Dictionary<int, string>() { [0] = "State 0", [1] = "State 1" };
-            StopColloision = true;
+            StopCollision = true;
             CollisionString = Guid.NewGuid().ToString("D").ToUpper();
         }
 
@@ -54,16 +54,27 @@ namespace Accessory_States
             CollisionString = CollisionString ?? Guid.NewGuid().ToString("D").ToUpper();
         }
 
-        public bool Equals(NameData other)
+        public bool Equals(NameData other, bool collision)
         {
-            return Name == other.Name;
+            if(collision)
+            {
+                if(this.StopCollision != other.StopCollision)
+                    return false;
+
+                if(this.StopCollision)
+                {
+                    return this.CollisionString.Equals(other.CollisionString) && Name.Equals(other.Name);
+                }
+            }
+
+            return Name.Equals(other.Name);
         }
 
         public void MergeStatesWith(NameData other)
         {
             if(other == null)
                 return;
-            foreach(KeyValuePair<int, string> item in other.StateNames)
+            foreach(var item in other.StateNames)
             {
                 if(StateNames.ContainsKey(item.Key))
                     continue;
@@ -74,15 +85,15 @@ namespace Accessory_States
 
         public string GetStateName(int state)
         {
-            if(StateNames.TryGetValue(state, out string name))
+            if(StateNames.TryGetValue(state, out var name))
                 return name;
             return StateNames[state] = "State: " + state;
         }
 
         public List<StateInfo> GetDefaultStates(int slot)
         {
-            List<StateInfo> states = new List<StateInfo>();
-            for(int i = 0; i < StateLength; i++)
+            var states = new List<StateInfo>();
+            for(var i = 0; i < StateLength; i++)
             {
                 states.Add(new StateInfo() { Binding = Binding, Slot = slot, State = i });
             }

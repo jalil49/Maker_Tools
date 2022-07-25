@@ -30,8 +30,8 @@ namespace Accessory_States
         #region Properties
         public bool[] ClothNotData
         {
-            get { return NowCoordinateData.ClothingNotData; }
-            set { NowCoordinateData.ClothingNotData = value; }
+            get => NowCoordinateData.ClothingNotData;
+            set => NowCoordinateData.ClothingNotData = value;
         }
 
         internal ChaFileCoordinate NowCoordinate => ChaControl.nowCoordinate;
@@ -40,7 +40,7 @@ namespace Accessory_States
 
         public int AssShoePreference
         {
-            get { return NowCoordinateData.AssShowPreference; }
+            get => NowCoordinateData.AssShowPreference;
             set
             {
                 NowCoordinateData.AssShowPreference = value;
@@ -55,11 +55,11 @@ namespace Accessory_States
             ClearNowCoordinate();
             NowCoordinate.accessory.TryGetExtendedDataById(Settings.GUID, out var pluginData);
 
-            if (pluginData != null)
+            if(pluginData != null)
             {
-                if (pluginData.version == 2)
+                if(pluginData.version == 2)
                 {
-                    if (pluginData.data.TryGetValue(Constants.CoordinateKey, out var bytedata) && bytedata != null)
+                    if(pluginData.data.TryGetValue(Constants.CoordinateKey, out var bytedata) && bytedata != null)
                     {
                         NowCoordinateData = MessagePackSerializer.Deserialize<CoordinateData>((byte[])bytedata);
                     }
@@ -70,7 +70,7 @@ namespace Accessory_States
                 }
             }
 
-            for (var i = 0; i < PartsArray.Length; i++)
+            for(var i = 0; i < PartsArray.Length; i++)
             {
                 LoadSlotData(i);
             }
@@ -78,13 +78,13 @@ namespace Accessory_States
             UpdateParentedDict();
 
             var args = new CoordinateLoadedEventARG(ChaControl/*, coordinate*/);
-            if (!(Coordloaded == null || Coordloaded.GetInvocationList().Length == 0))
+            if(!(Coordloaded == null || Coordloaded.GetInvocationList().Length == 0))
             {
                 try
                 {
                     Coordloaded?.Invoke(null, args);
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
                 }
@@ -96,12 +96,13 @@ namespace Accessory_States
         internal void UpdateParentedDict()
         {
             ParentedNameDictionary.Clear();
-            foreach (var item in SlotBindingData)
+            foreach(var item in SlotBindingData)
             {
-                if (!item.Value.Parented)
+                if(!item.Value.Parented)
                     continue;
-                if (!ParentedNameDictionary.TryGetValue(PartsArray[item.Key].parentKey, out var parentedData))
+                if(!ParentedNameDictionary.TryGetValue(PartsArray[item.Key].parentKey, out var parentedData))
                 { parentedData = ParentedNameDictionary[PartsArray[item.Key].parentKey] = new ParentedData(); }
+
                 parentedData.AssociateSlots.Add(item.Key);
             }
         }
@@ -117,29 +118,33 @@ namespace Accessory_States
 
         internal void SaveSlotData(int slot)
         {
-            if (slot >= PartsArray.Length)
+            if(slot >= PartsArray.Length)
             {
                 return;
             }
-            if (SlotBindingData.TryGetValue(slot, out var slotdata))
+
+            if(SlotBindingData.TryGetValue(slot, out var slotdata))
             {
                 SaveSlotData(slot, slotdata);
                 return;
             }
+
             SetAccessoryExtData(null, slot);
         }
 
         internal void SaveSlotData(int slot, SlotData slotData)
         {
-            if (slot >= PartsArray.Length)
+            if(slot >= PartsArray.Length)
             {
                 return;
             }
+
             var pluginData = PartsArray[slot].type != 120 ? slotData.Serialize() : null;
-            if (KKAPI.Maker.MakerAPI.InsideAndLoaded)
+            if(KKAPI.Maker.MakerAPI.InsideAndLoaded)
             {
                 SetAccessoryExtData(pluginData, slot, (int)CurrentCoordinate.Value);
             }
+
             SetAccessoryExtData(pluginData, slot);
         }
 
@@ -147,7 +152,7 @@ namespace Accessory_States
         {
             var pluginData = NowCoordinateData.Serialize();
             ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, pluginData);
-            if (KKAPI.Maker.MakerAPI.InsideAndLoaded)
+            if(KKAPI.Maker.MakerAPI.InsideAndLoaded)
             {
                 ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.SetExtendedDataById(Settings.GUID, pluginData);
             }
@@ -155,40 +160,40 @@ namespace Accessory_States
 
         internal void LoadSlotData(int slot)
         {
-            if (slot >= PartsArray.Length || PartsArray[slot].type == 120)
+            if(slot >= PartsArray.Length || PartsArray[slot].type == 120)
             {
                 return;
             }
 
             var extendedData = GetAccessoryExtData(slot);
-            if (extendedData == null)
+            if(extendedData == null)
             {
                 Settings.Logger.LogWarning("No data in slot " + slot);
                 return;
             }
 
-            if (extendedData.version > 2)
+            if(extendedData.version > 2)
             {
                 Settings.Logger.LogMessage($"{ChaControl.fileParam.fullname}: New version of Accessory States detected");
                 return;
             }
 
-            if (extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
+            if(extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) && bytearray != null)
             {
                 Settings.Logger.LogWarning("Loaded Data slot " + slot);
                 var slotdata = SlotBindingData[slot] = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
-                foreach (var item in slotdata.bindingDatas)
+                foreach(var item in slotdata.bindingDatas)
                 {
                     item.SetSlot(slot);
                     var binding = item.GetBinding();
-                    if (binding < 0)
+                    if(binding < 0)
                     {
-                        if (item.NameData == null)
+                        if(item.NameData == null)
                             continue;
                         //re-value binding reference
-                        var nameDataReference = NameDataList.FirstOrDefault(x => x.Equals(item.NameData));
+                        var nameDataReference = NameDataList.FirstOrDefault(x => x.Equals(item.NameData, true));
 
-                        if (nameDataReference == null)
+                        if(nameDataReference == null)
                         {
                             NameDataList.Add(item.NameData);
                             item.NameData.Binding = Constants.ClothingLength + NameDataList.IndexOf(nameDataReference);
@@ -203,7 +208,7 @@ namespace Accessory_States
                         continue;
                     }
 
-                    if (binding < Constants.ClothingLength)
+                    if(binding < Constants.ClothingLength)
                     {
                         item.NameData = NameDataList.First(x => x.Binding == binding);
                         item.NameData.AssociatedSlots.Add(slot);
@@ -226,17 +231,17 @@ namespace Accessory_States
 
         internal void ParentRemove(int slotNo, string parentStr)
         {
-            if (!SlotBindingData.TryGetValue(slotNo, out var slotData) || !slotData.Parented)
+            if(!SlotBindingData.TryGetValue(slotNo, out var slotData) || !slotData.Parented)
                 return;
 
-            if (!ParentedNameDictionary.TryGetValue(parentStr, out var nameData))
+            if(!ParentedNameDictionary.TryGetValue(parentStr, out var nameData))
             {
                 ParentedNameDictionary[parentStr] = nameData = new ParentedData();
             }
 
             nameData.AssociateSlots.Remove(slotNo);
 
-            if (nameData.AssociateSlots.Count == 0)
+            if(nameData.AssociateSlots.Count == 0)
             {
                 ParentedNameDictionary.Remove(parentStr);
             }
@@ -244,10 +249,10 @@ namespace Accessory_States
 
         internal void ParentUpdate(int slotNo, string parentStr)
         {
-            if (!SlotBindingData.TryGetValue(slotNo, out var slotData) || !slotData.Parented)
+            if(!SlotBindingData.TryGetValue(slotNo, out var slotData) || !slotData.Parented)
                 return;
 
-            if (!ParentedNameDictionary.TryGetValue(parentStr, out var nameData))
+            if(!ParentedNameDictionary.TryGetValue(parentStr, out var nameData))
             {
                 ParentedNameDictionary[parentStr] = nameData = new ParentedData();
             }

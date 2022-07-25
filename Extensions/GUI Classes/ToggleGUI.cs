@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using static Extensions.OnGUIExtensions;
-
 
 namespace Extensions.GUI_Classes
 {
@@ -23,10 +20,10 @@ namespace Extensions.GUI_Classes
 
         public void Draw()
         {
-            if (GUILayout.Toggle(Value, Text, style, layoutOptions) ^ Value)//xor operator
+            if(GUILayout.Toggle(Value, Text, style, layoutOptions) ^ Value)//xor operator
             {
                 Value = !Value;
-                if (onToggle == null)
+                if(onToggle == null)
                     return;
                 onToggle.Invoke(Value);
             }

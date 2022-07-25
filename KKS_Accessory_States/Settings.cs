@@ -21,25 +21,25 @@ namespace Accessory_States
         private void ExtendedSave_CardBeingSaved(ChaFile file)
         {
             var pluginData = ExtendedSave.GetExtendedDataById(file, GUID);
-            if (pluginData == null || pluginData.version != -1)
+            if(pluginData == null || pluginData.version != -1)
                 return;
 
-            if (pluginData.data.TryGetValue("TempMigration", out var byteArray) && byteArray != null)
+            if(pluginData.data.TryGetValue("TempMigration", out var byteArray) && byteArray != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, TempMigration>>((byte[])byteArray);
 
-                foreach (var item in temp)
+                foreach(var item in temp)
                 {
                     var accessory = file.coordinate[item.Key].accessory;
                     accessory.SetExtendedDataById(GUID, item.Value.CoordinateData.Serialize());
                     var parts = accessory.parts;
-                    foreach (var slotData in item.Value.SlotData)
+                    foreach(var slotData in item.Value.SlotData)
                     {
-                        if (slotData.Key >= parts.Length)
+                        if(slotData.Key >= parts.Length)
                             continue;
 
                         var part = parts[slotData.Key];
-                        if (part.type == 120)
+                        if(part.type == 120)
                             continue;
 
                         part.SetExtendedDataById(GUID, slotData.Value.Serialize());
@@ -53,20 +53,20 @@ namespace Accessory_States
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
             var attemptASS = false;
-            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null)
+            if(!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null)
                 attemptASS = true;
 
             Dictionary<int, TempMigration> DataStore;
 
-            if (!attemptASS)
+            if(!attemptASS)
             {
                 var Coordinate = new Dictionary<int, CoordinateDataV1>();
-                foreach (var item in coordinateMapping)
+                foreach(var item in coordinateMapping)
                 {
                     Coordinate[item.Key] = new CoordinateDataV1();
                 }
 
-                if (Data.version >= 0 && Data.version < 2)
+                if(Data.version >= 0 && Data.version < 2)
                 {
                     ImportMigrator.StandardCharaMigrator(Data, out DataStore);
                 }
@@ -77,48 +77,49 @@ namespace Accessory_States
             }
             else
             {
-                if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null)
+                if(!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null)
                     return;
 
                 var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                 var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                if (ASSData.version > 7)
+                if(ASSData.version > 7)
                 {
                     Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                     return;
                 }
-                else if (ASSData.version < 6)
+                else if(ASSData.version < 6)
                 {
                     AccStateSync.Migration.ConvertCharaPluginData(ASSData, ref TriggerPropertyList, ref TriggerGroupList);
                 }
                 else
                 {
-                    if (ASSData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                    if(ASSData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
                     {
                         var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                        if (_tempTriggerProperty?.Count > 0)
+                        if(_tempTriggerProperty?.Count > 0)
                             TriggerPropertyList.AddRange(_tempTriggerProperty);
 
-                        if (ASSData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                        if(ASSData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
                         {
                             var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                            if (_tempTriggerGroup?.Count > 0)
+                            if(_tempTriggerGroup?.Count > 0)
                             {
-                                foreach (var _group in _tempTriggerGroup)
+                                foreach(var _group in _tempTriggerGroup)
                                 {
-                                    if (_group.GUID.IsNullOrEmpty())
+                                    if(_group.GUID.IsNullOrEmpty())
                                         _group.GUID = Guid.NewGuid().ToString("D").ToUpper();
                                 }
+
                                 TriggerGroupList.AddRange(_tempTriggerGroup);
                             }
                         }
                     }
                 }
 
-                if (TriggerPropertyList == null)
+                if(TriggerPropertyList == null)
                     TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                if (TriggerGroupList == null)
+                if(TriggerGroupList == null)
                     TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
                 ImportMigrator.FullAssCardLoad(TriggerPropertyList, TriggerGroupList, out DataStore);
@@ -126,9 +127,9 @@ namespace Accessory_States
 
             var transfer = new Dictionary<int, TempMigration>();
 
-            foreach (var item in coordinateMapping)
+            foreach(var item in coordinateMapping)
             {
-                if (!item.Value.HasValue || !DataStore.TryGetValue(item.Key, out var coord))
+                if(!item.Value.HasValue || !DataStore.TryGetValue(item.Key, out var coord))
                     continue;
                 transfer[item.Value.Value] = coord;
             }

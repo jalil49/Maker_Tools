@@ -49,12 +49,11 @@ namespace Extensions
         {
             GUILayout.BeginHorizontal();
             {
-                if(Button(value ? "Enabled" : "Disabled", expandwidth: false))
+                var buttonText = value ? "Enabled: " : "Disabled: ";
+                if(Button(buttonText + text, tooltip, expandwidth: expandwidth))
                 {
                     value = !value;
                 }
-
-                Label(text, tooltip, expandwidth);
             }
 
             GUILayout.EndHorizontal();

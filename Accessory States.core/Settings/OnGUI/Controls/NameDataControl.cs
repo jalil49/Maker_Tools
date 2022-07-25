@@ -40,15 +40,15 @@ namespace Accessory_States.OnGUI
 
         public void Save(int SelectedSlot)
         {
-            foreach(KeyValuePair<int, SlotData> item in CharaEvent.SlotBindingData)
+            foreach(var item in CharaEvent.SlotBindingData)
             {
-                if(!item.Value.TryGetBinding(NameData, out BindingData binding))
+                if(!item.Value.TryGetBinding(NameData, out var binding))
                     continue;
 
-                List<StateInfo> states = binding.States;
-                bool sort = false;
+                var states = binding.States;
+                var sort = false;
 
-                for(int i = 0; i < NameData.StateLength; i++)
+                for(var i = 0; i < NameData.StateLength; i++)
                 {
                     if(states.Any(x => x.State == i))
                         continue;
@@ -66,9 +66,9 @@ namespace Accessory_States.OnGUI
 
         public void Delete()
         {
-            foreach(KeyValuePair<int, SlotData> item in CharaEvent.SlotBindingData)
+            foreach(var item in CharaEvent.SlotBindingData)
             {
-                int result = item.Value.bindingDatas.RemoveAll(x => x.NameData == NameData);
+                var result = item.Value.bindingDatas.RemoveAll(x => x.NameData == NameData);
                 if(result > 0)
                 {
                     CharaEvent.SaveSlotData(item.Key);
@@ -118,6 +118,9 @@ namespace Accessory_States.OnGUI
                 {
                     CharaEvent.ChangeBindingSub(1, NameData);
                 }
+
+                GL.Space(10);
+                NameData.StopCollision = Toggle(NameData.StopCollision, "Unique Group", "None-Unique Groups will be merged when possible by Name");
             }
 
             GL.EndHorizontal();
@@ -147,9 +150,9 @@ namespace Accessory_States.OnGUI
 
         public void DrawStateRename(int SelectedSlot)
         {
-            for(int j = 0; j < NameData.StateLength; j++)
+            for(var j = 0; j < NameData.StateLength; j++)
             {
-                TextFieldGUI newStateName = TryGetTextField(j, SelectedSlot);
+                var newStateName = TryGetTextField(j, SelectedSlot);
                 GL.BeginHorizontal();
                 {
                     Label(j + ": ", "", false);
@@ -200,7 +203,7 @@ namespace Accessory_States.OnGUI
 
         private TextFieldGUI TryGetTextField(int state, int SelectedSlot)
         {
-            if(!StatesRename.TryGetValue(state, out TextFieldGUI newStateName))
+            if(!StatesRename.TryGetValue(state, out var newStateName))
             {
                 StatesRename[state] = newStateName = new TextFieldGUI(new GUIContent(NameData.GetStateName(state), ""), GL.ExpandWidth(true), GL.MinWidth(30))
                 {

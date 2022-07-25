@@ -17,16 +17,16 @@ namespace Accessory_States
             var chafile = (currentGameMode == GameMode.Maker) ? MakerAPI.LastLoadedChaFile : ChaFileControl;
 
             var extendedData = GetExtendedData();
-            if (extendedData != null)
+            if(extendedData != null)
             {
-                if (extendedData.version < 2)
+                if(extendedData.version < 2)
                 {
                     Migration.Migrator.StandardCharaMigrator(ChaControl, extendedData);
                 }
             }
-            else if ((extendedData = ExtendedSave.GetExtendedDataById(chafile, "madevil.kk.ass")) != null)
+            else if((extendedData = ExtendedSave.GetExtendedDataById(chafile, "madevil.kk.ass")) != null)
             {
-                if (extendedData.version > 7)
+                if(extendedData.version > 7)
                 {
                     Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                 }
@@ -35,29 +35,29 @@ namespace Accessory_States
                     var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                     var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-
-                    if (extendedData.version < 6)
+                    if(extendedData.version < 6)
                     {
                         AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
                     }
                     else
                     {
-                        if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                        if(extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
                         {
                             var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                            if (_tempTriggerProperty?.Count > 0)
+                            if(_tempTriggerProperty?.Count > 0)
                                 TriggerPropertyList.AddRange(_tempTriggerProperty);
 
-                            if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                            if(extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
                             {
                                 var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                                if (_tempTriggerGroup?.Count > 0)
+                                if(_tempTriggerGroup?.Count > 0)
                                 {
-                                    foreach (var _group in _tempTriggerGroup)
+                                    foreach(var _group in _tempTriggerGroup)
                                     {
-                                        if (_group.GUID.IsNullOrEmpty())
+                                        if(_group.GUID.IsNullOrEmpty())
                                             _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
                                     }
+
                                     TriggerGroupList.AddRange(_tempTriggerGroup);
                                 }
                             }
@@ -84,7 +84,7 @@ namespace Accessory_States
             var States_Data = new PluginData() { version = Constants.SaveVersion };
             SetExtendedData(States_Data);
 
-            if (!Settings.ASS_SAVE.Value || ASSExists)
+            if(!Settings.ASS_SAVE.Value || ASSExists)
             {
                 return;
             }
@@ -92,7 +92,7 @@ namespace Accessory_States
             var triggers = new List<AccStateSync.TriggerProperty>();
             var groups = new List<AccStateSync.TriggerGroup>();
             AccStateSync.FullAssCardSave(ChaFileControl.coordinate, AssShoePreference, ref triggers, ref groups);
-            if (triggers.Count == 0)
+            if(triggers.Count == 0)
                 return;
             var pluginData = new PluginData() { version = 7 };
             pluginData.data.Add("Modified", MessagePackSerializer.Serialize(new HashSet<string>() { "Accesory States" }));
@@ -104,14 +104,15 @@ namespace Accessory_States
         // TODO: Confirm ASS support
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            if (!Settings.ASS_SAVE.Value || ASSExists)
+            if(!Settings.ASS_SAVE.Value || ASSExists)
             {
                 return;
             }
+
             var triggers = new List<AccStateSync.TriggerProperty>();
             var groups = new List<AccStateSync.TriggerGroup>();
             AccStateSync.ConvertCoordinateToAss(-1, AssShoePreference, coordinate, ref triggers, ref groups);
-            if (triggers.Count == 0)
+            if(triggers.Count == 0)
                 return;
             var pluginData = new PluginData() { version = 7 };
             pluginData.data.Add("Modified", MessagePackSerializer.Serialize(new HashSet<string>() { "Accesory States" }));
@@ -124,16 +125,16 @@ namespace Accessory_States
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
             var extendedData = GetCoordinateExtendedData(coordinate);
-            if (extendedData != null)
+            if(extendedData != null)
             {
-                if (extendedData.version < 2)
+                if(extendedData.version < 2)
                 {
                     Migration.Migrator.StandardCoordMigrator(coordinate, extendedData);
                 }
             }
-            else if ((extendedData = ExtendedSave.GetExtendedDataById(coordinate, "madevil.kk.ass")) != null)
+            else if((extendedData = ExtendedSave.GetExtendedDataById(coordinate, "madevil.kk.ass")) != null)
             {
-                if (extendedData.version > 7)
+                if(extendedData.version > 7)
                 {
                     Settings.Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                 }
@@ -142,29 +143,29 @@ namespace Accessory_States
                     var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
                     var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-
-                    if (extendedData.version < 6)
+                    if(extendedData.version < 6)
                     {
                         AccStateSync.Migration.ConvertCharaPluginData(extendedData, ref TriggerPropertyList, ref TriggerGroupList);
                     }
                     else
                     {
-                        if (extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                        if(extendedData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
                         {
                             var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                            if (_tempTriggerProperty?.Count > 0)
+                            if(_tempTriggerProperty?.Count > 0)
                                 TriggerPropertyList.AddRange(_tempTriggerProperty);
 
-                            if (extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                            if(extendedData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
                             {
                                 var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                                if (_tempTriggerGroup?.Count > 0)
+                                if(_tempTriggerGroup?.Count > 0)
                                 {
-                                    foreach (var _group in _tempTriggerGroup)
+                                    foreach(var _group in _tempTriggerGroup)
                                     {
-                                        if (_group.GUID.IsNullOrEmpty())
+                                        if(_group.GUID.IsNullOrEmpty())
                                             _group.GUID = System.Guid.NewGuid().ToString("D").ToUpper();
                                     }
+
                                     TriggerGroupList.AddRange(_tempTriggerGroup);
                                 }
                             }
@@ -189,7 +190,7 @@ namespace Accessory_States
 
         internal void AccessoryCategoryChange(int category, bool show)
         {
-            switch (category)
+            switch(category)
             {
                 case 0:
                     ShowMain = show;
@@ -201,6 +202,7 @@ namespace Accessory_States
                     Settings.Logger.LogWarning($"Unknown Accessory Category [{category}] set to {show}");
                     break;
             }
+
             RefreshSlots();
         }
 
@@ -208,11 +210,11 @@ namespace Accessory_States
         {
             var coordinateaccessory = ChaFileControl.coordinate[(int)CurrentCoordinate.Value].accessory.parts;
             var nowcoodaccessory = ChaControl.nowCoordinate.accessory.parts;
-            foreach (var slot in SlotBindingData)
+            foreach(var slot in SlotBindingData)
             {
-                foreach (var bindingData in slot.Value.bindingDatas)
+                foreach(var bindingData in slot.Value.bindingDatas)
                 {
-                    if (bindingData.NameData != name)
+                    if(bindingData.NameData != name)
                         continue;
                     coordinateaccessory[slot.Key].hideCategory = nowcoodaccessory[slot.Key].hideCategory = hidesetting;
                 }
@@ -225,12 +227,12 @@ namespace Accessory_States
         public void RefreshSlots(HashSet<int> slots)
         {
             var slotLength = PartsArray.Length;
-            foreach (var slot in slots)
+            foreach(var slot in slots)
             {
-                if (slot >= slotLength)
+                if(slot >= slotLength)
                     return;
 
-                if (!SlotBindingData.TryGetValue(slot, out var slotData))
+                if(!SlotBindingData.TryGetValue(slot, out var slotData))
                 { continue; }
 
                 RefreshSlots(slot, slotData);
@@ -240,14 +242,15 @@ namespace Accessory_States
         private void RefreshSlots(int slot, SlotData slotData)
         {
             var partsInfo = PartsArray[slot];
-            if (partsInfo.type == 120)
+            if(partsInfo.type == 120)
                 return;
 
             var show = ShouldShow(slotData);
-            if (slotData.Parented && ParentedNameDictionary.TryGetValue(partsInfo.parentKey, out var parentingState))
+            if(slotData.Parented && ParentedNameDictionary.TryGetValue(partsInfo.parentKey, out var parentingState))
             {
                 show &= parentingState.Show;
             }
+
             var isSub = partsInfo.hideCategory == 1;
             show &= !isSub && ShowMain || isSub && ShowSub; //respect the hide/show main and sub buttons
             ChaControl.SetAccessoryState(slot, show);
@@ -259,9 +262,9 @@ namespace Accessory_States
         public void RefreshSlots()
         {
             var slotLength = PartsArray.Length;
-            foreach (var slotData in SlotBindingData)
+            foreach(var slotData in SlotBindingData)
             {
-                if (slotData.Key >= slotLength)
+                if(slotData.Key >= slotLength)
                     return;
                 RefreshSlots(slotData.Key, slotData.Value);
             }
@@ -279,17 +282,16 @@ namespace Accessory_States
             var result = true;
             var currentPriority = 0;
 
-            foreach (var item in slotdata.bindingDatas)
+            foreach(var item in slotdata.bindingDatas)
             {
-                if (item.NameData == null)
+                if(item.NameData == null)
                     continue;
 
                 var stateInfo = item.GetStateInfo(item.NameData.CurrentState, shoeType);
-                if (stateInfo == null || item.NameData.Binding < 0 || stateInfo.Priority < currentPriority)
+                if(stateInfo == null || item.NameData.Binding < 0 || stateInfo.Priority < currentPriority)
                     continue;
 
-
-                if (stateInfo.Priority == currentPriority)
+                if(stateInfo.Priority == currentPriority)
                 {
                     result &= stateInfo.Show;
                     continue;
@@ -298,6 +300,7 @@ namespace Accessory_States
                 currentPriority = stateInfo.Priority;
                 result = stateInfo.Show;
             }
+
             return result;
         }
 
@@ -305,17 +308,18 @@ namespace Accessory_States
         {
             var clothstates = ChaControl.fileStatus.clothesState;
             var refreshSet = new HashSet<int>();
-            for (var i = 0; i < clothstates.Length; i++)
+            for(var i = 0; i < clothstates.Length; i++)
             {
                 var nameData = NameDataList.FirstOrDefault(x => x.Binding == i);
-                if (nameData == null)
+                if(nameData == null)
                     continue;
-                if (nameData.CurrentState != clothstates[i])
+                if(nameData.CurrentState != clothstates[i])
                 {
                     refreshSet.UnionWith(nameData.AssociatedSlots);
                     nameData.CurrentState = clothstates[i];
                 }
             }
+
             RefreshSlots(refreshSet);
         }
     }

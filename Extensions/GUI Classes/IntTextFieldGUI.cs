@@ -2,7 +2,6 @@
 using UnityEngine;
 using static Extensions.OnGUIExtensions;
 
-
 namespace Extensions.GUI_Classes
 {
     public class IntTextFieldGUI
@@ -21,10 +20,10 @@ namespace Extensions.GUI_Classes
         public void Draw()
         {
             var newText = GUILayout.TextField(Text, style, layoutOptions);
-            if (newText != Text && int.TryParse(newText, out var value))
+            if(newText != Text && int.TryParse(newText, out var value))
             {
                 Text = newText;
-                if (action == null)
+                if(action == null)
                     return;
                 action.Invoke(value);
             }

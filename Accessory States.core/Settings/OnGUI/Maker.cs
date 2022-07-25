@@ -24,7 +24,7 @@ namespace Accessory_States
             {
                 if(SelectedSlot < 0)
                     return null;
-                if(!GetController.SlotBindingData.TryGetValue(SelectedSlot, out SlotData slotData))
+                if(!GetController.SlotBindingData.TryGetValue(SelectedSlot, out var slotData))
                 {
                     slotData = GetController.SlotBindingData[SelectedSlot] = new SlotData();
                 }
@@ -53,17 +53,17 @@ namespace Accessory_States
 
         private void CreateMakerGUI(RegisterSubCategoriesEvent e)
         {
-            Settings owner = Settings.Instance;
-            MakerCategory category = new MakerCategory(null, null);
+            var owner = Settings.Instance;
+            var category = new MakerCategory(null, null);
 
-            MakerButton gui_button = new MakerButton("States GUI", category, owner);
+            var gui_button = new MakerButton("States GUI", category, owner);
             MakerAPI.AddAccessoryWindowControl(gui_button, true);
-            gui_button.OnClick.AddListener(_slotWindow.ToggleShow);
+            gui_button.OnClick.AddListener(ToggleSlotWindow);
 
             SidebarToggle = e.AddSidebarControl(new SidebarToggle("Show States Preview Menu", false, owner));
             SidebarToggle.ValueChanged.Subscribe(x => _previewWindow.ToggleShow(x));
 
-            string GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
+            var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             gui_button.GroupingID = GroupingID;
         }
 
@@ -121,10 +121,10 @@ namespace Accessory_States
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
-            CharaEvent controller = CharaEvent;
-            if(controller.SlotBindingData.TryGetValue(e.DestinationSlotIndex, out SlotData slotData))
+            var controller = CharaEvent;
+            if(controller.SlotBindingData.TryGetValue(e.DestinationSlotIndex, out var slotData))
             {
-                foreach(BindingData item in slotData.bindingDatas)
+                foreach(var item in slotData.bindingDatas)
                 {
                     item.NameData.AssociatedSlots.Remove(e.DestinationSlotIndex);
                 }
@@ -137,14 +137,14 @@ namespace Accessory_States
 
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
         {
-            CharaEvent controller = CharaEvent;
+            var controller = CharaEvent;
             if(e.CopyDestination == controller.CurrentCoordinate.Value)
             {
-                foreach(int slot in e.CopiedSlotIndexes)
+                foreach(var slot in e.CopiedSlotIndexes)
                 {
-                    if(controller.SlotBindingData.TryGetValue(slot, out SlotData slotData))
+                    if(controller.SlotBindingData.TryGetValue(slot, out var slotData))
                     {
-                        foreach(BindingData bindingData in slotData.bindingDatas)
+                        foreach(var bindingData in slotData.bindingDatas)
                         {
                             bindingData.NameData.AssociatedSlots.Remove(slot);
                         }
@@ -166,7 +166,7 @@ namespace Accessory_States
                 return;
             }
 
-            CharaEvent controller = CharaEvent;
+            var controller = CharaEvent;
             controller.SlotBindingData.Remove(slotNo);
             controller.SaveSlotData(slotNo);
         }
@@ -191,8 +191,8 @@ namespace Accessory_States
 
         private static void UpdateClothNots()
         {
-            CharaEvent controller = CharaEvent;
-            bool[] ClothNotData = controller.ClothNotData = new bool[3] { false, false, false };
+            var controller = CharaEvent;
+            var ClothNotData = controller.ClothNotData = new bool[3] { false, false, false };
             ClothNotData[0] = controller.ChaControl.notBot || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 2;
             ClothNotData[1] = controller.ChaControl.notBra || GetClothingNot(0, ChaListDefine.KeyType.Coordinate) == 1;
             ClothNotData[2] = controller.ChaControl.notShorts || GetClothingNot(2, ChaListDefine.KeyType.Coordinate) == 2;
@@ -201,10 +201,10 @@ namespace Accessory_States
 
         public static bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
         {
-            ListInfoBase listInfoBase = GetListInfoBase(kind);
+            var listInfoBase = GetListInfoBase(kind);
             if(listInfoBase == null)
                 return false;
-            int intValue = GetClothingNot(listInfoBase, value);
+            var intValue = GetClothingNot(listInfoBase, value);
             if(intValue == listInfoBase.GetInfoInt(value))
                 return false;
 
@@ -220,7 +220,7 @@ namespace Accessory_States
         {
             if(listInfo == null)
                 return 0;
-            if(!(listInfo.dictInfo.TryGetValue((int)key, out string stringValue) && int.TryParse(stringValue, out int intValue)))
+            if(!(listInfo.dictInfo.TryGetValue((int)key, out var stringValue) && int.TryParse(stringValue, out var intValue)))
                 return 0;
 
             return intValue;
@@ -228,7 +228,7 @@ namespace Accessory_States
 
         public static ListInfoBase GetListInfoBase(int kind)
         {
-            ListInfoBase[] lists = CharaEvent.ChaControl.infoClothes;
+            var lists = CharaEvent.ChaControl.infoClothes;
             if(kind >= lists.Length || kind < 0)
                 return null;
             return lists[kind];
@@ -241,7 +241,7 @@ namespace Accessory_States
             if(!_slotWindow.Show || !AccessoriesApi.AccessoryCanvasVisible)
                 return;
 
-            ChaFileAccessory.PartsInfo[] parts = CharaEvent.PartsArray;
+            var parts = CharaEvent.PartsArray;
             if(SelectedSlot < 0 || SelectedSlot >= parts.Length || parts[SelectedSlot].type == 120)
                 return;
 

@@ -31,7 +31,7 @@ namespace Accessory_States.Migration.Version1
         private void NullCheck()
         {
             States = States ?? new List<int[]>() { new int[] { 0, 3 } };
-            if (Shoetype < 0 || Shoetype > 2)
+            if(Shoetype < 0 || Shoetype > 2)
                 Shoetype = 2;
         }
 
@@ -41,15 +41,16 @@ namespace Accessory_States.Migration.Version1
             var bindingData = new BindingData() { NameData = nameData };
             var max = 0;
 
-            foreach (var state in States)
+            foreach(var state in States)
             {
-                if (state == null || state.Length != 2)
+                if(state == null || state.Length != 2)
                     continue;
                 max = Math.Max(max, state[1]);
             }
+
             max++;
 
-            for (var i = 0; i < max; i++)
+            for(var i = 0; i < max; i++)
             {
                 var newState = new StateInfo() { Binding = this.Binding, Priority = 0, ShoeType = this.Shoetype, Slot = slot, State = i };
                 newState.Show = States.Any(x => x[0] <= i && i <= x[1]);

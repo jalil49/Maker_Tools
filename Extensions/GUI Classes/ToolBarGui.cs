@@ -22,9 +22,9 @@ namespace Extensions.GUI_Classes
         public void Draw()
         {
             var newValue = GUILayout.Toolbar(Value, Text, style, layoutOptions);
-            if (newValue != Value)//xor operator
+            if(newValue != Value)//xor operator
             {
-                if (OnValueChange != null)
+                if(OnValueChange != null)
                     OnValueChange.Invoke(Value, newValue);
                 Value = newValue;
             }

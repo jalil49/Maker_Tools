@@ -9,7 +9,7 @@ using GL = UnityEngine.GUILayout;
 
 namespace Accessory_States.OnGUI
 {
-    public class PresetContols
+    public class PresetContol
     {
         public readonly PresetData PresetData;
         private readonly TextFieldGUI Name;
@@ -17,7 +17,7 @@ namespace Accessory_States.OnGUI
         private readonly TextAreaGUI Description;
         private readonly List<PresetData> Container;
 
-        public PresetContols(PresetData presetData, List<PresetData> container)
+        public PresetContol(PresetData presetData, List<PresetData> container)
         {
             PresetData = presetData;
             Container = container;
@@ -62,26 +62,27 @@ namespace Accessory_States.OnGUI
             {
                 Name.ActiveDraw();
 
-                int index = Container.IndexOf(PresetData);
+                var index = Container.IndexOf(PresetData);
 
-                if(Button("Apply", "Apply this preset's data to slot", false))
+                if(Button("Apply", "Apply this preset's data to slot, No collision check", false))
                 {
-                    if(chara.SlotBindingData.TryGetValue(SelectedSlot, out SlotData undoReference))
+                    if(chara.SlotBindingData.TryGetValue(SelectedSlot, out var undoReference))
                     {
-                        foreach(BindingData item in undoReference.bindingDatas)
+                        foreach(var item in undoReference.bindingDatas)
                         {
                             item.NameData.AssociatedSlots.Remove(SelectedSlot);
                         }
                     }
 
-                    SlotData slotData = chara.SlotBindingData[SelectedSlot] = PresetData.Data.DeepClone();
-                    List<NameData> names = chara.NameDataList;
-                    foreach(BindingData item in slotData.bindingDatas)
+                    var slotData = chara.SlotBindingData[SelectedSlot] = PresetData.Data.DeepClone();
+                    var names = chara.NameDataList;
+                    foreach(var item in slotData.bindingDatas)
                     {
-                        NameData reference = names.FirstOrDefault(x => item.NameData.Equals(x));
+                        var reference = names.FirstOrDefault(x => item.NameData.Equals(x, false));
                         if(reference != null)
                         {
                             item.NameData = reference;
+                            item.NameData.CollisionString = System.Guid.NewGuid().ToString("D").ToUpper();//replace Collision string from preset to prevent collisions from shared presets
                             item.NameData.AssociatedSlots.Add(SelectedSlot);
                             item.SetSlot(SelectedSlot);
                             continue;
@@ -169,18 +170,18 @@ namespace Accessory_States.OnGUI
 
         private void Save(CharaEvent chara, List<BindingData> bindingDatas, int SelectedSlot)
         {
-            foreach(KeyValuePair<int, SlotData> item in chara.SlotBindingData)
+            foreach(var item in chara.SlotBindingData)
             {
-                bool save = false;
-                foreach(BindingData item2 in item.Value.bindingDatas)
+                var save = false;
+                foreach(var item2 in item.Value.bindingDatas)
                 {
                     if(!bindingDatas.Any(x => x == item2))
                         continue;
-                    NameData NameData = item2.NameData;
-                    List<StateInfo> states = item2.States;
-                    bool sort = false;
+                    var NameData = item2.NameData;
+                    var states = item2.States;
+                    var sort = false;
 
-                    for(int i = 0; i < NameData.StateLength; i++)
+                    for(var i = 0; i < NameData.StateLength; i++)
                     {
                         if(states.Any(x => x.State == i))
                             continue;

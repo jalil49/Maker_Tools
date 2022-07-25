@@ -14,18 +14,18 @@ namespace Accessory_States.Classes.PresetStorage
         {
             set
             {
-                if (_fileName.IsNullOrWhiteSpace())
+                if(_fileName.IsNullOrWhiteSpace())
                     _fileName = Name;
-                if (_fileName.Length == 0)
+                if(_fileName.Length == 0)
                     _fileName = this.GetHashCode().ToString();
 
                 _fileName = string.Concat(value.Split(System.IO.Path.GetInvalidFileNameChars())).Trim();
             }
             get
             {
-                if (_fileName.IsNullOrWhiteSpace())
+                if(_fileName.IsNullOrWhiteSpace())
                     _fileName = Name;
-                if (_fileName.Length == 0)
+                if(_fileName.Length == 0)
                     _fileName = this.GetHashCode().ToString();
 
                 return _fileName;
@@ -45,7 +45,7 @@ namespace Accessory_States.Classes.PresetStorage
         }
         public bool Filter(string filter)
         {
-            if (Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || FileName.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || Description.Contains(filter, System.StringComparison.OrdinalIgnoreCase))
+            if(Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || FileName.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || Description.Contains(filter, System.StringComparison.OrdinalIgnoreCase))
                 return false;
             return true;
         }

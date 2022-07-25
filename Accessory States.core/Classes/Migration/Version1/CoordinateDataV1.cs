@@ -32,22 +32,23 @@ namespace Accessory_States.Migration.Version1
         public void CleanUp()
         {
             var removelist = Slotinfo.Where(x => x.Value.Binding == -1 && !x.Value.Parented).Select(x => x.Key).ToList();
-            foreach (var item in removelist)
+            foreach(var item in removelist)
             {
                 Slotinfo.Remove(item);
             }
+
             removelist = Names.Where(x => !Slotinfo.Any(y => y.Value.Binding == x.Key)).Select(x => x.Key).ToList();
-            foreach (var item in removelist)
+            foreach(var item in removelist)
             {
                 Names.Remove(item);
             }
 
-            foreach (var item in Names)
+            foreach(var item in Names)
             {
                 var max = MaxState(item.Key);
                 var statenames = item.Value.Statenames;
                 removelist = statenames.Keys.Where(x => x > max).ToList();
-                foreach (var key in removelist)
+                foreach(var key in removelist)
                 {
                     statenames.Remove(key);
                 }
@@ -59,7 +60,7 @@ namespace Accessory_States.Migration.Version1
             Slotinfo = Slotinfo ?? new Dictionary<int, SlotdataV1>();
             Names = Names ?? new Dictionary<int, NameDataV1>();
             ClothNotData = ClothNotData ?? new bool[3] { false, false, false };
-            if (ClothNotData.Length > 3)
+            if(ClothNotData.Length > 3)
             {
                 ClothNotData = new bool[3] { ClothNotData[0], ClothNotData[1], ClothNotData[2] };
             }
@@ -67,16 +68,18 @@ namespace Accessory_States.Migration.Version1
 
         private int MaxState(int binding)
         {
-            if (binding < 9)
+            if(binding < 9)
             {
                 return 3;
             }
+
             var max = 0;
             var bindinglist = Slotinfo.Values.Where(x => x.Binding == binding);
-            foreach (var item in bindinglist)
+            foreach(var item in bindinglist)
             {
                 item.States.ForEach(x => max = Math.Max(x[1], max));
             }
+
             return max;
         }
 

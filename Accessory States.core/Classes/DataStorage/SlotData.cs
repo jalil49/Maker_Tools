@@ -22,10 +22,10 @@ namespace Accessory_States
         }
         internal void NullCheck()
         {
-            if (bindingDatas == null)
+            if(bindingDatas == null)
                 bindingDatas = new List<BindingData>();
 
-            if (Gameformat.Unknown == Format)
+            if(Gameformat.Unknown == Format)
                 Format = DefaultFormat;
         }
 
@@ -33,29 +33,30 @@ namespace Accessory_States
         {
             bindingDatas.RemoveAll(x => x.GetBinding() < 0);
 
-            if (Parented)
+            if(Parented)
                 return true;
-            if (bindingDatas != null && bindingDatas.Count > 0)
+            if(bindingDatas != null && bindingDatas.Count > 0)
                 return true;
             return false;
         }
 
         public bool TryGetBinding(NameData nameData, out BindingData binding)
         {
-            foreach (var item in bindingDatas)
+            foreach(var item in bindingDatas)
             {
-                if (nameData != item.NameData)
+                if(nameData != item.NameData)
                     continue;
                 binding = item;
                 return true;
             }
+
             binding = null;
             return false;
         }
 
         public void SetSlot(int slot)
         {
-            foreach (var item in bindingDatas)
+            foreach(var item in bindingDatas)
             {
                 item.SetSlot(slot);
             }
@@ -63,7 +64,7 @@ namespace Accessory_States
 
         public ExtensibleSaveFormat.PluginData Serialize()
         {
-            if (!ShouldSave())
+            if(!ShouldSave())
                 return null;
             var data = new ExtensibleSaveFormat.PluginData() { version = Constants.SaveVersion };
             data.data.Add(Constants.AccessoryKey, MessagePackSerializer.Serialize(this));
@@ -72,17 +73,18 @@ namespace Accessory_States
 
         public bool BindingExists(int binding, int shoe)
         {
-            foreach (var item in bindingDatas)
+            foreach(var item in bindingDatas)
             {
-                if (item.GetBinding() == binding)
+                if(item.GetBinding() == binding)
                 {
-                    foreach (var item2 in item.States)
+                    foreach(var item2 in item.States)
                     {
-                        if (item2.ShoeType == 2 || item2.ShoeType == shoe)
+                        if(item2.ShoeType == 2 || item2.ShoeType == shoe)
                             return true;
                     }
                 }
             }
+
             return false;
         }
 

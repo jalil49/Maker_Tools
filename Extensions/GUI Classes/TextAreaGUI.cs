@@ -2,7 +2,6 @@
 using UnityEngine;
 using static Extensions.OnGUIExtensions;
 
-
 namespace Extensions.GUI_Classes
 {
     public class TextAreaGUI
@@ -24,10 +23,10 @@ namespace Extensions.GUI_Classes
         public void ActiveDraw()
         {
             var newText = GUILayout.TextArea(Text, style, layoutOptions);
-            if (newText != Text)
+            if(newText != Text)
             {
                 Text = newText;
-                if (action == null)
+                if(action == null)
                     return;
                 action.Invoke(Text);
             }
@@ -35,10 +34,10 @@ namespace Extensions.GUI_Classes
         public void ConfirmDraw()
         {
             newText = GUILayout.TextArea(newText, style, layoutOptions);
-            if (newText != Text && Button(ButtonText, expandwidth: false))
+            if(newText != Text && Button(ButtonText, expandwidth: false))
             {
                 Text = newText;
-                if (action == null)
+                if(action == null)
                     return;
                 action.Invoke(Text);
             }

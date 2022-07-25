@@ -11,12 +11,12 @@ namespace Accessory_States
 
         public int AssShowPreference
         {
-            get { return _assShowPreference; }
+            get => _assShowPreference;
             set
             {
-                if (value > 1)
+                if(value > 1)
                     value = 1;
-                if (value < 0)
+                if(value < 0)
                     value = 0;
                 _assShowPreference = value;
             }
@@ -48,7 +48,7 @@ namespace Accessory_States
         internal void NullCheck()
         {
             ClothingNotData = ClothingNotData ?? new bool[3] { false, false, false };
-            if (_assShowPreference < 0 || _assShowPreference > 1)
+            if(_assShowPreference < 0 || _assShowPreference > 1)
             {
 #if KKS
                 _assShowPreference = 1;//KKS Only has outdoor shoes

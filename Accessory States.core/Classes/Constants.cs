@@ -6,7 +6,7 @@ namespace Accessory_States
     {
         public static string GetClothingName(int clothNum)
         {
-            switch (clothNum)
+            switch(clothNum)
             {
                 case -1:
                     return "None";
@@ -48,8 +48,8 @@ namespace Accessory_States
             };
 
             var list = new List<NameData>();
-            for (var i = -1; i < ClothingLength; i++)
-                list.Add(new NameData() { Name = GetClothingName(i), StateNames = states, Binding = i });
+            for(var i = -1; i < ClothingLength; i++)
+                list.Add(new NameData() { Name = GetClothingName(i), StateNames = states, Binding = i, StopCollision = false });
             return list;
         }
 
