@@ -20,6 +20,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetFolder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Abstract\BaseGUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\NameDataControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\PresetControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\PresetFolderContol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\CharaEventControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\StateInfoControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGui.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Presets.cs" />
@@ -33,5 +39,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Abstract\" />
   </ItemGroup>
 </Project>

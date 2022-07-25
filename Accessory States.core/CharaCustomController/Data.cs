@@ -89,6 +89,8 @@ namespace Accessory_States
                     Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(Coordloaded)} - {ex}");
                 }
             }
+
+            RefreshSlots();
         }
 
         internal void UpdateParentedDict()

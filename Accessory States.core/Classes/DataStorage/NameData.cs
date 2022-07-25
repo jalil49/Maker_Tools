@@ -25,6 +25,10 @@ namespace Accessory_States
         /// </summary>
         public int CurrentState = 0;
 
+        public bool StopColloision;
+
+        public string CollisionString;
+
         [IgnoreMember]
         public int StateLength => StateNames.Count;
 
@@ -37,6 +41,8 @@ namespace Accessory_States
             DefaultState = 0;
             CurrentState = 0;
             StateNames = new Dictionary<int, string>() { [0] = "State 0", [1] = "State 1" };
+            StopColloision = true;
+            CollisionString = Guid.NewGuid().ToString("D").ToUpper();
         }
 
         internal void NullCheck()
@@ -45,6 +51,7 @@ namespace Accessory_States
             Name = Name ?? "";
             DefaultState = DefaultState < 0 ? 0 : DefaultState;
             CurrentState = CurrentState < 0 ? 0 : CurrentState;
+            CollisionString = CollisionString ?? Guid.NewGuid().ToString("D").ToUpper();
         }
 
         public bool Equals(NameData other)
@@ -54,11 +61,11 @@ namespace Accessory_States
 
         public void MergeStatesWith(NameData other)
         {
-            if (other == null)
+            if(other == null)
                 return;
-            foreach (var item in other.StateNames)
+            foreach(KeyValuePair<int, string> item in other.StateNames)
             {
-                if (StateNames.ContainsKey(item.Key))
+                if(StateNames.ContainsKey(item.Key))
                     continue;
 
                 StateNames[item.Key] = item.Value;
@@ -67,32 +74,33 @@ namespace Accessory_States
 
         public string GetStateName(int state)
         {
-            if (StateNames.TryGetValue(state, out var name))
+            if(StateNames.TryGetValue(state, out string name))
                 return name;
             return StateNames[state] = "State: " + state;
         }
 
         public List<StateInfo> GetDefaultStates(int slot)
         {
-            var states = new List<StateInfo>();
-            for (var i = 0; i < StateLength; i++)
+            List<StateInfo> states = new List<StateInfo>();
+            for(int i = 0; i < StateLength; i++)
             {
                 states.Add(new StateInfo() { Binding = Binding, Slot = slot, State = i });
             }
+
             Settings.Logger.LogWarning($"GetDefaultStates count {states.Count} bind {Binding}");
             return states;
         }
 
         public int IncrementCurrentState()
         {
-            if (++CurrentState >= StateLength)
+            if(++CurrentState >= StateLength)
                 CurrentState = 0;
             return CurrentState;
         }
 
         public int DecrementCurrentState()
         {
-            if (--CurrentState < 0)
+            if(--CurrentState < 0)
                 CurrentState = Math.Max(0, StateLength - 1);
             return CurrentState;
         }
@@ -102,7 +110,7 @@ namespace Accessory_States
         public void OnAfterDeserialize()
         {
             NullCheck();
-            if (!KKAPI.Studio.StudioAPI.InsideStudio) //Load Last State In Studio
+            if(!KKAPI.Studio.StudioAPI.InsideStudio) //Load Last State In Studio
                 CurrentState = DefaultState;
         }
     }

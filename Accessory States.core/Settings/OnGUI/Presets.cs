@@ -14,7 +14,7 @@ namespace Accessory_States
             SetCachePath();
         }
 
-        private static string CachePath { get; set; }
+        internal static string CachePath { get; private set; }
         private const string Extenstion = ".Presets";
         private static void SetCachePath()
         {
@@ -22,7 +22,7 @@ namespace Accessory_States
             CachePath = Paths.CachePath + sep + Settings.GUID + sep;
         }
 
-        private static bool CreateCacheFolder()
+        internal static bool CreateCacheFolder()
         {
             if (!Directory.Exists(CachePath))
             {

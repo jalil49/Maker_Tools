@@ -1,15 +1,24 @@
 ﻿using System;
 using UnityEngine;
 
-
 namespace Extensions.GUI_Classes
 {
     public class ScrollGUI
     {
-        public GUILayoutOption[] layoutOptions;
-        public Action action;
+        private GUILayoutOption[] layoutOptions;
+        private Action action;
 
-        private Vector2 Scrolling = new Vector2();
+        private Vector2 Scrolling;
+
+        public ScrollGUI(Action action, GUILayoutOption[] gUILayoutOptions = null)
+        {
+            if(action == null)
+                throw new ArgumentNullException("action");
+
+            layoutOptions = gUILayoutOptions ?? new GUILayoutOption[0];
+            this.action = action;
+            Scrolling = new Vector2();
+        }
 
         public void Draw()
         {

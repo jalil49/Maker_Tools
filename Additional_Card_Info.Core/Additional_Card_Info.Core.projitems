@@ -13,13 +13,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CardInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordinateInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\RestrictionInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Standard Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)CharaCustomController\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
   </ItemGroup>
 </Project>

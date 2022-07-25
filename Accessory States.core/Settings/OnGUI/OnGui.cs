@@ -19,57 +19,57 @@ namespace Accessory_States
 
         public void OnGUI()
         {
-            if (!_initialized)
+            if(!_initialized)
             {
                 _initialized = true;
                 InitializeStyles();
 #if Studio
-                if (!KKAPI.Studio.StudioAPI.InsideStudio)//disable OnGui and Update calls when not in maker for main game Initialize styles first, if in studio don't disable
+                if(!KKAPI.Studio.StudioAPI.InsideStudio)//disable OnGui and Update calls when not in maker for main game Initialize styles first, if in studio don't disable
 #endif
                 {
                     this.enabled = false;
                 }
             }
 
-            if (_maker != null)
+            if(_maker != null)
             {
-                if (KKAPI.Maker.MakerAPI.IsInterfaceVisible())
+                if(KKAPI.Maker.MakerAPI.IsInterfaceVisible())
                     _maker.OnGUI();
             }
 
-            if (_studio != null)
+            if(_studio != null)
             {
-                _studio.OnGui();
+                _studio.OnGUI();
             }
         }
 
         internal static void UpdateGUI(CharaEvent charaEvent)
         {
-            if (_maker != null)
+            if(_maker != null)
                 _maker.ClearCoordinate();
 
-            if (_studio != null)
+            if(_studio != null)
                 _studio.ClearCoordinate(charaEvent);
         }
 
         internal void Update()
         {
-            if (SlotWindowHotKey.Value.IsDown())
+            if(SlotWindowHotKey.Value.IsDown())
             {
-                if (_maker != null)
+                if(_maker != null)
                     _maker.ToggleSlotWindow();
 #if Studio
-                if (_studio != null)
+                if(_studio != null)
                     _studio.ToggleSlotWindow();
 #endif
             }
 
-            if (PreviewWindowHotKey.Value.IsDown())
+            if(PreviewWindowHotKey.Value.IsDown())
             {
-                if (_maker != null)
+                if(_maker != null)
                     _maker.TogglePreviewWindow();
 #if Studio
-                if (_studio != null)
+                if(_studio != null)
                     _studio.TogglePreviewWindow();
 #endif
             }
