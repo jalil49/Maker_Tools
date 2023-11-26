@@ -3,6 +3,7 @@ using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Instrumentation;
 
 namespace Accessory_States
 {
@@ -50,7 +51,7 @@ namespace Accessory_States
                 [Key("Kind")]
                 public int Kind { get; set; } = -1;
                 [Key("Group")]
-                public string Group { get; set; } = "";
+                public string Group { get; set; } = string.Empty;
                 [Key("State")]
                 public List<bool> State { get; set; } = new List<bool>() { true, false, false, false };
 

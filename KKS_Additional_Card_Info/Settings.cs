@@ -1,51 +1,69 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using Additional_Card_Info.Classes.Migration;
+using BepInEx;
 using ExtensibleSaveFormat;
 using MessagePack;
-using System.Collections.Generic;
 
 namespace Additional_Card_Info
 {
     [BepInProcess("KoikatsuSunshine")]
-    public partial class Settings : BaseUnityPlugin
+    public partial class Settings
     {
         private void GameUnique()
         {
             ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported;
         }
 
-        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
+        private static void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData,
+                                                           Dictionary<int, int?> coordinateMapping)
         {
-            if (!importedExtendedData.TryGetValue(GUID, out var ACI_Data) || ACI_Data == null || ACI_Data.version > 1) return;
-            Logger.LogDebug($"ACI Data version {ACI_Data.version} Found on import");
+            if (!importedExtendedData.TryGetValue(GUID, out var aciData) || aciData == null || aciData.version > 1)
+            {
+                return;
+            }
 
-            var CardInfo = new Migrator.CardInfoV1();
-            var CoordinateInfo = new Dictionary<int, Migrator.CoordinateInfoV1>();
-            if (ACI_Data.version == 1)
+            Logger.LogDebug($"ACI Data version {aciData.version.ToString()} Found on import");
+
+            var cardInfo = new Migrator.CardInfoV1();
+            var coordinateInfo = new Dictionary<int, Migrator.CoordinateInfoV1>();
+            switch (aciData.version)
             {
-                if (ACI_Data.data.TryGetValue("CardInfo", out var ByteData) && ByteData != null)
+                case 1:
                 {
-                    CardInfo = MessagePackSerializer.Deserialize<Migrator.CardInfoV1>((byte[])ByteData);
+                    if (aciData.data.TryGetValue("CardInfo", out var byteData) && byteData != null)
+                    {
+                        cardInfo = MessagePackSerializer.Deserialize<Migrator.CardInfoV1>((byte[])byteData);
+                    }
+
+                    if (aciData.data.TryGetValue("CoordinateInfo", out byteData) && byteData != null)
+                    {
+                        coordinateInfo =
+                            MessagePackSerializer.Deserialize<Dictionary<int, Migrator.CoordinateInfoV1>>(
+                                (byte[])byteData);
+                    }
+
+                    break;
                 }
-                if (ACI_Data.data.TryGetValue("CoordinateInfo", out ByteData) && ByteData != null)
-                {
-                    CoordinateInfo = MessagePackSerializer.Deserialize<Dictionary<int, Migrator.CoordinateInfoV1>>((byte[])ByteData);
-                }
+                case 0:
+                    Migrator.StandardCharaMigrateV0(aciData, ref coordinateInfo, ref cardInfo);
+                    break;
             }
-            else if (ACI_Data.version == 0)
-            {
-                Migrator.StandardCharaMigrateV0(ACI_Data, ref CoordinateInfo, ref CardInfo);
-            }
+
             var transfer = new Dictionary<int, Migrator.CoordinateInfoV1>();
 
             foreach (var item in coordinateMapping)
             {
-                if (!CoordinateInfo.TryGetValue(item.Key, out var info) || !item.Value.HasValue) continue;
+                if (!coordinateInfo.TryGetValue(item.Key, out var info) || !item.Value.HasValue)
+                {
+                    continue;
+                }
+
                 transfer[item.Value.Value] = info;
             }
 
-            ACI_Data.data.Clear();
-            ACI_Data.data.Add("CardInfo", MessagePackSerializer.Serialize(CardInfo));
-            ACI_Data.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(CoordinateInfo));
+            aciData.data.Clear();
+            aciData.data.Add("CardInfo", MessagePackSerializer.Serialize(cardInfo));
+            aciData.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(transfer));
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Accessory_States
         internal void NullCheck()
         {
             StateNames = StateNames ?? new Dictionary<int, string>();
-            Name = Name ?? "";
+            Name = Name ?? string.Empty;
             DefaultState = DefaultState < 0 ? 0 : DefaultState;
             CurrentState = CurrentState < 0 ? 0 : CurrentState;
             CollisionString = CollisionString ?? Guid.NewGuid().ToString("D").ToUpper();

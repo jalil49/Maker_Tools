@@ -10,7 +10,7 @@ namespace Accessory_States.Migration.Version1
     public class CoordinateDataV1 : IMessagePackSerializationCallbackReceiver
     {
         [Key("_slotinfo")]
-        public Dictionary<int, SlotdataV1> Slotinfo { get; set; }
+        public Dictionary<int, SlotdataV1> SlotData { get; set; }
 
         [Key("_names")]
         public Dictionary<int, NameDataV1> Names { get; set; }
@@ -23,7 +23,7 @@ namespace Accessory_States.Migration.Version1
 
         public CoordinateDataV1()
         {
-            Slotinfo = new Dictionary<int, SlotdataV1>();
+            SlotData = new Dictionary<int, SlotdataV1>();
             Names = new Dictionary<int, NameDataV1>();
             ClothNotData = new bool[3] { false, false, false };
             ForceClothNotUpdate = true;
@@ -31,13 +31,13 @@ namespace Accessory_States.Migration.Version1
 
         public void CleanUp()
         {
-            var removelist = Slotinfo.Where(x => x.Value.Binding == -1 && !x.Value.Parented).Select(x => x.Key).ToList();
+            var removelist = SlotData.Where(x => x.Value.Binding == -1 && !x.Value.Parented).Select(x => x.Key).ToList();
             foreach(var item in removelist)
             {
-                Slotinfo.Remove(item);
+                SlotData.Remove(item);
             }
 
-            removelist = Names.Where(x => !Slotinfo.Any(y => y.Value.Binding == x.Key)).Select(x => x.Key).ToList();
+            removelist = Names.Where(x => !SlotData.Any(y => y.Value.Binding == x.Key)).Select(x => x.Key).ToList();
             foreach(var item in removelist)
             {
                 Names.Remove(item);
@@ -57,7 +57,7 @@ namespace Accessory_States.Migration.Version1
 
         private void NullCheck()
         {
-            Slotinfo = Slotinfo ?? new Dictionary<int, SlotdataV1>();
+            SlotData = SlotData ?? new Dictionary<int, SlotdataV1>();
             Names = Names ?? new Dictionary<int, NameDataV1>();
             ClothNotData = ClothNotData ?? new bool[3] { false, false, false };
             if(ClothNotData.Length > 3)
@@ -74,7 +74,7 @@ namespace Accessory_States.Migration.Version1
             }
 
             var max = 0;
-            var bindinglist = Slotinfo.Values.Where(x => x.Binding == binding);
+            var bindinglist = SlotData.Values.Where(x => x.Binding == binding);
             foreach(var item in bindinglist)
             {
                 item.States.ForEach(x => max = Math.Max(x[1], max));

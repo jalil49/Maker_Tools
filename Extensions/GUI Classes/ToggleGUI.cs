@@ -6,26 +6,27 @@ namespace Extensions.GUI_Classes
 {
     public class ToggleGUI
     {
-        public bool Value = false;
-        public string Text = "Default Text";
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
-        public Action<bool> onToggle;
-        public ToggleGUI(string _text, params GUILayoutOption[] options)
+        private readonly GUILayoutOption[] _layoutOptions;
+        private readonly GUIStyle _style;
+        public Action<bool> OnToggle;
+        public string Text;
+
+        public ToggleGUI(bool value, string text, params GUILayoutOption[] options)
         {
-            Text = _text;
-            style = ToggleStyle;
-            layoutOptions = options;
+            Value = value;
+            Text = text;
+            _style = ToggleStyle;
+            _layoutOptions = options;
         }
+
+        public bool Value { get; set; }
 
         public void Draw()
         {
-            if(GUILayout.Toggle(Value, Text, style, layoutOptions) ^ Value)//xor operator
+            if (GUILayout.Toggle(Value, Text, _style, _layoutOptions) ^ Value) //xor operator
             {
                 Value = !Value;
-                if(onToggle == null)
-                    return;
-                onToggle.Invoke(Value);
+                OnToggle?.Invoke(Value);
             }
         }
     }

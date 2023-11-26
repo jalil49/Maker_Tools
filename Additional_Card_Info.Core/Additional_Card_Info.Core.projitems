@@ -13,12 +13,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CardInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordinateInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\RestrictionInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CardData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordinateData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\RestrictionData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\Test.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\KeepState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\CharacterControls.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\OutfitControls.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\SlotDataControls.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Standard Settings.cs" />
   </ItemGroup>

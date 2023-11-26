@@ -101,6 +101,12 @@
   <ItemGroup>
     <Analyzer Include="..\..\packages\KoikatuCompatibilityAnalyzer.1.1.0\analyzers\dotnet\cs\KoikatuCompatibilityAnalyzer.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Accessory Parents\Accessory_Parents\Accessory_Parents.csproj">
+      <Project>{a806537e-6d4c-4803-b426-42529cf78c3b}</Project>
+      <Name>Accessory_Parents</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\..\Additional_Card_Info.Core\Additional_Card_Info.Core.projitems" Label="Shared" />
   <Import Project="..\..\Accessory.Hooks\Accessory.Hooks.projitems" Label="Shared" />
   <Import Project="..\..\Extensions\Extensions.projitems" Label="Shared" />

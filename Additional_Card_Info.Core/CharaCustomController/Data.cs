@@ -1,245 +1,274 @@
-﻿using KKAPI.Chara;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Additional_Card_Info.Classes.Migration;
+using KKAPI.Chara;
+using KKAPI.Maker;
 using static ExtensibleSaveFormat.Extensions;
 
 namespace Additional_Card_Info
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        public CardInfo CardInfo = new CardInfo();
+        public CardData CardData = new CardData();
 
         public CoordinateInfo NowCoordinateInfo = new CoordinateInfo();
 
-        public Dictionary<int, SlotInfo> SlotInfo = new Dictionary<int, SlotInfo>();
+        public readonly Dictionary<int, SlotData> SlotData = new Dictionary<int, SlotData>();
 
         #region Properties
-        public RestrictionInfo NowRestrictionInfo
+
+        public ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
+
+        public RestrictionData NowRestrictionData
         {
-            get { return NowCoordinateInfo.RestrictionInfo; }
-            set { NowCoordinateInfo.RestrictionInfo = value; }
+            get => NowCoordinateInfo.RestrictionData;
+            set => NowCoordinateInfo.RestrictionData = value;
         }
 
         #region Cardinfo
+
         public bool CosplayReady
         {
-            get { return CardInfo.CosplayReady; }
-            set { CardInfo.CosplayReady = value; }
+            get => CardData.CosplayReady;
+            set => CardData.CosplayReady = value;
         }
 
         public bool[] PersonalClothingBools
         {
-            get { return CardInfo.PersonalClothingBools; }
-            set { CardInfo.PersonalClothingBools = value; }
+            get => CardData.PersonalClothingBools;
+            set => CardData.PersonalClothingBools = value;
         }
 
-        public Dictionary<string, string> ReferenceADVDirectory
+        public Dictionary<string, string> ReferenceAdvDirectory
         {
-            get { return CardInfo.AdvancedFolderDirectory; }
-            set { CardInfo.AdvancedFolderDirectory = value; }
+            get => CardData.AdvancedFolderDirectory;
+            set => CardData.AdvancedFolderDirectory = value;
         }
 
         public bool AdvancedDirectory
         {
-            get { return CardInfo.AdvancedDirectory; }
-            set { CardInfo.AdvancedDirectory = value; }
-        }
-        public string SimpleFolderDirectory
-        {
-            get { return CardInfo.SimpleFolderDirectory; }
-            set { CardInfo.SimpleFolderDirectory = value; }
+            get => CardData.AdvancedDirectory;
+            set => CardData.AdvancedDirectory = value;
         }
 
-        #endregion 
+        public string SimpleFolderDirectory
+        {
+            get => CardData.SimpleFolderDirectory;
+            set => CardData.SimpleFolderDirectory = value;
+        }
+
+        #endregion
 
         #region Coordinate
 
         public bool MakeUpKeep
         {
-            get { return NowCoordinateInfo.MakeUpKeep; }
-            set { NowCoordinateInfo.MakeUpKeep = value; }
+            get => NowCoordinateInfo.MakeUpKeep;
+            set => NowCoordinateInfo.MakeUpKeep = value;
         }
 
         public bool[] CoordinateSaveBools
         {
-            get { return NowCoordinateInfo.CoordinateSaveBools; }
-            set { NowCoordinateInfo.CoordinateSaveBools = value; }
+            get => NowCoordinateInfo.CoordinateSaveBools;
+            set => NowCoordinateInfo.CoordinateSaveBools = value;
         }
 
         /// <summary>
-        /// Pull correct Not data, since ClothingUnlocker will modify the normal output
+        ///     Pull correct Not data, since ClothingUnlocker will modify the normal output
         /// </summary>
         public bool[] ClothNotData
         {
-            get { return NowCoordinateInfo.ClothNotData; }
-            set { NowCoordinateInfo.ClothNotData = value; }
+            get => NowCoordinateInfo.ClothNotData;
+            set => NowCoordinateInfo.ClothNotData = value;
         }
 
         public List<string> CreatorNames
         {
-            get { return NowCoordinateInfo.CreatorNames; }
-            set { NowCoordinateInfo.CreatorNames = value; }
+            get => NowCoordinateInfo.CreatorNames;
+            set => NowCoordinateInfo.CreatorNames = value;
         }
 
         public string SetNames
         {
-            get { return NowCoordinateInfo.SetNames; }
-            set { NowCoordinateInfo.SetNames = value; }
+            get => NowCoordinateInfo.SetNames;
+            set => NowCoordinateInfo.SetNames = value;
         }
 
         public string SubSetNames
         {
-            get { return NowCoordinateInfo.SubSetNames; }
-            set { NowCoordinateInfo.SubSetNames = value; }
+            get => NowCoordinateInfo.SubSetNames;
+            set => NowCoordinateInfo.SubSetNames = value;
         }
+
         #endregion
 
         #region Restriction
 
         public int CoordinateType
         {
-            get { return NowRestrictionInfo.CoordinateType; }
-            set { NowRestrictionInfo.CoordinateType = value; }
+            get => NowRestrictionData.CoordinateType;
+            set => NowRestrictionData.CoordinateType = value;
         }
 
         public int CoordinateSubType
         {
-            get { return NowRestrictionInfo.CoordinateSubType; }
-            set { NowRestrictionInfo.CoordinateSubType = value; }
+            get => NowRestrictionData.CoordinateSubType;
+            set => NowRestrictionData.CoordinateSubType = value;
         }
 
-        public Dictionary<int, int> PersonalityType_Restriction
+        public Dictionary<int, int> PersonalityTypeRestriction
         {
-            get { return NowRestrictionInfo.PersonalityType_Restriction; }
-            set { NowRestrictionInfo.PersonalityType_Restriction = value; }
+            get => NowRestrictionData.PersonalityType_Restriction;
+            set => NowRestrictionData.PersonalityType_Restriction = value;
         }
 
-        public Dictionary<int, int> TraitType_Restriction
+        public Dictionary<int, int> TraitTypeRestriction
         {
-            get { return NowRestrictionInfo.TraitType_Restriction; }
-            set { NowRestrictionInfo.TraitType_Restriction = value; }
+            get => NowRestrictionData.TraitType_Restriction;
+            set => NowRestrictionData.TraitType_Restriction = value;
         }
 
-        public Dictionary<int, int> Interest_Restriction
+        public Dictionary<int, int> InterestRestriction
         {
-            get { return NowRestrictionInfo.Interest_Restriction; }
-            set { NowRestrictionInfo.Interest_Restriction = value; }
+            get => NowRestrictionData.Interest_Restriction;
+            set => NowRestrictionData.Interest_Restriction = value;
         }
 
-        public bool[] Height_Restriction
+        public bool[] HeightRestriction
         {
-            get { return NowRestrictionInfo.Height_Restriction; }
-            set { NowRestrictionInfo.Height_Restriction = value; }
+            get => NowRestrictionData.Height_Restriction;
+            set => NowRestrictionData.Height_Restriction = value;
         }
 
-        public bool[] Breastsize_Restriction
+        public bool[] BreastsizeRestriction
         {
-            get { return NowRestrictionInfo.Breastsize_Restriction; }
-            set { NowRestrictionInfo.Breastsize_Restriction = value; }
+            get => NowRestrictionData.BreastSize_Restriction;
+            set => NowRestrictionData.BreastSize_Restriction = value;
         }
 
-        public int HstateType_Restriction
+        public int HstateTypeRestriction
         {
-            get { return NowRestrictionInfo.HstateType_Restriction; }
-            set { NowRestrictionInfo.HstateType_Restriction = value; }
+            get => NowRestrictionData.HStateType_Restriction;
+            set => NowRestrictionData.HStateType_Restriction = value;
         }
 
-        public int ClubType_Restriction
+        public int ClubTypeRestriction
         {
-            get { return NowRestrictionInfo.ClubType_Restriction; }
-            set { NowRestrictionInfo.ClubType_Restriction = value; }
+            get => NowRestrictionData.ClubType_Restriction;
+            set => NowRestrictionData.ClubType_Restriction = value;
         }
 
         public int GenderType
         {
-            get { return NowRestrictionInfo.GenderType; }
-            set { NowRestrictionInfo.GenderType = value; }
+            get => NowRestrictionData.GenderType;
+            set => NowRestrictionData.GenderType = value;
         }
+
         #endregion
 
-        private SlotInfo SelectedSlotInfo
+        private SlotData SelectedSlotInfo
         {
             get
             {
-                var slot = KKAPI.Maker.AccessoriesApi.SelectedMakerAccSlot;
+                var slot = AccessoriesApi.SelectedMakerAccSlot;
                 if (slot < 0 || slot >= Parts.Length)
                 {
                     return null;
                 }
-                SlotInfo.TryGetValue(slot, out var result);
+
+                SlotData.TryGetValue(slot, out var result);
                 return result;
             }
             set
             {
-                var slot = KKAPI.Maker.AccessoriesApi.SelectedMakerAccSlot;
+                var slot = AccessoriesApi.SelectedMakerAccSlot;
                 if (slot < 0 || slot >= Parts.Length)
                 {
                     return;
                 }
+
                 if (value == null)
                 {
-                    SlotInfo.Remove(slot);
+                    SlotData.Remove(slot);
                     return;
                 }
-                SlotInfo[slot] = value;
+
+                SlotData[slot] = value;
             }
         }
+
         #endregion
 
         #region Save or Load Data
+
         private void SaveSlot()
         {
-            var slot = KKAPI.Maker.AccessoriesApi.SelectedMakerAccSlot;
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
             if (slot < 0 || slot >= Parts.Length)
             {
                 return;
             }
+
             SaveSlot(slot);
         }
-        private void SaveSlot(int slot)
+
+        internal void SaveSlot(int slot)
         {
-            if (!SlotInfo.TryGetValue(slot, out var slotInfo))
+            if (!SlotData.TryGetValue(slot, out var slotData))
             {
                 Parts[slot].SetExtendedDataById(Settings.GUID, null);
                 return;
             }
-            Parts[slot].SetExtendedDataById(Settings.GUID, slotInfo.Serialize());
+
+            Parts[slot].SetExtendedDataById(Settings.GUID, slotData.Serialize());
         }
-        private void LoadSlot(int slot)
+
+        internal void LoadSlot(int slot)
         {
             if (slot >= Parts.Length)
             {
-                SlotInfo.Remove(slot);
+                SlotData.Remove(slot);
                 return;
             }
 
             if (Parts[slot].TryGetExtendedDataById(Settings.GUID, out var pluginData))
             {
-                var slotinfo = Migrator.SlotInfoMigrate(pluginData);
-                if (slotinfo != null)
+                var slotData = Migrator.SlotInfoMigrate(pluginData);
+                if (slotData != null)
                 {
-                    SlotInfo[slot] = slotinfo;
+                    SlotData[slot] = slotData;
                     return;
                 }
             }
-            SlotInfo.Remove(slot);
+
+            SlotData.Remove(slot);
         }
 
-        private void SaveCoordinate() => ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, NowCoordinateInfo.Serialize(Creatorname));
+        private void SaveCoordinate()
+        {
+            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID,
+                NowCoordinateInfo.Serialize(CreatorName));
+        }
+
         private void LoadCoordinate()
         {
             if (ChaControl.nowCoordinate.accessory.TryGetExtendedDataById(Settings.GUID, out var pluginData))
             {
-                var newinfo = Migrator.CoordinateInfoMigrate(pluginData);
-                if (newinfo != null)
+                var newInfo = Migrator.CoordinateInfoMigrate(pluginData);
+                if (newInfo != null)
                 {
-                    NowCoordinateInfo = newinfo;
+                    NowCoordinateInfo = newInfo;
                     return;
                 }
             }
+
             NowCoordinateInfo.Clear();
         }
 
-        private void SaveCard() => ChaControl.fileParam.SetExtendedDataById(Settings.GUID, CardInfo.Serialize());
+        private void SaveCard()
+        {
+            ChaControl.fileParam.SetExtendedDataById(Settings.GUID, CardData.Serialize());
+        }
+
         private void LoadCard()
         {
             if (ChaControl.fileParam.TryGetExtendedDataById(Settings.GUID, out var plugin))
@@ -247,12 +276,14 @@ namespace Additional_Card_Info
                 var card = Migrator.CardInfoMigrate(plugin);
                 if (card != null)
                 {
-                    CardInfo = card;
+                    CardData = card;
                     return;
                 }
             }
-            CardInfo.Clear();
+
+            CardData.Clear();
         }
+
         #endregion
     }
 }

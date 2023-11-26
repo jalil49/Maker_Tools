@@ -1,40 +1,42 @@
-﻿using KKAPI.Maker;
-using KKAPI.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using UniRx;
+using KKAPI.Maker;
+using KKAPI.Utilities;
 using UnityEngine;
 
 namespace CardUpdateTool
 {
     public partial class CardUpdateTool
     {
-        static private Vector2 StateScrolling = new Vector2();
-        static private Vector2 PathScrolling = new Vector2();
-        static private bool mouseassigned = false;
-        static Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
+        private static Vector2 StateScrolling;
+        private static Vector2 PathScrolling;
+        private static bool mouseassigned;
 
-        static string CharacterPath = new System.IO.DirectoryInfo(UserData.Path).FullName + "chara";
-        static string CoordinatePath = new System.IO.DirectoryInfo(UserData.Path).FullName + "coordinate";
-        static bool UpdateCoordinates = false;
-        static int Tabvalue;
-        static readonly string[] Tabnames = new string[] { "Coordinates", "Characters" };
+        private static Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f),
+            (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
 
-        static int InProgressCount = 0;
-        static int ProgressTotal = 0;
+        private static string CharacterPath = new DirectoryInfo(UserData.Path).FullName + "chara";
+        private static string CoordinatePath = new DirectoryInfo(UserData.Path).FullName + "coordinate";
+        private static bool UpdateCoordinates;
+        private static int Tabvalue;
+        private static readonly string[] Tabnames = { "Coordinates", "Characters" };
 
-        static bool ShowForce = false;
-        static bool ShowFullyupdated = false;
+        private static int InProgressCount;
+        private static int ProgressTotal;
 
-        static bool ForceStop = false;
-        static bool Pause = false;
-        static bool Waiting = false;
+        private static bool ShowForce;
+        private static bool ShowFullyupdated;
 
-        static GUIStyle labelstyle;
-        static GUIStyle buttonstyle;
-        static GUIStyle fieldstyle;
-        static GUIStyle togglestyle;
+        private static bool ForceStop;
+        private static bool Pause;
+        private static bool Waiting;
+
+        private static GUIStyle labelstyle;
+        private static GUIStyle buttonstyle;
+        private static GUIStyle fieldstyle;
+        private static GUIStyle togglestyle;
 
         internal void OnGUI()
         {
@@ -59,7 +61,7 @@ namespace CardUpdateTool
             }
 
             IMGUIUtils.DrawSolidBox(screenRect);
-            screenRect = GUILayout.Window(2903, screenRect, CustomGui, $"Card Update Tool GUI");
+            screenRect = GUILayout.Window(2903, screenRect, CustomGui, "Card Update Tool GUI");
         }
 
         private void CustomGui(int id)
@@ -75,9 +77,8 @@ namespace CardUpdateTool
                     case 1:
                         DrawCharacterWindow();
                         break;
-                    default:
-                        break;
                 }
+
                 GUILayout.Label(GUI.tooltip, labelstyle, GUILayout.ExpandHeight(false));
             }
             GUILayout.EndVertical();
@@ -95,13 +96,20 @@ namespace CardUpdateTool
                 Label($"In Progress {InProgressCount}/{ProgressTotal}");
 
                 if (MigrateCount > 0)
+                {
                     Label($"# Of outfits with Migrated mods {MigrateCount}");
+                }
 
                 if (OutDatedcount > 0)
+                {
                     Label($"# Of outfits with Outdated mods {OutDatedcount}");
+                }
 
                 if (Missingcount > 0)
+                {
                     Label($"# Of outfits with Missing mods {Missingcount}");
+                }
+
                 return;
             }
 
@@ -121,6 +129,7 @@ namespace CardUpdateTool
                 {
                     OutfitCardCheck(CoordinatePath);
                 }
+
                 Label($"Card Count {OutfitList.Count}");
             }
             GUILayout.EndHorizontal();
@@ -157,6 +166,7 @@ namespace CardUpdateTool
                                 MoveToNewDirectory(CoordinatePath, card, "/OutdatedMods/", ref csv);
                                 OutfitList.Remove(card);
                             }
+
                             UpdateOutmiss();
                             WriteCSV(CoordinatePath, csv);
                         }
@@ -167,8 +177,6 @@ namespace CardUpdateTool
                         var cardlist = OutfitList.Where(x => x.OutdatedMods).ToList();
                         StartCoroutine(OutfitCardsUpdate(cardlist));
                     }
-
-
                 }
                 GUILayout.EndHorizontal();
             }
@@ -190,14 +198,17 @@ namespace CardUpdateTool
                                 MoveToNewDirectory(CoordinatePath, card, "/MissingMods/", ref csv);
                                 OutfitList.Remove(card);
                             }
+
                             WriteCSV(CoordinatePath, csv);
                             UpdateOutmiss();
                         }
                     }
 
-                    if (ShowForce && Button("Force Update", "Force update, if a sideloader toggle is enabled missing content will be lost"))
+                    if (ShowForce && Button("Force Update",
+                        "Force update, if a sideloader toggle is enabled missing content will be lost"))
                     {
-                        var cardlist = OutfitList.Where(x => x.MigratedMods || x.OutdatedMods || x.MissingMods).ToList();
+                        var cardlist = OutfitList.Where(x => x.MigratedMods || x.OutdatedMods || x.MissingMods)
+                            .ToList();
                         StartCoroutine(OutfitCardsUpdate(cardlist));
                     }
                 }
@@ -218,13 +229,20 @@ namespace CardUpdateTool
                 Label($"In Progress {InProgressCount}/{ProgressTotal}");
 
                 if (MigrateCount > 0)
+                {
                     Label($"# Of Characters with Migrated mods {MigrateCount}");
+                }
 
                 if (OutDatedcount > 0)
+                {
                     Label($"# Of Characters with Outdated mods {OutDatedcount}");
+                }
 
                 if (Missingcount > 0)
+                {
                     Label($"# Of Characters with Missing mods {Missingcount}");
+                }
+
                 return;
             }
 
@@ -244,6 +262,7 @@ namespace CardUpdateTool
                 {
                     CharacterCardCheck(CharacterPath);
                 }
+
                 Label($"Card Count {CharacterList.Count}");
             }
             GUILayout.EndHorizontal();
@@ -281,12 +300,14 @@ namespace CardUpdateTool
                                 MoveToNewDirectory(CharacterPath, card, "/OutdatedMods/", ref csv);
                                 CharacterList.Remove(card);
                             }
+
                             WriteCSV(CharacterPath, csv);
                             UpdateOutmiss();
                         }
                     }
 
-                    if (ShowForce && OutDatedcount > 0 && Button("Force Update", "Force update, missing content will be lost"))
+                    if (ShowForce && OutDatedcount > 0 &&
+                        Button("Force Update", "Force update, missing content will be lost"))
                     {
                         var cardlist = CharacterList.Where(x => x.OutdatedMods).ToList();
 
@@ -313,12 +334,15 @@ namespace CardUpdateTool
                                 MoveToNewDirectory(CharacterPath, card, "/MissingMods/", ref csv);
                                 CharacterList.Remove(card);
                             }
+
                             WriteCSV(CharacterPath, csv);
                         }
+
                         UpdateOutmiss();
                     }
 
-                    if (ShowForce && Missingcount > 0 && Button("Force Update", "Force update, if a sideloader toggle is enabled missing content will be lost"))
+                    if (ShowForce && Missingcount > 0 && Button("Force Update",
+                        "Force update, if a sideloader toggle is enabled missing content will be lost"))
                     {
                         var cardlist = CharacterList.Where(x => x.OutdatedMods || x.MissingMods).ToList();
                         StartCoroutine(CharactersCardsUpdate(cardlist, UpdateCoordinates));
@@ -334,7 +358,7 @@ namespace CardUpdateTool
         {
             GUILayout.BeginHorizontal();
             {
-                Label($"Updateable GUIDS");
+                Label("Updateable GUIDS");
                 ShowFullyupdated = Toggle(ShowFullyupdated, "Show Fully Updated");
             }
             GUILayout.EndHorizontal();
@@ -349,20 +373,26 @@ namespace CardUpdateTool
                 foreach (var guid in CharacterData.PrintOrder)
                 {
                     var versionData = maxversions[guid];
-                    if (!versionData.CharaVisible || !ShowFullyupdated && !ShowForce && !versionData.AnyCharaOutdated)
+                    if (!versionData.CharaVisible || (!ShowFullyupdated && !ShowForce && !versionData.AnyCharaOutdated))
                     {
                         continue;
                     }
+
                     GUILayout.BeginHorizontal();
                     {
-                        Label($"{versionData.Name}: Ver.{versionData.version} #{versionData.CharaUpToDate + versionData.CharaOutdatedCount}", true);
+                        Label(
+                            $"{versionData.Name}: Ver.{versionData.version} #{versionData.CharaUpToDate + versionData.CharaOutdatedCount}",
+                            true);
 
-                        if (versionData.AnyCharaOutdated && Button($"Update #{versionData.CharaOutdatedCount}", "These cards have an outdated version, note if after updating the number remains the same you might have an outdated plugin installed"))
+                        if (versionData.AnyCharaOutdated && Button($"Update #{versionData.CharaOutdatedCount}",
+                            "These cards have an outdated version, note if after updating the number remains the same you might have an outdated plugin installed"))
                         {
                             var cardlist = CharacterList.Where(x => UpdateByGuid(x, guid, false)).ToList();
                             StartCoroutine(CharactersCardsUpdate(cardlist, UpdateCoordinates));
                         }
-                        if (ShowForce && Button($"Update Missing #{CharacterList.Count - versionData.CharaUpToDate}", $"Update all cards that lack {versionData.Name} data"))
+
+                        if (ShowForce && Button($"Update Missing #{CharacterList.Count - versionData.CharaUpToDate}",
+                            $"Update all cards that lack {versionData.Name} data"))
                         {
                             var cardlist = CharacterList.Where(x => UpdateByGuid(x, guid, true)).ToList();
                             StartCoroutine(CharactersCardsUpdate(cardlist, UpdateCoordinates));
@@ -383,20 +413,27 @@ namespace CardUpdateTool
                 foreach (var guid in OutfitData.PrintOrder)
                 {
                     var versionData = maxversions[guid];
-                    if (!versionData.OutfitVisible || !ShowFullyupdated && !ShowForce && !versionData.AnyOutfitOutdated)
+                    if (!versionData.OutfitVisible ||
+                        (!ShowFullyupdated && !ShowForce && !versionData.AnyOutfitOutdated))
                     {
                         continue;
                     }
+
                     GUILayout.BeginHorizontal();
                     {
-                        Label($"{versionData.Name}: Ver.{versionData.version} #{versionData.OutfitsUpToDate + versionData.OutfitOutdatedCount}", true);
+                        Label(
+                            $"{versionData.Name}: Ver.{versionData.version} #{versionData.OutfitsUpToDate + versionData.OutfitOutdatedCount}",
+                            true);
 
-                        if (versionData.AnyOutfitOutdated && Button($"Update #{versionData.OutfitOutdatedCount}", "These cards have an outdated version, note if after updating the number remains the same you might have an outdated plugin installed"))
+                        if (versionData.AnyOutfitOutdated && Button($"Update #{versionData.OutfitOutdatedCount}",
+                            "These cards have an outdated version, note if after updating the number remains the same you might have an outdated plugin installed"))
                         {
                             var cardlist = OutfitList.Where(x => UpdateByGuid(x, guid, false)).ToList();
                             StartCoroutine(OutfitCardsUpdate(cardlist));
                         }
-                        if (ShowForce && Button($"Update Missing #{OutfitList.Count - versionData.OutfitsUpToDate}", $"Update all cards that lack {versionData.Name} data"))
+
+                        if (ShowForce && Button($"Update Missing #{OutfitList.Count - versionData.OutfitsUpToDate}",
+                            $"Update all cards that lack {versionData.Name} data"))
                         {
                             var cardlist = OutfitList.Where(x => UpdateByGuid(x, guid, true)).ToList();
                             StartCoroutine(OutfitCardsUpdate(cardlist));
@@ -432,7 +469,8 @@ namespace CardUpdateTool
                 ShowForce = Toggle(ShowForce, "Show Force", "Show extra update options");
                 if (Tabvalue == 1 && !UpdateInProgress)
                 {
-                    UpdateCoordinates = Toggle(UpdateCoordinates, "Coordinates", "Run through each coordinate after loading");
+                    UpdateCoordinates = Toggle(UpdateCoordinates, "Coordinates",
+                        "Run through each coordinate after loading");
                 }
 
 
@@ -460,25 +498,20 @@ namespace CardUpdateTool
             }
         }
 
-        private static bool Toggle(bool toggle, string text, string tooltip = "", bool expandwidth = false)
-        {
-            return GUILayout.Toggle(toggle, new GUIContent(text, tooltip), togglestyle, GUILayout.ExpandWidth(expandwidth));
-        }
+        private static bool Toggle(bool toggleValue, string text, string tooltip = "", bool expandwidth = false) =>
+            GUILayout.Toggle(toggleValue, new GUIContent(text, tooltip), togglestyle,
+                GUILayout.ExpandWidth(expandwidth));
 
-        private static bool Button(string text, string tooltip = "", bool expandwidth = false)
-        {
-            return GUILayout.Button(new GUIContent(text, tooltip), buttonstyle, GUILayout.ExpandWidth(expandwidth));
-        }
+        private static bool Button(string text, string tooltip = "", bool expandwidth = false) =>
+            GUILayout.Button(new GUIContent(text, tooltip), buttonstyle, GUILayout.ExpandWidth(expandwidth));
 
         private static void Label(string text, bool expandwidth = false)
         {
             GUILayout.Label(text, labelstyle, GUILayout.ExpandWidth(expandwidth));
         }
 
-        private static string Field(string text, bool expandwidth = false)
-        {
-            return GUILayout.TextField(text, fieldstyle, GUILayout.ExpandWidth(expandwidth));
-        }
+        private static string Field(string text, bool expandwidth = false) =>
+            GUILayout.TextField(text, fieldstyle, GUILayout.ExpandWidth(expandwidth));
 
         private IEnumerator<int> DragEvent()
         {
@@ -491,6 +524,7 @@ namespace CardUpdateTool
                 mousebuttonup = Input.GetMouseButtonUp(0);
                 yield return 0;
             }
+
             while (!mousebuttonup)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
@@ -498,6 +532,7 @@ namespace CardUpdateTool
                 mousepos = pos;
                 yield return 0;
             }
+
             yield return 0;
             mouseassigned = false;
         }
@@ -508,6 +543,7 @@ namespace CardUpdateTool
             {
                 SetFontSize(Math.Max(labelstyle.fontSize - 1, 5));
             }
+
             if (Button("GUI+", "Increase GUI Size"))
             {
                 SetFontSize(1 + labelstyle.fontSize);

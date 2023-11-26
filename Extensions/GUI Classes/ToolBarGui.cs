@@ -6,28 +6,33 @@ namespace Extensions.GUI_Classes
 {
     public class ToolbarGUI
     {
-        public int Value = 0;
-        public GUIContent[] Text;
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
-        public Action<int, int> OnValueChange;
-        public ToolbarGUI(int defaultValue, GUIContent[] _text, params GUILayoutOption[] options)
+        private readonly GUILayoutOption[] _layoutOptions;
+        private readonly Action<int, int> _onValueChange;
+        private readonly GUIStyle _style;
+        private readonly GUIContent[] _text;
+
+        public ToolbarGUI(int defaultValue, GUIContent[] text, Action<int, int> onValueChange = null,
+                          params GUILayoutOption[] options)
         {
             Value = defaultValue;
-            Text = _text;
-            style = ButtonStyle;
-            layoutOptions = options;
+            _text = text;
+            _onValueChange = onValueChange;
+            _style = ButtonStyle;
+            _layoutOptions = options;
         }
+
+        public int Value { get; private set; }
 
         public void Draw()
         {
-            var newValue = GUILayout.Toolbar(Value, Text, style, layoutOptions);
-            if(newValue != Value)//xor operator
+            var newValue = GUILayout.Toolbar(Value, _text, _style, _layoutOptions);
+            if (newValue == Value)
             {
-                if(OnValueChange != null)
-                    OnValueChange.Invoke(Value, newValue);
-                Value = newValue;
+                return;
             }
+
+            _onValueChange?.Invoke(Value, newValue);
+            Value = newValue;
         }
     }
 }

@@ -6,52 +6,54 @@ namespace Extensions.GUI_Classes
 {
     public class TextFieldGUI
     {
-        public GUIContent GUIContent;
+        private readonly GUILayoutOption[] _layoutOptions;
+        private readonly Action<string, string> _onValueChange;
+        private readonly GUIStyle _style;
+        public readonly GUIContent GUIContent;
+        private string _newText;
         public string ButtonText = "Rename";
-        private string newText;
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
-        public Action<string, string> OnValueChange;
-        public TextFieldGUI(GUIContent _text, params GUILayoutOption[] gUILayoutOptions)
+
+        public TextFieldGUI(GUIContent text, Action<string, string> onValueChange,
+                            params GUILayoutOption[] gUILayoutOptions)
         {
-            style = TextFieldStyle;
-            GUIContent = _text;
-            layoutOptions = gUILayoutOptions;
-            newText = _text.text;
+            _style = TextFieldStyle;
+            GUIContent = text;
+            _onValueChange = onValueChange;
+            _layoutOptions = gUILayoutOptions;
+            _newText = text.text;
         }
 
         public void ActiveDraw()
         {
-            var newText = GUILayout.TextField(GUIContent.text, style, layoutOptions);
-            if(newText != GUIContent.text)
+            var textField = GUILayout.TextField(GUIContent.text, _style, _layoutOptions);
+            if (textField == GUIContent.text)
             {
-                if(OnValueChange != null)
-                {
-                    OnValueChange.Invoke(GUIContent.text, newText);
-                }
-
-                GUIContent.text = newText;
+                return;
             }
+
+            _onValueChange?.Invoke(GUIContent.text, textField);
+
+            GUIContent.text = textField;
         }
 
         public void ConfirmDraw()
         {
-            newText = GUILayout.TextField(newText, style, layoutOptions);
+            _newText = GUILayout.TextField(_newText, _style, _layoutOptions);
 
-            if(newText != GUIContent.text && Button(ButtonText, expandwidth: false))
+            if (_newText != GUIContent.text && Button(ButtonText, expandwidth: false))
             {
-                if(OnValueChange != null)
+                if (_onValueChange != null)
                 {
-                    OnValueChange.Invoke(GUIContent.text, newText);
+                    _onValueChange.Invoke(GUIContent.text, _newText);
                 }
 
-                GUIContent.text = newText;
+                GUIContent.text = _newText;
             }
         }
 
         internal void ManuallySetNewText(string text)
         {
-            newText = text;
+            _newText = text;
         }
     }
 }

@@ -1,10 +1,6 @@
-﻿using ExtensibleSaveFormat;
+﻿using Additional_Card_Info.Classes.Migration;
 using KKAPI;
 using KKAPI.Chara;
-using KKAPI.Maker;
-using MessagePack;
-using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 
 namespace Additional_Card_Info
@@ -13,26 +9,21 @@ namespace Additional_Card_Info
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            var ACI_Data = GetExtendedData();
+            var aciData = GetExtendedData();
 
-            if (ACI_Data != null)
+            if (aciData != null)
             {
-                if (ACI_Data.version <= Constants.MasterSaveVersion)
+                if (aciData.version <= Constants.MasterSaveVersion)
                 {
-                    CardInfo = Migrator.StandardCharaMigrate(ChaControl, ACI_Data);
+                    CardData = Migrator.StandardCharaMigrate(ChaControl, aciData);
                 }
                 else
                 {
-                    CardInfo.Clear();
+                    CardData.Clear();
                 }
             }
 
-            CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
-            {
-                UpdatePluginData();
-
-                UpdateSlots();
-            });
+            CurrentCoordinate.Subscribe(delegate { UpdatePluginData(); });
 
             LoadCard();
             UpdatePluginData();
@@ -40,29 +31,30 @@ namespace Additional_Card_Info
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            SetExtendedData(CardInfo.Serialize());
+            SetExtendedData(CardData.Serialize());
         }
 
-        protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate) => UpdateClothingNots();
+        protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate) { }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
             NowCoordinateInfo.Clear();
-            var ACI_Data = GetCoordinateExtendedData(coordinate);
-            if (ACI_Data != null)
+            var aciData = GetCoordinateExtendedData(coordinate);
+            if (aciData != null)
             {
-                Migrator.StandardCoordinateMigrate(coordinate, ACI_Data);
+                Migrator.StandardCoordinateMigrate(coordinate, aciData);
             }
         }
 
-        private void UpdatePluginData()
+        internal void UpdatePluginData()
         {
             LoadCoordinate();
-            SlotInfo.Clear();
+            SlotData.Clear();
             for (var i = 0; i < Parts.Length; i++)
             {
                 LoadSlot(i);
             }
+
             UpdateSlots();
         }
     }

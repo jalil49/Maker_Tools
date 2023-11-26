@@ -30,14 +30,13 @@ namespace Additional_Card_Info
         private static bool TryfindPluginInstance(string pluginName)
         {
             return BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out _);
-            ;
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
 #if States
-            Maker.SlotAccTypeChange(slotNo, type);
+            MakerGUI.SlotAccTypeChange(slotNo, type);
 #else
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
 #endif
@@ -57,7 +56,7 @@ namespace Additional_Card_Info
             public static void Hook_ChangeClothType(int index)
             {
                 if(index < 4)
-                    Maker.ClothingTypeChange();
+                    MakerGUI.ClothingTypeChange();
             }
 #endif
         }
@@ -70,7 +69,7 @@ namespace Additional_Card_Info
             internal static void MovPatch(List<QueueItem> Queue)
             {
 #if States
-                Maker.MovIt(Queue);
+                MakerGUI.MovIt(Queue);
 #else
                 KKAPI.Maker.MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
 #endif

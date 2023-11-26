@@ -1,9 +1,7 @@
-﻿using Extensions;
-using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+using ExtensibleSaveFormat;
+using MessagePack;
 
 namespace Accessory_Parents
 {
@@ -13,17 +11,13 @@ namespace Accessory_Parents
     {
         public string CoordinateCheck;
 
-        public string Name { get; set; }
-
-        public int ParentSlot { get; set; } = -1;
-
         public List<int> ChildSlots;
 
         public Custom_Name(string _name, int _slot, List<int> _childslots)
         {
             Name = _name;
             ParentSlot = _slot;
-            ChildSlots = _childslots.ToNewList();
+            ChildSlots = _childslots ?? new List<int>();
             NullCheck();
         }
 
@@ -34,25 +28,46 @@ namespace Accessory_Parents
             NullCheck();
         }
 
-        public Custom_Name(string _name)
+        public Custom_Name(string name)
         {
-            Name = _name;
+            Name = name;
             NullCheck();
         }
+
+        public string Name { get; set; }
+
+        public int ParentSlot { get; set; } = -1;
+
         private void NullCheck()
         {
-            if (Name == null) Name = "";
-            if (ChildSlots == null) ChildSlots = new List<int>();
-            if (CoordinateCheck.IsNullOrEmpty()) CoordinateCheck = "";
+            if (Name == null)
+            {
+                Name = string.Empty;
+            }
+
+            if (ChildSlots == null)
+            {
+                ChildSlots = new List<int>();
+            }
+
+            if (CoordinateCheck.IsNullOrEmpty())
+            {
+                CoordinateCheck = string.Empty;
+            }
         }
 
-        public ExtensibleSaveFormat.PluginData Serialize()
+        public PluginData Serialize()
         {
             if (ParentSlot < 0 || ChildSlots.Count == 0)
             {
                 return null;
             }
-            return new ExtensibleSaveFormat.PluginData() { version = 2, data = new Dictionary<string, object>() { ["AccessoryData"] = MessagePackSerializer.Serialize(this) } };
+
+            return new PluginData
+            {
+                version = 2,
+                data = new Dictionary<string, object> { ["AccessoryData"] = MessagePackSerializer.Serialize(this) }
+            };
         }
     }
 }

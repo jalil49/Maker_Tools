@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using static KKAPI.Utilities.IMGUIUtils;
 
 namespace Extensions
@@ -17,11 +18,11 @@ namespace Extensions
         public static GUIStyle WindowStyle { get; set; }
 
         /// <summary>
-        /// Initialize all files and set a default font size
+        ///     Initialize all files and set a default font size
         /// </summary>
         public static void InitializeStyles()
         {
-            if(LabelStyle == null)
+            if (LabelStyle == null)
             {
                 LabelStyle = new GUIStyle(SolidBackgroundGuiSkin.label)
                 {
@@ -42,7 +43,7 @@ namespace Extensions
         }
 
         /// <summary>
-        /// Creates a toggle with default style
+        ///     Creates a toggle with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
         public static bool Toggle(bool value, string text, string tooltip, bool expandwidth = true)
@@ -50,7 +51,7 @@ namespace Extensions
             GUILayout.BeginHorizontal();
             {
                 var buttonText = value ? "Enabled: " : "Disabled: ";
-                if(Button(buttonText + text, tooltip, expandwidth: expandwidth))
+                if (Button(buttonText + text, tooltip, expandwidth))
                 {
                     value = !value;
                 }
@@ -61,53 +62,47 @@ namespace Extensions
         }
 
         /// <summary>
-        /// Creates a Button with default style
+        ///     Creates a Button with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
-        public static bool Button(string text, string tooltip = " ", bool expandwidth = true)
+        public static bool Button(string text, string tooltip = " ", bool expandwidth = true) =>
+            GUILayout.Button(new GUIContent(text, tooltip), ButtonStyle, GUILayout.ExpandWidth(expandwidth));
+
+        /// <summary>
+        ///     Creates a TextField with default style
+        /// </summary>
+        /// <returns>value of GUI element</returns>
+        public static string TextField(string text, bool expandwidth = true) => GUILayout.TextField(text,
+            TextFieldStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(10));
+
+        /// <summary>
+        ///     Creates a HorizontalSlider with default style
+        /// </summary>
+        /// <returns>value of GUI element</returns>
+        public static int
+            HorizontalSlider(int value, int start, int stop, bool expandWidth = true, int minWidth = 100) =>
+            Mathf.RoundToInt(GUILayout.HorizontalSlider(value, start, stop, SliderStyle, SliderThumbStyle,
+                GUILayout.ExpandWidth(expandWidth), GUILayout.MinWidth(minWidth)));
+
+        /// <summary>
+        ///     Creates a HorizontalSlider with default style
+        /// </summary>
+        /// <returns>value of GUI element</returns>
+        public static float HorizontalSlider(float value, float start, float stop, bool expandWidth = true,
+                                             int minWidth = 100) => GUILayout.HorizontalSlider(value, start, stop,
+            SliderStyle, SliderThumbStyle, GUILayout.ExpandWidth(expandWidth), GUILayout.MinWidth(minWidth));
+
+        /// <summary>
+        ///     Creates a Label with default style
+        /// </summary>
+        /// <returns>value of GUI element</returns>
+        public static void Label(string text, string tooltip = "", bool expandWidth = true)
         {
-            return GUILayout.Button(new GUIContent(text, tooltip), ButtonStyle, GUILayout.ExpandWidth(expandwidth));
+            GUILayout.Label(new GUIContent(text, tooltip), LabelStyle, GUILayout.ExpandWidth(expandWidth));
         }
 
         /// <summary>
-        /// Creates a TextField with default style
-        /// </summary>
-        /// <returns>value of GUI element</returns>
-        public static string TextField(string text, bool expandwidth = true)
-        {
-            return GUILayout.TextField(text, TextFieldStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(10));
-        }
-
-        /// <summary>
-        /// Creates a HorizontalSlider with default style
-        /// </summary>
-        /// <returns>value of GUI element</returns>
-        public static int HorizontalSlider(int value, int start, int stop, bool expandwidth = true, int minWidth = 100)
-        {
-            return Mathf.RoundToInt(GUILayout.HorizontalSlider(value, start, stop, SliderStyle, SliderThumbStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(minWidth)));
-        }
-
-        /// <summary>
-        /// Creates a HorizontalSlider with default style
-        /// </summary>
-        /// <returns>value of GUI element</returns>
-        public static float HorizontalSlider(float value, float start, float stop, bool expandwidth = true, int minWidth = 100)
-        {
-            return GUILayout.HorizontalSlider(value, start, stop, SliderStyle, SliderThumbStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(minWidth));
-        }
-
-        /// <summary>
-        /// Creates a Label with default style
-        /// </summary>
-        /// <returns>value of GUI element</returns>
-        /// 
-        public static void Label(string text, string tooltip = "", bool expandwidth = true)
-        {
-            GUILayout.Label(new GUIContent(text, tooltip), LabelStyle, GUILayout.ExpandWidth(expandwidth));
-        }
-
-        /// <summary>
-        /// Sets default font size
+        ///     Sets default font size
         /// </summary>
         public static void SetFontSize(int size)
         {
@@ -125,9 +120,10 @@ namespace Extensions
         {
             SetFontSize(FontSize + 1);
         }
+
         public static void DecrementFontSize()
         {
-            SetFontSize(System.Math.Max(1, FontSize - 1));
+            SetFontSize(Math.Max(1, FontSize - 1));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Extensions;
+﻿using ExtensibleSaveFormat;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -10,99 +10,103 @@ namespace Accessory_Themes
     [MessagePackObject(true)]
     public class SlotData
     {
-        public string ThemeName { get; set; } = "";
         public bool IsRelative { get; set; }
+        public ThemeData Theme { get; set; }
 
-        public ExtensibleSaveFormat.PluginData Serialize()
+        public PluginData Serialize()
         {
-            if (ThemeName.IsNullOrEmpty())
+            if(Theme == null)
             {
                 return null;
             }
-            return new ExtensibleSaveFormat.PluginData()
+
+            return new PluginData
             {
                 version = Constants.AccessoryKeyVersion,
-                data = new Dictionary<string, object>() { [Constants.AccessoryKey] = MessagePackSerializer.Serialize(this) }
+                data = new Dictionary<string, object>
+                { [Constants.AccessoryKey] = MessagePackSerializer.Serialize(this) }
             };
         }
-        public static SlotData Deserialize(object bytearray) => MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
-    }
 
+        public static SlotData Deserialize(object bytearray)
+        {
+            return MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
+        }
+    }
 
     [Serializable]
     [MessagePackObject]
-    public class ThemeData
+    public class ThemeData : IMessagePackSerializationCallbackReceiver, IEquatable<ThemeData>
     {
-        [Key("_themename")]
+        public ThemeData(string themeName)
+        {
+            ThemeName = themeName;
+            NullCheck();
+        }
+
+        public ThemeData(string themeName, ChaFileAccessory.PartsInfo part) : this(themeName)
+        {
+            BaseColors = new Color[part.color.Length];
+            for(var i = 0; i < BaseColors.Length; i++)
+            {
+                BaseColors[i] = new Color(part.color[i].r, part.color[i].g, part.color[i].b, part.color[i].a);
+            }
+        }
+
+        public ThemeData(string themeName, Color[] baseColors) : this(themeName)
+        {
+            BaseColors = baseColors ?? new Color[4] { Color.white, Color.white, Color.white, Color.white };
+        }
+
+        public ThemeData(string themeName, Color[] baseColors, string collision) : this(themeName, baseColors)
+        {
+            Collision = collision;
+        }
+
         public string ThemeName { get; set; }
 
-        [Key("_isrelative")]
-        public bool Isrelative { get; set; }
+        public Color[] BaseColors { get; set; }
 
-        [IgnoreMember]
-        public Color[] Colors { get; set; }
+        public string Collision { get; private set; }
 
-        [Key("_slots")]
-        public List<int> ThemedSlots { get; set; }
-
-        public ThemeData(string _themename)
+        public override bool Equals(object obj)
         {
-            ThemeName = _themename;
+            return Equals(obj as ThemeData);
+        }
+
+        public bool Equals(ThemeData other)
+        {
+            return !(other is null) &&
+                   ThemeName == other.ThemeName &&
+                   EqualityComparer<Color[]>.Default.Equals(BaseColors, other.BaseColors) &&
+                   Collision == other.Collision;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1385759252;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ThemeName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Color[]>.Default.GetHashCode(BaseColors);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Collision);
+            return hashCode;
+        }
+
+        public void OnAfterDeserialize()
+        {
             NullCheck();
         }
 
-        public ThemeData(string _themename, ChaFileAccessory.PartsInfo part)
+        public void OnBeforeSerialize()
         {
-            ThemeName = _themename;
-            Colors = new Color[part.color.Length];
-            for (var i = 0; i < Colors.Length; i++)
-            {
-                Colors[i] = new Color(part.color[i].r, part.color[i].g, part.color[i].b, part.color[i].a);
-            }
-            NullCheck();
-        }
-
-        public ThemeData(ThemeData _copy, bool partial)
-        {
-            ThemeName = _copy.ThemeName;
-            Isrelative = _copy.Isrelative;
-            Colors = _copy.Colors.ToNewArray(4);
-            if (!partial) ThemedSlots = _copy.ThemedSlots.ToNewList();
-            NullCheck();
-        }
-
-        public ThemeData(string _themename, Color[] _colors)
-        {
-            ThemeName = _themename;
-            Colors = _colors.ToNewArray(4);
-            NullCheck();
-        }
-
-        public ThemeData(string _themename, bool _isrelative, Color[] _colors, List<int> _slots) => CopyData(_themename, _isrelative, _colors, _slots);
-
-        public ThemeData(ThemeData _copy) => CopyData(_copy.ThemeName, _copy.Isrelative, _copy.Colors, _copy.ThemedSlots);
-
-        public void CopyData(string _themename, bool _isrelative, Color[] _colors, List<int> _slots)
-        {
-            ThemeName = _themename;
-            Isrelative = _isrelative;
-            ThemedSlots = _slots.ToNewList();
-            Colors = _colors.ToNewArray(4);
-            NullCheck();
         }
 
         private void NullCheck()
         {
-            if (ThemeName == null) ThemeName = "";
-            if (Colors == null) Colors = new Color[4];
-            for (var i = 0; i < Colors.Length; i++)
-            {
-                if (Colors[i] == null)
-                {
-                    Colors[i] = new Color();
-                }
-            }
-            if (ThemedSlots == null) ThemedSlots = new List<int>();
+            ThemeName = ThemeName ?? string.Empty;
+
+            Collision = Collision ?? Guid.NewGuid().ToString("N");
+
+            BaseColors = BaseColors ?? new Color[4] { Color.white, Color.white, Color.white, Color.white };
         }
     }
 }

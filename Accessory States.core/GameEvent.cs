@@ -89,14 +89,14 @@ namespace Accessory_States
             ButtonList.Remove(Female);
 
             var nameDataList = controller.NameDataList;
-            var slotinfo = controller.SlotBindingData;
+            var SlotData = controller.SlotBindingData;
             var shoetype = Heroine_Ctrl.fileStatus.shoesType;
             foreach(var nameData in nameDataList)
             {
                 if(nameData.Binding < Constants.ClothingLength)
                     continue; // skip default clothing buttons.
 
-                if(slotinfo.Any(x => x.Value.BindingExists(nameData.Binding, shoetype))) //hide binding in-case its outdoor/indoor specific
+                if(SlotData.Any(x => x.Value.BindingExists(nameData.Binding, shoetype))) //hide binding in-case its outdoor/indoor specific
                 {
                     foreach(var sprite in HSprites)
                     {

@@ -1,35 +1,34 @@
-﻿using KKAPI;
-using KKAPI.Chara;
-using KKAPI.Maker;
-using KKAPI.Maker.UI;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using KKAPI;
+using KKAPI.Chara;
+using KKAPI.Maker;
+using KKAPI.Maker.UI;
 using TMPro;
-using UniRx;
 using UnityEngine;
 
 namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        static MakerDropdown Parent_DropDown;
+        private static MakerDropdown Parent_DropDown;
 
-        static MakerText ParentText;
-        static MakerText ChildText;
+        private static MakerText ParentText;
+        private static MakerText ChildText;
 
-        static MakerButton Save_Relative_Button;
+        private static MakerButton Save_Relative_Button;
 
-        static MakerButton Child_Button;
-        static MakerButton Gui_Button;
+        private static MakerButton Child_Button;
+        private static MakerButton Gui_Button;
 
-        static bool MakerEnabled = false;
+        private static bool MakerEnabled;
 
-        static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+        private static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
-        static bool Retrospect = false;
-        static bool RecursiveStop = false;
+        private static bool Retrospect;
+        private static bool RecursiveStop;
 
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
@@ -53,11 +52,13 @@ namespace Accessory_Parents
             {
                 return;
             }
+
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
         }
+
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             MakerEnabled = Settings.Enable.Value;
@@ -65,30 +66,26 @@ namespace Accessory_Parents
             {
                 return;
             }
+
             var owner = Settings.Instance;
-            var category = new MakerCategory("", "");
+            var category = new MakerCategory(string.Empty, string.Empty);
 
             ParentText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Parent", category, owner), true);
             ChildText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Child", category, owner), true);
-            var Dropdown = new MakerDropdown("Parent", new string[] { "None" }, category, 0, owner);
+            var Dropdown = new MakerDropdown("Parent", new[] { "None" }, category, 0, owner);
             Parent_DropDown = MakerAPI.AddAccessoryWindowControl(Dropdown, true);
 
             Child_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Make Child", category, owner), true);
-            Child_Button.OnClick.AddListener(delegate ()
-            {
-                GetController.MakeChild();
-            });
-            Save_Relative_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Save Position", category, owner), true);
-            Save_Relative_Button.OnClick.AddListener(delegate ()
+            Child_Button.OnClick.AddListener(delegate { GetController.MakeChild(); });
+            Save_Relative_Button =
+                MakerAPI.AddAccessoryWindowControl(new MakerButton("Save Position", category, owner), true);
+            Save_Relative_Button.OnClick.AddListener(delegate
             {
                 GetController.Save_Relative_Data(AccessoriesApi.SelectedMakerAccSlot);
             });
 
             Gui_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Parent GUI", category, owner), true);
-            Gui_Button.OnClick.AddListener(delegate ()
-            {
-                GUI_Toggle();
-            });
+            Gui_Button.OnClick.AddListener(delegate { GUI_Toggle(); });
 
             var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
             Parent_DropDown.GroupingID = GroupingID;
@@ -128,7 +125,8 @@ namespace Accessory_Parents
             {
                 return;
             }
-            var output = "Slot " + (slot + 1).ToString();
+
+            var output = "Slot " + (slot + 1);
             var find = Parent_Groups.Where(x => x.ParentSlot == slot).ToArray();
             if (find.Length > 0)
             {
@@ -153,10 +151,12 @@ namespace Accessory_Parents
             {
                 output += " is not Parent";
             }
+
             foreach (var item in ParentText.ControlObjects)
             {
                 item.GetComponentInChildren<TextMeshProUGUI>().text = output;
             }
+
             string output2;
             if (Child.TryGetValue(slot, out var value))
             {
@@ -166,6 +166,7 @@ namespace Accessory_Parents
             {
                 output2 = "Is not a Child";
             }
+
             foreach (var item in ChildText.ControlObjects)
             {
                 item.GetComponentInChildren<TextMeshProUGUI>().text = output2;
@@ -346,7 +347,8 @@ namespace Accessory_Parents
                         }
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+ ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -413,7 +415,8 @@ namespace Accessory_Parents
 
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+ ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -470,7 +473,8 @@ namespace Accessory_Parents
                         ChaControl.SetAccessoryPos(item, correctNo, value, add, flags);
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+ ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -505,7 +509,8 @@ namespace Accessory_Parents
                         ChaControl.SetAccessoryPos(item, correctNo, Value, false, flags);
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+ ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
 
@@ -527,6 +532,7 @@ namespace Accessory_Parents
                 {
                     unbindlist.ElementAt(i).ParentSlot = -1;
                 }
+
                 Relative_Data.Remove(slotNo);
                 UpdateRelations();
                 Update_Drop_boxes();
@@ -551,6 +557,7 @@ namespace Accessory_Parents
             {
                 return;
             }
+
             if (!Relative_Data.TryGetValue(slot, out var relative))
             {
                 relative = new Vector3[3];
@@ -560,6 +567,7 @@ namespace Accessory_Parents
                     relative[1] = Vector3.zero;
                     relative[2] = Vector3.one;
                 }
+
                 Relative_Data[slot] = relative;
             }
 
@@ -586,6 +594,7 @@ namespace Accessory_Parents
         private void Update_Drop_boxes()
         {
             StartCoroutine(Wait());
+
             IEnumerator Wait()
             {
                 if (!MakerAPI.InsideMaker || !MakerEnabled)
@@ -600,19 +609,23 @@ namespace Accessory_Parents
 
 
                 var ControlObjects = Parent_DropDown.ControlObjects;
-                var Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
+                var Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject
+                    .GetComponentInChildren<TMP_Dropdown>().options);
                 if (Options.Count > 1)
                 {
                     Options.RemoveRange(1, Options.Count - 1);
                 }
+
                 foreach (var item in Parent_Groups)
                 {
                     Options.Add(new TMP_Dropdown.OptionData(item.Name));
                 }
+
                 foreach (var item in ControlObjects)
                 {
                     item.GetComponentInChildren<TMP_Dropdown>().options = Options;
                 }
+
                 Update_Old_Parents();
             }
         }
@@ -694,6 +707,7 @@ namespace Accessory_Parents
                 {
                     continue;
                 }
+
                 var ParentKey = AccessoriesApi.GetPartsInfo(slot).parentKey;
                 Old_Parent[slot] = string.Copy(ParentKey);
             }
@@ -704,7 +718,9 @@ namespace Accessory_Parents
             var slot = AccessoriesApi.SelectedMakerAccSlot;
 
             if (AccessoriesApi.GetPartsInfo(slot).type == 120)
+            {
                 return;
+            }
 
             if (Parent_DropDown.Value == 0)
             {
@@ -718,7 +734,9 @@ namespace Accessory_Parents
             }
 
             if (!NameData.ChildSlots.Contains(slot))
+            {
                 NameData.ChildSlots.Add(slot);
+            }
 
             MakeChild(slot, NameData.ParentSlot);
         }
@@ -750,12 +768,13 @@ namespace Accessory_Parents
                     MakeChild();
                     return;
                 }
-                if (Input.GetKeyDown(KeyCode.F) && AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type != 120)
+
+                if (Input.GetKeyDown(KeyCode.F) &&
+                    AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type != 120)
                 {
                     AddTheme(true);
                     MakeChild();
                     Parent_DropDown.SetValue(Parent_Groups.Count + 1, false);
-                    return;
                 }
             }
         }
@@ -778,6 +797,7 @@ namespace Accessory_Parents
                     }
                 }
             }
+
             return childlist.Count > 0;
         }
 
@@ -792,12 +812,15 @@ namespace Accessory_Parents
                 {
                     Handover.ElementAt(i).ParentSlot = item.DstSlot;
                 }
+
                 if (RelativeData.TryGetValue(item.SrcSlot, out var RelativeVector))
                 {
                     RelativeData[item.DstSlot] = RelativeVector;
                 }
+
                 RelativeData.Remove(item.SrcSlot);
             }
+
             UpdateRelations();
             Update_Old_Parents();
             Update_Text();
@@ -807,7 +830,10 @@ namespace Accessory_Parents
         {
             var childlist = new List<int>();
             if (!RecursiveStop)
+            {
                 TryChildListBySlot(slot, out childlist, true);
+            }
+
             childlist.Add(slot);
 
             childlist = childlist.Distinct().ToList();
@@ -826,6 +852,7 @@ namespace Accessory_Parents
                         relativedata[2] = Vector3.one;
                     }
                 }
+
                 move = relativedata[0][kind] - listvector[kind];
             }
 
@@ -863,7 +890,9 @@ namespace Accessory_Parents
 
             var childlist = new List<int>();
             if (!RecursiveStop)
+            {
                 TryChildListBySlot(slot, out childlist, true);
+            }
 
             childlist.Add(slot);
 
@@ -905,6 +934,7 @@ namespace Accessory_Parents
                         relativedata[1] = Vector3.zero;
                         relativedata[2] = Vector3.one;
                     }
+
                     rot[kind] = relativedata[1][kind] - listvectors[1][kind];
 
                     New_pos = listvectors[0] - originalvectors[0]; //offset with parent as origin
@@ -939,7 +969,10 @@ namespace Accessory_Parents
         {
             var childlist = new List<int>();
             if (!RecursiveStop)
+            {
                 TryChildListBySlot(slot, out childlist, true);
+            }
+
             childlist.Add(slot);
             childlist = childlist.Distinct().ToList();
 
@@ -957,6 +990,7 @@ namespace Accessory_Parents
                         relativedata[2] = Vector3.one;
                     }
                 }
+
                 scale = relativedata[2][kind] - listvector[kind];
             }
 
@@ -1013,7 +1047,8 @@ namespace Accessory_Parents
         {
             if (slot < 20)
             {
-                ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].addMove = ChaControl.nowCoordinate.accessory.parts[slot].addMove;
+                ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].addMove =
+                    ChaControl.nowCoordinate.accessory.parts[slot].addMove;
             }
         }
     }

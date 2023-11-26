@@ -10,13 +10,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\RelativeColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\GUI Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OnGUI\Controls\CharaEventControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OnGUI\MakerGUI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Standard Settings.cs" />
   </ItemGroup>
   <ItemGroup>

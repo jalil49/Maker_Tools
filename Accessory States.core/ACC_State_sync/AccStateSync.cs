@@ -1,9 +1,8 @@
-﻿using ExtensibleSaveFormat;
-using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ExtensibleSaveFormat.Extensions;
+using ExtensibleSaveFormat;
+using MessagePack;
 
 namespace Accessory_States
 {
@@ -16,32 +15,17 @@ namespace Accessory_States
             [IgnoreMember]
             public const string SerializeKey = "TriggerPropertyList";
 
-            [Key("Coordinate")]
-            public int Coordinate { get; set; } = -1;
-
-            [Key("Slot")]
-            public int Slot { get; set; } = -1;
-
-            [Key("RefKind")]
-            public int RefKind { get; set; } = -1;
-
-            [Key("RefState")]
-            public int RefState { get; set; } = -1;
-
-            [Key("Visible")]
-            public bool Visible { get; set; } = true;
-
-            [Key("Priority")]
-            public int Priority { get; set; } = 0;
+            [Key("RenderHide")]
+            public HashSet<string> RenderHide;
 
             [Key("RenderShow")]
             public HashSet<string> RenderShow;
 
-            [Key("RenderHide")]
-            public HashSet<string> RenderHide;
-
             [SerializationConstructor]
-            public TriggerProperty(int coordinate, int slot, int refkind, int refstate, bool visible, int priority, HashSet<string> rendershow = null, HashSet<string> renderhide = null) // this shit is here to avoid msgpack fucking error
+            public TriggerProperty(int coordinate, int slot, int refkind, int refstate, bool visible, int priority,
+                                   HashSet<string> rendershow = null,
+                                   HashSet<string> renderhide =
+                                       null) // this shit is here to avoid msgpack fucking error
             {
                 Coordinate = coordinate;
                 Slot = slot;
@@ -63,18 +47,23 @@ namespace Accessory_States
                 Priority = stateInfo.Priority;
             }
 
-            public StateInfo ToStateInfo()
-            {
-                return new StateInfo()
-                {
-                    Priority = Priority,
-                    State = RefState,
-                    Show = Visible,
-                    Slot = Slot,
-                    ShoeType = 2,
-                    Binding = RefKind
-                };
-            }
+            [Key("Coordinate")]
+            public int Coordinate { get; set; } = -1;
+
+            [Key("Slot")]
+            public int Slot { get; set; } = -1;
+
+            [Key("RefKind")]
+            public int RefKind { get; set; } = -1;
+
+            [Key("RefState")]
+            public int RefState { get; set; } = -1;
+
+            [Key("Visible")]
+            public bool Visible { get; set; } = true;
+
+            [Key("Priority")]
+            public int Priority { get; set; }
 
             public void OnBeforeSerialize() { }
 
@@ -83,6 +72,17 @@ namespace Accessory_States
                 RenderShow = RenderShow ?? new HashSet<string>();
                 RenderHide = RenderHide ?? new HashSet<string>();
             }
+
+            public StateInfo ToStateInfo() =>
+                new StateInfo
+                {
+                    Priority = Priority,
+                    State = RefState,
+                    Show = Visible,
+                    Slot = Slot,
+                    ShoeType = 2,
+                    Binding = RefKind
+                };
         }
 
         [Serializable]
@@ -92,8 +92,44 @@ namespace Accessory_States
             [IgnoreMember]
             public const string SerializeKey = "TriggerGroupList";
 
+            private string _guid;
+
+            [SerializationConstructor]
+            public TriggerGroup(int coordinate, int kind, string label, int state, int startup, int secondary)
+            {
+                Coordinate = coordinate;
+                Kind = kind;
+                State = state;
+                if (label.Trim().IsNullOrEmpty())
+                {
+                    label = $"Custom {kind - 8}";
+                }
+
+                Label = label;
+                Startup = startup;
+                Secondary = secondary;
+
+                States = new Dictionary<int, string> { [0] = "State 1", [1] = "State 2" };
+            }
+
+            public TriggerGroup(int coordinate, int kind, string label, int startup, int secondary) : this(coordinate,
+                kind, label, 0, startup, secondary) { }
+
+            public TriggerGroup(int coordinate, int kind, string label = "") :
+                this(coordinate, kind, label, 0, 0, -1) { }
+
+            public TriggerGroup(NameData nameData, int coord)
+            {
+                Coordinate = coord;
+                Kind = nameData.Binding;
+                State = nameData.CurrentState;
+                States = nameData.StateNames;
+                Label = nameData.Name;
+                Startup = nameData.DefaultState;
+            }
+
             [Key("Coordinate")]
-            public int Coordinate { get; set; } = -1;
+            public int Coordinate { get; set; }
 
             [Key("Kind")]
             public int Kind { get; set; } // TriggerProperty RefGroup
@@ -105,10 +141,10 @@ namespace Accessory_States
             public Dictionary<int, string> States { get; set; }
 
             [Key("Label")]
-            public string Label { get; set; } = "";
+            public string Label { get; set; }
 
             [Key("Startup")]
-            public int Startup { get; set; } = 0;
+            public int Startup { get; set; }
 
             [Key("Secondary")]
             public int Secondary { get; set; } = -1;
@@ -124,37 +160,8 @@ namespace Accessory_States
                 set => _guid = value;
             }
 
-            private string _guid;
-
-            [SerializationConstructor]
-            public TriggerGroup(int coordinate, int kind, string label, int state, int startup, int secondary)
-            {
-                Coordinate = coordinate;
-                Kind = kind;
-                State = state;
-                if(label.Trim().IsNullOrEmpty())
-                    label = $"Custom {kind - 8}";
-                Label = label;
-                Startup = startup;
-                Secondary = secondary;
-
-                States = new Dictionary<int, string>() { [0] = "State 1", [1] = "State 2" };
-            }
-            public TriggerGroup(int coordinate, int kind, string label, int startup, int secondary) : this(coordinate, kind, label, 0, startup, secondary) { }
-            public TriggerGroup(int coordinate, int kind, string label = "") : this(coordinate, kind, label, 0, 0, -1) { }
-            public TriggerGroup(NameData nameData, int coord)
-            {
-                Coordinate = coord;
-                Kind = nameData.Binding;
-                State = nameData.CurrentState;
-                States = nameData.StateNames;
-                Label = nameData.Name;
-                Startup = nameData.DefaultState;
-            }
-
-            public NameData ToNameData()
-            {
-                return new NameData
+            public NameData ToNameData() =>
+                new NameData
                 {
                     Name = Label,
                     Binding = Kind,
@@ -162,54 +169,66 @@ namespace Accessory_States
                     CurrentState = Startup,
                     DefaultState = State
                 };
-            }
         }
 
         internal static List<string> _cordNames = new List<string>();
 #if KK
-        internal static List<string> _clothesNames = new List<string>() { "Top", "Bottom", "Bra", "Underwear", "Gloves", "Pantyhose", "Legwear", "Indoors", "Outdoors" };
+        internal static List<string> _clothesNames =
+            new List<string>
+                { "Top", "Bottom", "Bra", "Underwear", "Gloves", "Pantyhose", "Legwear", "Indoors", "Outdoors" };
 #else
-        internal static List<string> _clothesNames = new List<string>() { "Top", "Bottom", "Bra", "Underwear", "Gloves", "Pantyhose", "Legwear", "Shoes" };
+        internal static List<string> _clothesNames = new List<string>
+            { "Top", "Bottom", "Bra", "Underwear", "Gloves", "Pantyhose", "Legwear", "Shoes" };
 #endif
-        internal static Dictionary<int, string> _statesNames = new Dictionary<int, string>() { [0] = "Full", [1] = "Half 1", [2] = "Half 2", [3] = "Undressed" };
+        internal static Dictionary<int, string> _statesNames = new Dictionary<int, string>
+            { [0] = "Full", [1] = "Half 1", [2] = "Half 2", [3] = "Undressed" };
+
         internal static Dictionary<string, string> _accessoryParentNames = new Dictionary<string, string>();
-        public static void ConvertCoordinateToAss(int coord, int AssShoePreference, ChaFileCoordinate coordinate, ref List<TriggerProperty> triggers, ref List<TriggerGroup> groups)
+
+        public static void ConvertCoordinateToAss(int coord, int AssShoePreference, ChaFileCoordinate coordinate,
+                                                  ref List<TriggerProperty> triggers, ref List<TriggerGroup> groups)
         {
             var localNames = Constants.GetNameDataList();
             var slot = 0;
-            foreach(var part in coordinate.accessory.parts)
+            foreach (var part in coordinate.accessory.parts)
             {
                 GetSlotData(slot, AssShoePreference, part, ref localNames, coord, ref triggers);
                 slot++;
             }
 
-            foreach(var item in localNames)
+            foreach (var item in localNames)
             {
                 groups.Add(new TriggerGroup(item, coord));
             }
         }
 
-        public static SlotData GetSlotData(int slot, int AssShoePreference, ChaFileAccessory.PartsInfo part, ref List<NameData> localNames, int coord, ref List<TriggerProperty> triggers)
+        public static SlotData GetSlotData(int slot, int AssShoePreference, ChaFileAccessory.PartsInfo part,
+                                           ref List<NameData> localNames, int coord, ref List<TriggerProperty> triggers)
         {
-            if(!part.TryGetExtendedDataById(Settings.GUID, out var extendedData) || extendedData == null || extendedData.version > 2 || !extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) || bytearray == null)
+            if (!part.TryGetExtendedDataById(Settings.GUID, out var extendedData) || extendedData == null ||
+                extendedData.version > 2 || !extendedData.data.TryGetValue(Constants.AccessoryKey, out var bytearray) ||
+                bytearray == null)
             {
                 return null;
             }
 
             var slotdata = MessagePackSerializer.Deserialize<SlotData>((byte[])bytearray);
-            foreach(var item in slotdata.bindingDatas)
+            foreach (var item in slotdata.bindingDatas)
             {
                 item.SetSlot(slot);
                 var binding = item.GetBinding();
 
-                if(binding < 0)
+                if (binding < 0)
                 {
-                    if(item.NameData == null)
+                    if (item.NameData == null)
+                    {
                         continue;
+                    }
+
                     //re-value binding reference
                     var nameDataReference = localNames.FirstOrDefault(x => x.Equals(item.NameData, true));
 
-                    if(nameDataReference == null)
+                    if (nameDataReference == null)
                     {
                         localNames.Add(item.NameData);
                         item.NameData.Binding = Constants.ClothingLength + localNames.IndexOf(nameDataReference);
@@ -220,7 +239,7 @@ namespace Accessory_States
                         item.NameData = nameDataReference;
                     }
 
-                    foreach(var state in item.States)
+                    foreach (var state in item.States)
                     {
                         triggers.Add(new TriggerProperty(state, coord, slot));
                     }
@@ -228,60 +247,68 @@ namespace Accessory_States
                     continue;
                 }
 
-                if(binding < Constants.ClothingLength)
+                if (binding < Constants.ClothingLength)
                 {
                     item.NameData = localNames.First(x => x.Binding == binding);
                 }
 
-                foreach(var state in item.States)
+                foreach (var state in item.States)
                 {
-                    if(state.ShoeType == AssShoePreference || state.ShoeType == 2)
+                    if (state.ShoeType == AssShoePreference || state.ShoeType == 2)
+                    {
                         triggers.Add(new TriggerProperty(state, coord, slot));
+                    }
                 }
             }
 
             return slotdata;
         }
 
-        public static void FullAssCardSave(ChaFileCoordinate[] coordinates, int AssShoePreference, ref List<TriggerProperty> triggers, ref List<TriggerGroup> groups)
+        public static void FullAssCardSave(ChaFileCoordinate[] coordinates, int AssShoePreference,
+                                           ref List<TriggerProperty> triggers, ref List<TriggerGroup> groups)
         {
             var coord = 0;
-            foreach(var coordinate in coordinates)
+            foreach (var coordinate in coordinates)
             {
                 ConvertCoordinateToAss(coord, AssShoePreference, coordinate, ref triggers, ref groups);
                 coord++;
             }
         }
 
-        public static void FullAssCardLoad(ChaFileCoordinate[] coordinates, ChaFileCoordinate nowCoordinate, int currentCoord, List<TriggerProperty> triggers, List<TriggerGroup> groups)
+        public static void FullAssCardLoad(ChaFileCoordinate[] coordinates, ChaFileCoordinate nowCoordinate,
+                                           int currentCoord, List<TriggerProperty> triggers, List<TriggerGroup> groups)
         {
-            for(var i = 0; i < coordinates.Length; i++)
+            for (var i = 0; i < coordinates.Length; i++)
             {
-                ConvertAssCoordinate(coordinates[i], triggers.FindAll(x => x.Coordinate == i), groups.FindAll(x => x.Coordinate == i));
-                if(i == currentCoord)
+                ConvertAssCoordinate(coordinates[i], triggers.FindAll(x => x.Coordinate == i),
+                    groups.FindAll(x => x.Coordinate == i));
+                if (i == currentCoord)
                 {
-                    ConvertAssCoordinate(nowCoordinate, triggers.FindAll(x => x.Coordinate == i), groups.FindAll(x => x.Coordinate == i));
+                    ConvertAssCoordinate(nowCoordinate, triggers.FindAll(x => x.Coordinate == i),
+                        groups.FindAll(x => x.Coordinate == i));
                 }
             }
         }
 
-        public static void ConvertAssCoordinate(ChaFileCoordinate coordinate, List<TriggerProperty> triggers, List<TriggerGroup> groups)
+        public static void ConvertAssCoordinate(ChaFileCoordinate coordinate, List<TriggerProperty> triggers,
+                                                List<TriggerGroup> groups)
         {
             var localNames = Constants.GetNameDataList();
             var max = localNames.Max(x => x.Binding) + 1;
             //dictionary<slot, refkind, listoftriggers>
             var slotDict = new Dictionary<int, Dictionary<int, List<TriggerProperty>>>();
             var groupRelation = new Dictionary<TriggerGroup, NameData>();
-            foreach(var item in groups)
+            foreach (var item in groups)
             {
                 var newNameData = item.ToNameData();
-                var reference = localNames.FirstOrDefault(x => x.Binding == newNameData.Binding || x.Equals(newNameData, true));
-                if(reference != null)
+                var reference =
+                    localNames.FirstOrDefault(x => x.Binding == newNameData.Binding || x.Equals(newNameData, true));
+                if (reference != null)
                 {
                     newNameData = reference;
                 }
 
-                if(newNameData.Binding >= Constants.ClothingLength)
+                if (newNameData.Binding >= Constants.ClothingLength)
                 {
                     newNameData.Binding = max;
                     max++;
@@ -290,39 +317,42 @@ namespace Accessory_States
                 groupRelation[item] = newNameData;
             }
 
-            foreach(var item in triggers)
+            foreach (var item in triggers)
             {
-                if(!slotDict.TryGetValue(item.Slot, out var subDict))
+                if (!slotDict.TryGetValue(item.Slot, out var subDict))
                 {
                     subDict = slotDict[item.Slot] = new Dictionary<int, List<TriggerProperty>>();
                 }
 
-                if(!subDict.TryGetValue(item.RefKind, out var subRefKindList))
+                if (!subDict.TryGetValue(item.RefKind, out var subRefKindList))
                 {
                     slotDict[item.RefKind] = new Dictionary<int, List<TriggerProperty>>();
                 }
             }
 
             var parts = coordinate.accessory.parts;
-            foreach(var slotReference in slotDict)
+            foreach (var slotReference in slotDict)
             {
                 var part = parts[slotReference.Key];
 
-                if(part.TryGetExtendedDataById(Settings.GUID, out var pluginData) && pluginData != null)
+                if (part.TryGetExtendedDataById(Settings.GUID, out var pluginData) && pluginData != null)
                 {
                     continue;
                 }
 
                 var slotData = new SlotData();
 
-                foreach(var bindingReference in slotReference.Value)
+                foreach (var bindingReference in slotReference.Value)
                 {
-                    if(bindingReference.Key >= parts.Length)
+                    if (bindingReference.Key >= parts.Length)
+                    {
                         continue;
+                    }
 
-                    var bindingData = new BindingData() { NameData = groupRelation[groups.First(x => x.Kind == bindingReference.Key)] };
+                    var bindingData = new BindingData
+                        { NameData = groupRelation[groups.First(x => x.Kind == bindingReference.Key)] };
                     slotData.bindingDatas.Add(bindingData);
-                    foreach(var state in bindingReference.Value)
+                    foreach (var state in bindingReference.Value)
                     {
                         bindingData.States.Add(state.ToStateInfo());
                     }

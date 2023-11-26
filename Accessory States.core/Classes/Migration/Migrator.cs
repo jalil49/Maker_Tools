@@ -85,7 +85,7 @@ namespace Accessory_States.Migration
                 names.Add(item.Value.ToNewNameData());
             }
 
-            foreach(var item in dict.Slotinfo)
+            foreach(var item in dict.SlotData)
             {
                 if(parts.Length <= item.Key)
                     continue;
@@ -124,7 +124,7 @@ namespace Accessory_States.Migration
                 for(var i = 0; i < temp.Length && i < coordcount; i++)
                 {
                     var sub = temp[i];
-                    var slotinfo = data[i].Slotinfo;
+                    var SlotData = data[i].SlotData;
 
                     foreach(var element in sub)
                     {
@@ -133,7 +133,7 @@ namespace Accessory_States.Migration
                             result = element.Value - 1;
                         else
                             result = element.Value;
-                        slotinfo[element.Key] = new SlotdataV1() { Binding = result };
+                        SlotData[element.Key] = new SlotdataV1() { Binding = result };
                     }
                 }
             }
@@ -143,11 +143,11 @@ namespace Accessory_States.Migration
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int[]>[]>((byte[])ByteData);
                 for(var i = 0; i < temp.Length && i < coordcount; i++)
                 {
-                    var slotinfo = data[i].Slotinfo;
+                    var SlotData = data[i].SlotData;
 
                     foreach(var pair in temp[i])
                     {
-                        if(slotinfo.TryGetValue(pair.Key, out var slotdata))
+                        if(SlotData.TryGetValue(pair.Key, out var slotdata))
                         {
                             var list = slotdata.States = new List<int[]> { pair.Value };
                             if(list[0][0] == 1)
@@ -181,12 +181,12 @@ namespace Accessory_States.Migration
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, bool>[]>((byte[])ByteData);
                 for(var i = 0; i < temp.Length && i < coordcount; i++)
                 {
-                    var slotinfo = data[i].Slotinfo;
+                    var SlotData = data[i].SlotData;
                     foreach(var item in temp[i])
                     {
-                        if(!slotinfo.TryGetValue(item.Key, out var slotdata))
+                        if(!SlotData.TryGetValue(item.Key, out var slotdata))
                         {
-                            slotdata = slotinfo[item.Key] = new SlotdataV1();
+                            slotdata = SlotData[item.Key] = new SlotdataV1();
                         }
 
                         slotdata.Parented = item.Value;
@@ -202,7 +202,7 @@ namespace Accessory_States.Migration
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>>((byte[])ByteData);
 
-                var slotinfo = data.Slotinfo;
+                var SlotData = data.SlotData;
 
                 foreach(var element in temp)
                 {
@@ -212,17 +212,17 @@ namespace Accessory_States.Migration
                     else
                         result = element.Value;
                     temp[element.Key] = result;
-                    slotinfo[element.Key] = new SlotdataV1() { Binding = element.Value };
+                    SlotData[element.Key] = new SlotdataV1() { Binding = element.Value };
                 }
             }
 
             if(plugindata.data.TryGetValue("ACC_State_array", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int[]>>((byte[])ByteData);
-                var slotinfo = data.Slotinfo;
+                var SlotData = data.SlotData;
                 foreach(var item in temp)
                 {
-                    if(slotinfo.TryGetValue(item.Key, out var slotdata))
+                    if(SlotData.TryGetValue(item.Key, out var slotdata))
                     {
                         slotdata.States = new List<int[]> { item.Value };
                     }
@@ -241,12 +241,12 @@ namespace Accessory_States.Migration
             if(plugindata.data.TryGetValue("ACC_Parented_Dictionary", out ByteData) && ByteData != null)
             {
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, bool>>((byte[])ByteData);
-                var slotinfo = data.Slotinfo;
+                var SlotData = data.SlotData;
                 foreach(var item in temp)
                 {
-                    if(!slotinfo.TryGetValue(item.Key, out var slotdata))
+                    if(!SlotData.TryGetValue(item.Key, out var slotdata))
                     {
-                        slotdata = slotinfo[item.Key] = new SlotdataV1();
+                        slotdata = SlotData[item.Key] = new SlotdataV1();
                     }
 
                     slotdata.Parented = item.Value;
@@ -303,7 +303,7 @@ namespace Accessory_States.Migration
                 names.Add(item.Value.ToNewNameData());
             }
 
-            foreach(var item in dict.Slotinfo)
+            foreach(var item in dict.SlotData)
             {
                 var slotdata = new SlotData
                 {
@@ -335,7 +335,7 @@ namespace Accessory_States.Migration
                 for(var i = 0; i < temp.Length; i++)
                 {
                     var data = TryMigrateV0Data(AllCoordinatedata, i);
-                    var slotinfo = data.Slotinfo;
+                    var SlotData = data.SlotData;
 
                     var sub = temp[i];
                     foreach(var element in sub)
@@ -345,7 +345,7 @@ namespace Accessory_States.Migration
                             result = element.Value - 1;
                         else
                             result = element.Value;
-                        slotinfo[element.Key] = new SlotdataV1() { Binding = result };
+                        SlotData[element.Key] = new SlotdataV1() { Binding = result };
                     }
                 }
             }
@@ -356,11 +356,11 @@ namespace Accessory_States.Migration
                 for(var i = 0; i < temp.Length; i++)
                 {
                     var data = TryMigrateV0Data(AllCoordinatedata, i);
-                    var slotinfo = data.Slotinfo;
+                    var SlotData = data.SlotData;
 
                     foreach(var pair in temp[i])
                     {
-                        if(slotinfo.TryGetValue(pair.Key, out var slotdata))
+                        if(SlotData.TryGetValue(pair.Key, out var slotdata))
                         {
                             var list = slotdata.States = new List<int[]> { pair.Value };
                             if(list[0][0] == 1)
@@ -397,12 +397,12 @@ namespace Accessory_States.Migration
                 for(var i = 0; i < temp.Length; i++)
                 {
                     var data = TryMigrateV0Data(AllCoordinatedata, i);
-                    var slotinfo = data.Slotinfo;
+                    var SlotData = data.SlotData;
                     foreach(var item in temp[i])
                     {
-                        if(!slotinfo.TryGetValue(item.Key, out var slotdata))
+                        if(!SlotData.TryGetValue(item.Key, out var slotdata))
                         {
-                            slotdata = slotinfo[item.Key] = new SlotdataV1();
+                            slotdata = SlotData[item.Key] = new SlotdataV1();
                         }
 
                         slotdata.Parented = item.Value;
