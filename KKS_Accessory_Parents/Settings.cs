@@ -3,10 +3,11 @@ using ExtensibleSaveFormat;
 using MessagePack;
 using System.Collections.Generic;
 
+// ReSharper disable once CheckNamespace
 namespace Accessory_Parents
 {
     [BepInProcess("KoikatsuSunshine")]
-    public partial class Settings : BaseUnityPlugin
+    public partial class Settings
     {
         private void GameUnique()
         {
@@ -15,35 +16,38 @@ namespace Accessory_Parents
 
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
-            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null || Data.version > 1) return;
-            var Parent_Data = new Dictionary<int, Migrator.CoordinateDataV1>();
+            if (!importedExtendedData.TryGetValue(Guid, out var data) || data == null || data.version > 1) return;
+            var parentData = new Dictionary<int, Migrator.CoordinateDataV1>();
 
-            if (Data.version == 1)
+            switch (data.version)
             {
-                if (Data.data.TryGetValue("Coordinate_Data", out var ByteData) && ByteData != null)
+                case 1:
                 {
-                    Parent_Data = MessagePackSerializer.Deserialize<Dictionary<int, Migrator.CoordinateDataV1>>((byte[])ByteData);
+                    if (data.data.TryGetValue("Coordinate_Data", out var byteData) && byteData != null)
+                    {
+                        parentData = MessagePackSerializer.Deserialize<Dictionary<int, Migrator.CoordinateDataV1>>((byte[])byteData);
+                    }
+
+                    break;
                 }
-            }
-            else if (Data.version == 0)
-            {
-                Migrator.MigrateV0(Data, ref Parent_Data, coordinateMapping.Count);
-            }
-            else
-            {
-                Logger.LogWarning("New version of plugin detected please update");
+                case 0:
+                    Migrator.MigrateV0(data, ref parentData, coordinateMapping.Count);
+                    break;
+                default:
+                    Logger.LogWarning("New version of plugin detected please update");
+                    break;
             }
 
             var transfer = new Dictionary<int, Migrator.CoordinateDataV1>();
 
             foreach (var item in coordinateMapping)
             {
-                if (!Parent_Data.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
+                if (!parentData.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
                 transfer[item.Value.Value] = coord;
 
             }
-            Data.data.Clear();
-            Data.data["Coordinate_Data"] = MessagePackSerializer.Serialize(transfer);
+            data.data.Clear();
+            data.data["Coordinate_Data"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

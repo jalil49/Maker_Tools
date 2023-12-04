@@ -22,7 +22,7 @@ namespace Accessory_States
         private static void SetCachePath()
         {
             var sep = Path.DirectorySeparatorChar;
-            CachePath = Paths.CachePath + sep + Settings.GUID + sep;
+            CachePath = Paths.CachePath + sep + Settings.Guid + sep;
         }
 
         public static void OpenPresetFolder()
@@ -64,10 +64,7 @@ namespace Accessory_States
 
         private static string[] GetAllPresetFiles()
         {
-            if (CreateCacheFolder())
-            {
-                return new string[0];
-            }
+            if (CreateCacheFolder()) return new string[0];
 
             return Directory.GetFiles(CachePath);
         }
@@ -82,15 +79,9 @@ namespace Accessory_States
 
                 if (TryReadFile(item, out var presetData, out var presetFolder))
                 {
-                    if (presetData != null)
-                    {
-                        presetDatas.Add(presetData);
-                    }
+                    if (presetData != null) presetDatas.Add(presetData);
 
-                    if (presetFolder != null)
-                    {
-                        presetFolders.Add(presetFolder);
-                    }
+                    if (presetFolder != null) presetFolders.Add(presetFolder);
                 }
             }
         }
@@ -99,12 +90,8 @@ namespace Accessory_States
         {
             var presets = new List<PresetData>();
             foreach (var item in GetAllPresetFiles())
-            {
                 if (TryReadFile(item, out var presetData, out _) && presetData != null)
-                {
                     presets.Add(presetData);
-                }
-            }
 
             return presets;
         }
@@ -140,12 +127,8 @@ namespace Accessory_States
         {
             var presets = new List<PresetFolder>();
             foreach (var item in GetAllPresetFiles())
-            {
                 if (TryReadFile(item, out var _, out var presetFolder) && presetFolder != null)
-                {
                     presets.Add(presetFolder);
-                }
-            }
 
             return presets;
         }
@@ -155,18 +138,12 @@ namespace Accessory_States
             presetData = null;
             presetFolder = null;
             var data = File.ReadAllBytes(saveFile);
-            if (data == null || data.Length == 0)
-            {
-                return false;
-            }
+            if (data == null || data.Length == 0) return false;
 
             try
             {
                 var serializeddict = MessagePackSerializer.Deserialize<KeyValuePair<string, byte[]>>(data);
-                if (serializeddict.Key.IsNullOrWhiteSpace())
-                {
-                    return false;
-                }
+                if (serializeddict.Key.IsNullOrWhiteSpace()) return false;
 
                 switch (serializeddict.Key)
                 {

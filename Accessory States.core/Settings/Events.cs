@@ -2,15 +2,15 @@
 
 namespace Accessory_States
 {
-    public sealed class CoordinateLoadedEventARG : EventArgs
+    public sealed class CoordinateLoadedEventArg : EventArgs
     {
-
         //TODO: Remove Event with Get GameEvent Object.
-        public CoordinateLoadedEventARG(ChaControl _Character/*, ChaFileCoordinate _Coordinate*/)
+        public CoordinateLoadedEventArg(ChaControl character /*, ChaFileCoordinate _Coordinate*/)
         {
             //Coordinate = _Coordinate;
-            Character = _Character;
+            Character = character;
         }
+
         public ChaControl Character { get; }
         //public ChaFileCoordinate Coordinate { get; }
     }

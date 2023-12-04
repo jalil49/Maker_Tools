@@ -5,25 +5,25 @@ namespace Extensions.GUI_Classes
 {
     public class ScrollGUI
     {
-        private GUILayoutOption[] layoutOptions;
-        private Action action;
+        private readonly Action _action;
+        private readonly GUILayoutOption[] _layoutOptions;
 
-        private Vector2 Scrolling;
+        private Vector2 _scrolling;
 
         public ScrollGUI(Action action, GUILayoutOption[] gUILayoutOptions = null)
         {
-            if(action == null)
+            if (action == null)
                 throw new ArgumentNullException("action");
 
-            layoutOptions = gUILayoutOptions ?? new GUILayoutOption[0];
-            this.action = action;
-            Scrolling = new Vector2();
+            _layoutOptions = gUILayoutOptions ?? new GUILayoutOption[0];
+            this._action = action;
+            _scrolling = new Vector2();
         }
 
         public void Draw()
         {
-            Scrolling = GUILayout.BeginScrollView(Scrolling, layoutOptions);
-            action.Invoke();
+            _scrolling = GUILayout.BeginScrollView(_scrolling, _layoutOptions);
+            _action.Invoke();
             GUILayout.EndScrollView();
         }
     }

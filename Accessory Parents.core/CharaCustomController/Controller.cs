@@ -1,10 +1,5 @@
-﻿using ExtensibleSaveFormat;
-using KKAPI;
+﻿using KKAPI;
 using KKAPI.Chara;
-using KKAPI.Maker;
-using MessagePack;
-using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 
 namespace Accessory_Parents
@@ -13,22 +8,18 @@ namespace Accessory_Parents
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            var Data = GetExtendedData();
-            if (Data != null)
+            var data = GetExtendedData();
+            if (data != null)
             {
-                if (Data.version <= 2)
-                {
-                    Migrator.StandardCharaMigrator(ChaControl, Data);
-                }
+                if (data.version <= 2)
+                    Migrator.StandardCharaMigrator(ChaControl, data);
                 else
-                {
                     Settings.Logger.LogWarning("New version of plugin detected please update");
-                }
             }
 
-            CurrentCoordinate.Subscribe(X =>
+            CurrentCoordinate.Subscribe(coordinateType =>
             {
-                ShowCustomGui = false;
+                _showCustomGui = false;
                 UpdateNowCoordinate();
                 Update_Drop_boxes();
             });
@@ -36,15 +27,14 @@ namespace Accessory_Parents
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            var Data = GetCoordinateExtendedData(coordinate);
-            if (Data != null)
+            var data = GetCoordinateExtendedData(coordinate);
+            if (data != null)
             {
             }
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
@@ -54,7 +44,6 @@ namespace Accessory_Parents
 
         private void UpdateNowCoordinate()
         {
-
         }
     }
 }

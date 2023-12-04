@@ -12,7 +12,7 @@ namespace Extensions.GUI_Classes
         private readonly GUIContent[] _text;
 
         public ToolbarGUI(int defaultValue, GUIContent[] text, Action<int, int> onValueChange = null,
-                          params GUILayoutOption[] options)
+            params GUILayoutOption[] options)
         {
             Value = defaultValue;
             _text = text;
@@ -26,10 +26,7 @@ namespace Extensions.GUI_Classes
         public void Draw()
         {
             var newValue = GUILayout.Toolbar(Value, _text, _style, _layoutOptions);
-            if (newValue == Value)
-            {
-                return;
-            }
+            if (newValue == Value) return;
 
             _onValueChange?.Invoke(Value, newValue);
             Value = newValue;

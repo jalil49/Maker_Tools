@@ -3,7 +3,7 @@ using KKAPI.Chara;
 
 namespace Generic.Core
 {
-    partial class Dummy : CharaCustomFunctionController
+    internal class Dummy : CharaCustomFunctionController
     {
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {

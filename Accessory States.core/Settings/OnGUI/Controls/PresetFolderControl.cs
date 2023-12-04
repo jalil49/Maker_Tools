@@ -27,22 +27,13 @@ namespace Accessory_States.OnGUI
 
             _fileName = new TextFieldGUI(new GUIContent(presetFolder.FileName), (oldVal, newVal) =>
                 {
-                    if (newVal.IsNullOrWhiteSpace())
-                    {
-                        newVal = _presetFolder.Name;
-                    }
+                    if (newVal.IsNullOrWhiteSpace()) newVal = _presetFolder.Name;
 
-                    if (newVal.Length == 0)
-                    {
-                        newVal = _presetFolder.GetHashCode().ToString();
-                    }
+                    if (newVal.Length == 0) newVal = _presetFolder.GetHashCode().ToString();
 
                     newVal = string.Concat(newVal.Split(Path.GetInvalidFileNameChars())).Trim();
 
-                    if (_presetFolder.SavedOnDisk)
-                    {
-                        Presets.Rename(oldVal, newVal);
-                    }
+                    if (_presetFolder.SavedOnDisk) Presets.Rename(oldVal, newVal);
 
                     _presetFolder.FileName = newVal;
                     _fileName.ManuallySetNewText(_presetFolder.FileName);
@@ -51,20 +42,21 @@ namespace Accessory_States.OnGUI
 
             _description = new TextAreaGUI(presetFolder.Description)
             {
-                action = val => { _presetFolder.Description = val; }
+                Action = val => { _presetFolder.Description = val; }
             };
         }
 
-        public bool Filter(string filter) => _presetFolder.Filter(filter);
+        public bool Filter(string filter)
+        {
+            return _presetFolder.Filter(filter);
+        }
 
         public void Draw(SlotData slotData, int slot)
         {
             GL.BeginHorizontal();
             {
                 if (Button(ShowContents ? "-" : "+", "Show or Hide Folder Contents", false))
-                {
                     ShowContents = !ShowContents;
-                }
 
                 _name.ActiveDraw();
 
@@ -74,13 +66,9 @@ namespace Accessory_States.OnGUI
                 {
                     _container.RemoveAt(index);
                     if (Event.current.shift)
-                    {
                         _container.Insert(0, _presetFolder);
-                    }
                     else
-                    {
                         _container.Insert(index - 1, _presetFolder);
-                    }
                 }
 
                 if (Button("↓", $"Move Down: Index {index}, Hold Shift to move to bottom", false) &&
@@ -88,13 +76,9 @@ namespace Accessory_States.OnGUI
                 {
                     _container.RemoveAt(index);
                     if (Event.current.shift)
-                    {
                         _container.Add(_presetFolder);
-                    }
                     else
-                    {
                         _container.Insert(index + 1, _presetFolder);
-                    }
                 }
             }
 
@@ -105,19 +89,12 @@ namespace Accessory_States.OnGUI
                 GL.FlexibleSpace();
 
                 if (Button("Add Preset", string.Empty, false))
-                {
                     _presetFolder.PresetDatas.Add(PresetData.ConvertSlotData(slotData, slot));
-                }
 
                 if (_fileName.GUIContent.text.Length > 0 && Button("Save", string.Empty, false))
-                {
                     _presetFolder.SaveFile();
-                }
 
-                if (Button("Remove", "Unload from Memory", false))
-                {
-                    _container.Remove(_presetFolder);
-                }
+                if (Button("Remove", "Unload from Memory", false)) _container.Remove(_presetFolder);
 
                 GL.Space(10);
                 if (_presetFolder.SavedOnDisk && Button("Delete", "Delete From disk", false))

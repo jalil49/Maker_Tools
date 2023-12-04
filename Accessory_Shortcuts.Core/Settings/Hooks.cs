@@ -7,12 +7,12 @@ namespace Accessory_Shortcuts
 {
     public static class Hooks
     {
-        static ManualLogSource Logger;
+        static ManualLogSource _logger;
         public static void Init()
         {
             var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
-            harmony.PatchAll(typeof(CustomAcsChangeSlot_KKS_Start_Patches));
-            Logger = Settings.Logger;
+            harmony.PatchAll(typeof(CustomAcsChangeSlotKksStartPatches));
+            _logger = Settings.Logger;
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
@@ -36,7 +36,7 @@ namespace Accessory_Shortcuts
         }
 
         [HarmonyPatch(typeof(CustomAcsChangeSlot), nameof(CustomAcsChangeSlot.Start))]
-        internal static class CustomAcsChangeSlot_KKS_Start_Patches
+        internal static class CustomAcsChangeSlotKksStartPatches
         {
             private static void Postfix(CustomAcsChangeSlot __instance)
             {

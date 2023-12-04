@@ -121,18 +121,18 @@ namespace Additional_Card_Info.Classes.Migration
 
                 var baseFile = control.chaFile.coordinate[item.Key];
 
-                if (baseFile.accessory.TryGetExtendedDataById(Settings.GUID, out var baseData))
+                if (baseFile.accessory.TryGetExtendedDataById(Settings.Guid, out var baseData))
                 {
-                    control.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID, baseData);
+                    control.nowCoordinate.accessory.SetExtendedDataById(Settings.Guid, baseData);
                 }
 
                 var baseParts = baseFile.accessory.parts;
                 var nowParts = control.nowCoordinate.accessory.parts;
                 for (var i = 0; i < baseParts.Length; i++)
                 {
-                    if (baseParts[i].TryGetExtendedDataById(Settings.GUID, out baseData))
+                    if (baseParts[i].TryGetExtendedDataById(Settings.Guid, out baseData))
                     {
-                        nowParts[i].SetExtendedDataById(Settings.GUID, baseData);
+                        nowParts[i].SetExtendedDataById(Settings.Guid, baseData);
                     }
                 }
             }
@@ -154,7 +154,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<List<int>[]>((byte[])byteData);
                 for (var i = 0; i < 7 && i < coordinateData.Count; i++)
                 {
-                    coordinateData[i].HairAcc = temp[i];
+                    coordinateData[i].hairAcc = temp[i];
                 }
             }
 
@@ -163,7 +163,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<List<int>[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].AccKeep = temp[i];
+                    coordinateData[i].accKeep = temp[i];
                 }
             }
 
@@ -174,7 +174,7 @@ namespace Additional_Card_Info.Classes.Migration
                 {
                     if (temp[i])
                     {
-                        coordinateData[i].MakeUpKeep = true;
+                        coordinateData[i].makeUpKeep = true;
                     }
                 }
             }
@@ -184,7 +184,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<bool[][]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].CoordinateSaveBools = temp[i];
+                    coordinateData[i].coordinateSaveBools = temp[i];
                 }
             }
 
@@ -193,7 +193,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.PersonalityType_Restriction = temp[i];
+                    coordinateData[i].restrictionData.PersonalityTypeRestriction = temp[i];
                 }
             }
 
@@ -202,7 +202,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.Interest_Restriction = temp[i];
+                    coordinateData[i].restrictionData.InterestRestriction = temp[i];
                 }
             }
 
@@ -211,7 +211,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<Dictionary<int, int>[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.TraitType_Restriction = temp[i];
+                    coordinateData[i].restrictionData.TraitTypeRestriction = temp[i];
                 }
             }
 
@@ -220,7 +220,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.HStateType_Restriction = temp[i];
+                    coordinateData[i].restrictionData.hStateTypeRestriction = temp[i];
                 }
             }
 
@@ -229,7 +229,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.ClubType_Restriction = temp[i];
+                    coordinateData[i].restrictionData.clubTypeRestriction = temp[i];
                 }
             }
 
@@ -238,7 +238,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<bool[][]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.Height_Restriction = temp[i];
+                    coordinateData[i].restrictionData.heightRestriction = temp[i];
                 }
             }
 
@@ -247,7 +247,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<bool[][]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.BreastSize_Restriction = temp[i];
+                    coordinateData[i].restrictionData.breastSizeRestriction = temp[i];
                 }
             }
 
@@ -256,7 +256,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.CoordinateType = temp[i] + 1;
+                    coordinateData[i].restrictionData.coordinateType = temp[i] + 1;
                 }
             }
 
@@ -265,7 +265,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.CoordinateSubType = temp[i] + 1;
+                    coordinateData[i].restrictionData.coordinateSubType = temp[i] + 1;
                 }
             }
 
@@ -274,7 +274,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<string[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    var nameref = coordinateData[i].CreatorNames = new List<string>();
+                    var nameref = coordinateData[i].creatorNames = new List<string>();
                     if (temp[i] != string.Empty)
                     {
                         nameref.Add(temp[i]);
@@ -287,7 +287,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<string[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].SetNames = temp[i];
+                    coordinateData[i].setNames = temp[i];
                 }
             }
 
@@ -296,7 +296,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<string[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].SubSetNames = temp[i];
+                    coordinateData[i].subSetNames = temp[i];
                 }
             }
 
@@ -305,7 +305,7 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<bool[][]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].ClothNotData = temp[i];
+                    coordinateData[i].clothNotData = temp[i];
                 }
             }
 
@@ -314,13 +314,13 @@ namespace Additional_Card_Info.Classes.Migration
                 var temp = MessagePackSerializer.Deserialize<int[]>((byte[])byteData);
                 for (var i = 0; i < 7; i++)
                 {
-                    coordinateData[i].RestrictionData.GenderType = temp[i];
+                    coordinateData[i].restrictionData.genderType = temp[i];
                 }
             }
 
             if (aciData.data.TryGetValue("Cosplay_Academy_Ready", out byteData) && byteData != null)
             {
-                cardInfo.CosplayReady = MessagePackSerializer.Deserialize<bool>((byte[])byteData);
+                cardInfo.cosplayReady = MessagePackSerializer.Deserialize<bool>((byte[])byteData);
             }
         }
 
@@ -363,20 +363,20 @@ namespace Additional_Card_Info.Classes.Migration
 
             var pluginData = new PluginData { version = 2 };
             var slotDict = new Dictionary<int, SlotData>();
-            foreach (var item in infoV1.AccKeep)
+            foreach (var item in infoV1.accKeep)
             {
-                slotDict[item] = new SlotData { KeepState = KeepState.NonHairKeep };
+                slotDict[item] = new SlotData { keepState = KeepState.NonHairKeep };
             }
 
-            foreach (var item in infoV1.HairAcc)
+            foreach (var item in infoV1.hairAcc)
             {
                 if (slotDict.TryGetValue(item, out var slotData))
                 {
-                    slotData.KeepState = KeepState.HairKeep;
+                    slotData.keepState = KeepState.HairKeep;
                     continue;
                 }
 
-                slotDict[item] = new SlotData { KeepState = KeepState.HairKeep };
+                slotDict[item] = new SlotData { keepState = KeepState.HairKeep };
             }
 
             var parts = file.accessory.parts;
@@ -388,28 +388,28 @@ namespace Additional_Card_Info.Classes.Migration
                 }
 
                 pluginData.data[Constants.AccessoryKey] = item.Value.Serialize();
-                parts[item.Key].SetExtendedDataById(Settings.GUID, pluginData);
+                parts[item.Key].SetExtendedDataById(Settings.Guid, pluginData);
             }
 
             pluginData.data.Clear();
 
-            file.accessory.SetExtendedDataById(Settings.GUID, new CoordinateInfo
+            file.accessory.SetExtendedDataById(Settings.Guid, new CoordinateInfo
             {
-                ClothNotData = infoV1.ClothNotData,
-                CoordinateSaveBools = infoV1.CoordinateSaveBools,
-                CreatorNames = infoV1.CreatorNames,
-                MakeUpKeep = infoV1.MakeUpKeep,
-                RestrictionData = infoV1.RestrictionData,
-                SetNames = infoV1.SetNames,
-                SubSetNames = infoV1.SubSetNames,
-                AdvancedFolder = advancedDirect
+                clothNotData = infoV1.clothNotData,
+                coordinateSaveBools = infoV1.coordinateSaveBools,
+                creatorNames = infoV1.creatorNames,
+                makeUpKeep = infoV1.makeUpKeep,
+                restrictionData = infoV1.restrictionData,
+                setNames = infoV1.setNames,
+                subSetNames = infoV1.subSetNames,
+                advancedFolder = advancedDirect
             }.Serialize());
         }
 
         private static CoordinateInfoV1 StandardCoordinateMigrateV0(PluginData aciData)
         {
             var coordinateInfoV1 = new CoordinateInfoV1();
-            var restrictionInfo = coordinateInfoV1.RestrictionData;
+            var restrictionInfo = coordinateInfoV1.restrictionData;
 
             foreach (var valuePair in aciData.data)
             {
@@ -417,7 +417,7 @@ namespace Additional_Card_Info.Classes.Migration
                 switch (valuePair.Key)
                 {
                     case "HairAcc":
-                        coordinateInfoV1.HairAcc = MessagePackSerializer.Deserialize<List<int>>(byteData);
+                        coordinateInfoV1.hairAcc = MessagePackSerializer.Deserialize<List<int>>(byteData);
                         break;
                     case "CoordinateSaveBools":
                         var boolRef = MessagePackSerializer.Deserialize<bool[]>(byteData);
@@ -426,22 +426,22 @@ namespace Additional_Card_Info.Classes.Migration
                             boolRef = new bool[9];
                         }
 
-                        coordinateInfoV1.CoordinateSaveBools = boolRef;
+                        coordinateInfoV1.coordinateSaveBools = boolRef;
                         break;
                     case "AccKeep":
-                        coordinateInfoV1.AccKeep = MessagePackSerializer.Deserialize<List<int>>(byteData);
+                        coordinateInfoV1.accKeep = MessagePackSerializer.Deserialize<List<int>>(byteData);
                         break;
                     case "CoordinateType":
-                        restrictionInfo.CoordinateType = MessagePackSerializer.Deserialize<int>(byteData) + 1;
+                        restrictionInfo.coordinateType = MessagePackSerializer.Deserialize<int>(byteData) + 1;
                         break;
                     case "CoordinateSubType":
-                        restrictionInfo.CoordinateSubType = MessagePackSerializer.Deserialize<int>(byteData) + 1;
+                        restrictionInfo.coordinateSubType = MessagePackSerializer.Deserialize<int>(byteData) + 1;
                         break;
                     case "Set_Name":
-                        coordinateInfoV1.SetNames = MessagePackSerializer.Deserialize<string>(byteData) ?? string.Empty;
+                        coordinateInfoV1.setNames = MessagePackSerializer.Deserialize<string>(byteData) ?? string.Empty;
                         break;
                     case "SubSetNames":
-                        coordinateInfoV1.SubSetNames =
+                        coordinateInfoV1.subSetNames =
                             MessagePackSerializer.Deserialize<string>(byteData) ?? string.Empty;
                         break;
                     case "ClothNot":
@@ -451,13 +451,13 @@ namespace Additional_Card_Info.Classes.Migration
                             notRef = new bool[3];
                         }
 
-                        coordinateInfoV1.ClothNotData = notRef;
+                        coordinateInfoV1.clothNotData = notRef;
                         break;
                     case "GenderType":
-                        restrictionInfo.GenderType = MessagePackSerializer.Deserialize<int>(byteData);
+                        restrictionInfo.genderType = MessagePackSerializer.Deserialize<int>(byteData);
                         break;
                     case "Creator":
-                        var list = coordinateInfoV1.CreatorNames = new List<string>();
+                        var list = coordinateInfoV1.creatorNames = new List<string>();
                         var temp = MessagePackSerializer.Deserialize<string>(byteData);
                         if (!temp.IsNullOrEmpty())
                         {
@@ -466,26 +466,26 @@ namespace Additional_Card_Info.Classes.Migration
 
                         break;
                     case "Interest_Restriction":
-                        restrictionInfo.Interest_Restriction =
+                        restrictionInfo.InterestRestriction =
                             MessagePackSerializer.Deserialize<Dictionary<int, int>>(byteData) ??
                             new Dictionary<int, int>();
                         break;
                     case "PersonalityType_Restriction":
-                        restrictionInfo.PersonalityType_Restriction =
+                        restrictionInfo.PersonalityTypeRestriction =
                             MessagePackSerializer.Deserialize<Dictionary<int, int>>(byteData) ??
                             new Dictionary<int, int>();
                         break;
                     case "TraitType_Restriction":
-                        restrictionInfo.TraitType_Restriction =
+                        restrictionInfo.TraitTypeRestriction =
                             MessagePackSerializer.Deserialize<Dictionary<int, int>>(byteData) ??
                             new Dictionary<int, int>();
                         break;
                     case "HstateType_Restriction":
-                        restrictionInfo.HStateType_Restriction =
+                        restrictionInfo.hStateTypeRestriction =
                             MessagePackSerializer.Deserialize<int>(byteData);
                         break;
                     case "ClubType_Restriction":
-                        restrictionInfo.ClubType_Restriction = MessagePackSerializer.Deserialize<int>(byteData);
+                        restrictionInfo.clubTypeRestriction = MessagePackSerializer.Deserialize<int>(byteData);
                         break;
                     case "Height_Restriction":
                         boolRef = MessagePackSerializer.Deserialize<bool[]>(byteData);
@@ -494,7 +494,7 @@ namespace Additional_Card_Info.Classes.Migration
                             boolRef = new bool[3];
                         }
 
-                        restrictionInfo.Height_Restriction = boolRef;
+                        restrictionInfo.heightRestriction = boolRef;
                         break;
                     case "Breastsize_Restriction":
                         boolRef = MessagePackSerializer.Deserialize<bool[]>(byteData);
@@ -503,7 +503,7 @@ namespace Additional_Card_Info.Classes.Migration
                             boolRef = new bool[3];
                         }
 
-                        restrictionInfo.BreastSize_Restriction = boolRef;
+                        restrictionInfo.breastSizeRestriction = boolRef;
                         break;
                 }
             }
@@ -520,17 +520,17 @@ namespace Additional_Card_Info.Classes.Migration
         [MessagePackObject]
         public class CardInfoV1 : IMessagePackSerializationCallbackReceiver
         {
-            [Key("_cosplayready")]
-            public bool CosplayReady;
+            [FormerlySerializedAs("CosplayReady")] [Key("_cosplayready")]
+            public bool cosplayReady;
 
-            [Key("_advdir")]
-            public bool AdvancedDirectory;
+            [FormerlySerializedAs("AdvancedDirectory")] [Key("_advdir")]
+            public bool advancedDirectory;
 
-            [Key("_personalsavebool")]
-            public bool[] PersonalClothingBools;
+            [FormerlySerializedAs("PersonalClothingBools")] [Key("_personalsavebool")]
+            public bool[] personalClothingBools;
 
-            [Key("_simpledirectory")]
-            public string SimpleFolderDirectory;
+            [FormerlySerializedAs("SimpleFolderDirectory")] [Key("_simpledirectory")]
+            public string simpleFolderDirectory;
 
             [Key("_advdirectory")]
             public Dictionary<string, string> AdvancedFolderDirectory;
@@ -546,9 +546,9 @@ namespace Additional_Card_Info.Classes.Migration
 
             private void NullCheck()
             {
-                SimpleFolderDirectory = SimpleFolderDirectory ?? string.Empty;
+                simpleFolderDirectory = simpleFolderDirectory ?? string.Empty;
                 AdvancedFolderDirectory = AdvancedFolderDirectory ?? new Dictionary<string, string>();
-                PersonalClothingBools = PersonalClothingBools ?? new bool[9];
+                personalClothingBools = personalClothingBools ?? new bool[9];
             }
 
             public PluginData Serialize() =>
@@ -575,14 +575,14 @@ namespace Additional_Card_Info.Classes.Migration
 
             private void NullCheck()
             {
-                ClothNotData = ClothNotData ?? new bool[3];
-                CoordinateSaveBools = CoordinateSaveBools ?? new bool[9];
-                AccKeep = AccKeep ?? new List<int>();
-                HairAcc = HairAcc ?? new List<int>();
-                CreatorNames = CreatorNames ?? new List<string>();
-                SetNames = SetNames ?? string.Empty;
-                SubSetNames = SubSetNames ?? string.Empty;
-                RestrictionData = RestrictionData ?? new RestrictionData();
+                clothNotData = clothNotData ?? new bool[3];
+                coordinateSaveBools = coordinateSaveBools ?? new bool[9];
+                accKeep = accKeep ?? new List<int>();
+                hairAcc = hairAcc ?? new List<int>();
+                creatorNames = creatorNames ?? new List<string>();
+                setNames = setNames ?? string.Empty;
+                subSetNames = subSetNames ?? string.Empty;
+                restrictionData = restrictionData ?? new RestrictionData();
             }
 
             public PluginData Serialize() =>
@@ -601,33 +601,34 @@ namespace Additional_Card_Info.Classes.Migration
 
             #region fields
 
-            [Key("_makeup")]
-            public bool MakeUpKeep;
+            [FormerlySerializedAs("MakeUpKeep")] [Key("_makeup")]
+            public bool makeUpKeep;
 
-            [Key("_clothnot")]
-            public bool[] ClothNotData;
+            [FormerlySerializedAs("ClothNotData")] [Key("_clothnot")]
+            public bool[] clothNotData;
 
-            [Key("_coordsavebool")]
-            public bool[] CoordinateSaveBools;
+            [FormerlySerializedAs("CoordinateSaveBools")] [Key("_coordsavebool")]
+            public bool[] coordinateSaveBools;
 
-            [Key("_acckeep")]
-            public List<int> AccKeep;
+            [FormerlySerializedAs("AccKeep")] [Key("_acckeep")]
+            public List<int> accKeep;
 
-            [Key("_hairkeep")]
-            public List<int> HairAcc;
+            [FormerlySerializedAs("HairAcc")] [Key("_hairkeep")]
+            public List<int> hairAcc;
 
-            [Key("_creatornames")]
-            public List<string> CreatorNames;
+            [FormerlySerializedAs("CreatorNames")] [Key("_creatornames")]
+            public List<string> creatorNames;
 
-            [Key("_set")]
-            public string SetNames;
+            [FormerlySerializedAs("SetNames")] [Key("_set")]
+            public string setNames;
 
-            [Key("_subset")]
-            public string SubSetNames;
+            [FormerlySerializedAs("SubSetNames")] [Key("_subset")]
+            public string subSetNames;
 
+            [FormerlySerializedAs("RestrictionData")]
             [FormerlySerializedAs("RestrictionInfo")]
             [Key("_restrictioninfo")]
-            public RestrictionData RestrictionData;
+            public RestrictionData restrictionData;
 
             #endregion
         }

@@ -1,11 +1,10 @@
-﻿using BepInEx;
-using KKAPI.Maker;
+﻿using KKAPI.Maker;
 using KKAPI.Studio;
 using static Extensions.OnGUIExtensions;
 
 namespace Accessory_States
 {
-    public partial class Settings : BaseUnityPlugin
+    public partial class Settings
     {
         private bool _initialized;
 
@@ -38,15 +37,10 @@ namespace Accessory_States
                 //disable OnGui and Update calls when not in maker for main game Initialize styles first, if in studio don't disable
                 if (!StudioAPI.InsideStudio)
 #endif
-                {
                     enabled = false;
-                }
             }
 
-            if (MakerAPI.IsInterfaceVisible())
-            {
-                MakerGUI.Instance?.OnGUI();
-            }
+            if (MakerAPI.IsInterfaceVisible()) MakerGUI.Instance?.OnGUI();
 
             StudioGUI.Instance?.OnGUI();
         }

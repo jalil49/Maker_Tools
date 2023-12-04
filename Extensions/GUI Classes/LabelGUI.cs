@@ -6,19 +6,19 @@ namespace Extensions.GUI_Classes
 {
     public class LabelGUI
     {
+        public GUILayoutOption[] LayoutOptions;
+        public GUIStyle Style;
         public string Text = "Default Text";
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
 
         public LabelGUI()
         {
-            style = LabelStyle;
+            Style = LabelStyle;
         }
 
         public void Draw()
         {
             BeginVertical();
-            GUILayout.Label(Text, style, layoutOptions);
+            Label(Text, Style, LayoutOptions);
             EndVertical();
         }
     }

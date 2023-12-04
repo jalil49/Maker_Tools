@@ -7,13 +7,13 @@ using KKAPI.Studio;
 
 namespace Accessory_Themes
 {
-    [BepInPlugin(GUID, "Accessory Themes", Version)]
+    [BepInPlugin(Guid, "Accessory Themes", Version)]
     [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
-    [BepInDependency(Additional_Card_Info.Settings.GUID, Additional_Card_Info.Settings.Version)]
+    [BepInDependency(Additional_Card_Info.Settings.Guid, Additional_Card_Info.Settings.Version)]
     [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
     public partial class Settings : BaseUnityPlugin
     {
-        public const string GUID = "Accessory_Themes";
+        public const string Guid = "Accessory_Themes";
         public const string Version = "2.0";
         internal static Settings Instance;
         internal static new ManualLogSource Logger;
@@ -27,7 +27,7 @@ namespace Accessory_Themes
 
             if (StudioAPI.InsideStudio) return;
 
-            CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
+            CharacterApi.RegisterExtraBehaviour<CharaEvent>(Guid);
             Hooks.Init(Logger);
 
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "3", "Requires restarting maker");

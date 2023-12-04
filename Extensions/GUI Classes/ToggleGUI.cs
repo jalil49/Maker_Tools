@@ -4,14 +4,14 @@ using static Extensions.OnGUIExtensions;
 
 namespace Extensions.GUI_Classes
 {
-    public class ToggleGUI
+    public class ToggleGUI<T> where T:Enum
     {
         private readonly GUILayoutOption[] _layoutOptions;
         private readonly GUIStyle _style;
         public Action<bool> OnToggle;
-        public string Text;
+        public T Text;
 
-        public ToggleGUI(bool value, string text, params GUILayoutOption[] options)
+        public ToggleGUI(bool value, T text, params GUILayoutOption[] options)
         {
             Value = value;
             Text = text;
@@ -23,7 +23,7 @@ namespace Extensions.GUI_Classes
 
         public void Draw()
         {
-            if (GUILayout.Toggle(Value, Text, _style, _layoutOptions) ^ Value) //xor operator
+            if (GUILayout.Toggle(Value, Text.ToString(), _style, _layoutOptions) ^ Value) //xor operator
             {
                 Value = !Value;
                 OnToggle?.Invoke(Value);

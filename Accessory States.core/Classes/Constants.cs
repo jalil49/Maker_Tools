@@ -4,9 +4,14 @@ namespace Accessory_States
 {
     public static class Constants
     {
+        public const string CoordinateKey = "CoordinateData";
+        public const string AccessoryKey = "SlotData";
+        public const int SaveVersion = 2;
+        public const int ClothingLength = 8;
+
         public static string GetClothingName(int clothNum)
         {
-            switch(clothNum)
+            switch (clothNum)
             {
                 case -1:
                     return "None";
@@ -39,23 +44,19 @@ namespace Accessory_States
 
         public static List<NameData> GetNameDataList()
         {
-            var states = new Dictionary<int, string>()
+            var states = new Dictionary<int, string>
             {
                 [0] = "Full",
                 [1] = "Shift",
                 [2] = "Hang",
-                [3] = "Naked",
+                [3] = "Naked"
             };
 
             var list = new List<NameData>();
-            for(var i = -1; i < ClothingLength; i++)
-                list.Add(new NameData() { Name = GetClothingName(i), StateNames = states, Binding = i, StopCollision = false });
+            for (var i = -1; i < ClothingLength; i++)
+                list.Add(new NameData
+                    { Name = GetClothingName(i), StateNames = states, binding = i, stopCollision = false });
             return list;
         }
-
-        public const string CoordinateKey = "CoordinateData";
-        public const string AccessoryKey = "SlotData";
-        public const int SaveVersion = 2;
-        public const int ClothingLength = 8;
     }
 }

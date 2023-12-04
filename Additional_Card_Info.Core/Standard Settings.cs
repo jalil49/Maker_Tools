@@ -9,12 +9,12 @@ using KKAPI.Studio;
 
 namespace Additional_Card_Info
 {
-    [BepInPlugin(GUID, "Additional Card Info", Version)]
+    [BepInPlugin(Guid, "Additional Card Info", Version)]
     [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
     [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
     public partial class Settings : BaseUnityPlugin
     {
-        public const string GUID = "Additional_Card_Info";
+        public const string Guid = "Additional_Card_Info";
         public const string Version = "2.0";
         internal static Settings Instance;
         internal new static ManualLogSource Logger;
@@ -31,7 +31,7 @@ namespace Additional_Card_Info
                 return;
             }
 
-            CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
+            CharacterApi.RegisterExtraBehaviour<CharaEvent>(Guid);
             StartCoroutine(DelayedInit());
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "4", "Requires restarting maker");
             CreatorName = Config.Bind("User", "Creator", string.Empty,

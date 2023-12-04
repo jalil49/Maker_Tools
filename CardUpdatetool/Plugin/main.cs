@@ -18,29 +18,29 @@ namespace CardUpdateTool
             OutfitData.Clear();
             GuidList.Clear();
             StaticMaxVersion.Clear();
-            ShowGui = false;
+            _showGui = false;
         }
 
         internal void Starting()
         {
-            CharacterPath = new DirectoryInfo(UserData.Path).FullName + "chara";
+            _characterPath = new DirectoryInfo(UserData.Path).FullName + "chara";
             switch (MakerAPI.GetMakerSex())
             {
                 case 0:
-                    CharacterPath += @"\male";
+                    _characterPath += @"\male";
                     break;
                 case 1:
-                    CharacterPath += @"\female";
+                    _characterPath += @"\female";
                     break;
             }
-            CharacterPath = Path.GetFullPath(CharacterPath);
+            _characterPath = Path.GetFullPath(_characterPath);
             GetAllGuids();
         }
 
         internal void Register(object sender, RegisterSubCategoriesEvent e)
         {
-            toggle = e.AddSidebarControl(new SidebarToggle("Card Update Tool", ShowGui, Instance));
-            toggle.ValueChanged.Subscribe(X => ShowGui = X);
+            _toggle = e.AddSidebarControl(new SidebarToggle("Card Update Tool", _showGui, Instance));
+            _toggle.ValueChanged.Subscribe(x => _showGui = x);
         }
 
         private void UpdateOutmiss()
@@ -58,8 +58,8 @@ namespace CardUpdateTool
             }
             foreach (var guid in StaticMaxVersion.Where(x => !x.Value.CharaVisible || !x.Value.OutfitVisible))
             {
-                guid.Value.CharaVisible = guid.Value.CharaVisible || CharacterList.Any(x => x.Plugin_data.ContainsKey(guid.Key));
-                guid.Value.OutfitVisible = guid.Value.OutfitVisible || OutfitList.Any(x => x.Plugin_data.ContainsKey(guid.Key));
+                guid.Value.CharaVisible = guid.Value.CharaVisible || CharacterList.Any(x => x.PluginData.ContainsKey(guid.Key));
+                guid.Value.OutfitVisible = guid.Value.OutfitVisible || OutfitList.Any(x => x.PluginData.ContainsKey(guid.Key));
             }
         }
 
@@ -72,9 +72,9 @@ namespace CardUpdateTool
 
         internal static string InterceptSave(string path)
         {
-            if (interceptsave)
+            if (_interceptsave)
             {
-                return interceptpath;
+                return _interceptpath;
             }
             return path;
         }
@@ -82,7 +82,7 @@ namespace CardUpdateTool
         internal static void DeleteIntercept(string path)
         {
             WaitForSave = false;
-            if (!interceptsave || path == interceptpath)//just in case there are other attempts during save. 
+            if (!_interceptsave || path == _interceptpath)//just in case there are other attempts during save. 
             {
                 return;
             }
@@ -97,14 +97,14 @@ namespace CardUpdateTool
 
             foreach (var maxdatainfo in StaticMaxVersion)
             {
-                var charafilter = CharacterList.Where(x => !x.MissingMods && !x.OutdatedMods && x.Plugin_data.ContainsKey(maxdatainfo.Key));
-                var outfitfilter = OutfitList.Where(x => !x.MissingMods && !x.OutdatedMods && x.Plugin_data.ContainsKey(maxdatainfo.Key));
+                var charafilter = CharacterList.Where(x => !x.MissingMods && !x.OutdatedMods && x.PluginData.ContainsKey(maxdatainfo.Key));
+                var outfitfilter = OutfitList.Where(x => !x.MissingMods && !x.OutdatedMods && x.PluginData.ContainsKey(maxdatainfo.Key));
 
-                maxdatainfo.Value.CharaUpToDate = charafilter.Count(x => x.Plugin_data[maxdatainfo.Key] == maxdatainfo.Value.version);
-                maxdatainfo.Value.CharaOutdatedCount = charafilter.Count(x => x.Plugin_data[maxdatainfo.Key] < maxdatainfo.Value.version);
+                maxdatainfo.Value.CharaUpToDate = charafilter.Count(x => x.PluginData[maxdatainfo.Key] == maxdatainfo.Value.Version);
+                maxdatainfo.Value.CharaOutdatedCount = charafilter.Count(x => x.PluginData[maxdatainfo.Key] < maxdatainfo.Value.Version);
 
-                maxdatainfo.Value.OutfitsUpToDate = outfitfilter.Count(x => x.Plugin_data[maxdatainfo.Key] == maxdatainfo.Value.version);
-                maxdatainfo.Value.OutfitOutdatedCount = outfitfilter.Count(x => x.Plugin_data[maxdatainfo.Key] < maxdatainfo.Value.version);
+                maxdatainfo.Value.OutfitsUpToDate = outfitfilter.Count(x => x.PluginData[maxdatainfo.Key] == maxdatainfo.Value.Version);
+                maxdatainfo.Value.OutfitOutdatedCount = outfitfilter.Count(x => x.PluginData[maxdatainfo.Key] < maxdatainfo.Value.Version);
             }
 
             OutfitData.PrintOrder = StaticMaxVersion.OrderBy(x => !x.Value.AnyOutfitOutdated).ThenByDescending(x => x.Value.OutfitOutdatedCount).ThenBy(x => x.Value.Name).Select(x => x.Key).ToList();
@@ -115,34 +115,34 @@ namespace CardUpdateTool
         {
             UpdateVisibleGuids();
             UpdateOutmiss();
-            UpdateInProgress = false;
-            ForceStop = false;
-            interceptsave = false;
+            _updateInProgress = false;
+            _forceStop = false;
+            _interceptsave = false;
         }
 
-        private void CharacterCardCheck(string StartPath)
+        private void CharacterCardCheck(string startPath)
         {
-            CharacterData.CardInfoListConvert(DirectoryFinder.Get_Cards_From_Path(StartPath));
-            StartCoroutine(test());
+            CharacterData.CardInfoListConvert(DirectoryFinder.Get_Cards_From_Path(startPath));
+            StartCoroutine(Test());
 
-            IEnumerator<int> test()
+            IEnumerator<int> Test()
             {
-                UpdateInProgress = true;
+                _updateInProgress = true;
                 var testcontrol = new ChaFile();
-                InProgressCount = 0;
-                ProgressTotal = CharacterList.Count;
+                _inProgressCount = 0;
+                _progressTotal = CharacterList.Count;
 
-                var csv = OpenCSV(StartPath);
-                if (csv == null) ForceStop = true;
+                var csv = OpenCsv(startPath);
+                if (csv == null) _forceStop = true;
 
-                for (; InProgressCount < ProgressTotal && !ForceStop; InProgressCount++)
+                for (; _inProgressCount < _progressTotal && !_forceStop; _inProgressCount++)
                 {
-                    if (InProgressCount % 50 == 0)
+                    if (_inProgressCount % 50 == 0)
                         yield return 0;
 
                     Migrateable = NeedUpdate = BlackList = false;
 
-                    var card = CharacterList[InProgressCount];
+                    var card = CharacterList[_inProgressCount];
                     Waitforresolver = true;
 
                     testcontrol.LoadFile(card.Path);
@@ -154,55 +154,55 @@ namespace CardUpdateTool
 
                     if (testcontrol.lastLoadErrorCode != 0)
                     {
-                        card.lasterror = testcontrol.lastLoadErrorCode;
-                        MoveToNewDirectory(StartPath, card, "/BadCardData/", ref csv);
-                        CharacterList.RemoveAt(InProgressCount);
-                        InProgressCount--;
-                        ProgressTotal--;
+                        card.Lasterror = testcontrol.lastLoadErrorCode;
+                        MoveToNewDirectory(startPath, card, "/BadCardData/", ref csv);
+                        CharacterList.RemoveAt(_inProgressCount);
+                        _inProgressCount--;
+                        _progressTotal--;
                     }
                     else
                         Dataloading(ref card, ExtendedSave.GetAllExtendedData(testcontrol));
 
                     if (NeedUpdate || BlackList)
                     {
-                        AddToCSV(ref csv, card.Path, CSVLine(card, card.Path));
+                        AddToCsv(ref csv, card.Path, CsvLine(card, card.Path));
                     }
 
-                    if (ForceStop)
+                    if (_forceStop)
                     {
-                        var removecount = ProgressTotal - InProgressCount;
+                        var removecount = _progressTotal - _inProgressCount;
                         if (removecount > 0)
-                            CharacterList.RemoveRange(InProgressCount, removecount);
+                            CharacterList.RemoveRange(_inProgressCount, removecount);
                     }
                 }
-                if (csv != null) WriteCSV(StartPath, csv);
+                if (csv != null) WriteCsv(startPath, csv);
                 Stopcommand();
             }
         }
 
-        private void OutfitCardCheck(string StartPath)
+        private void OutfitCardCheck(string startPath)
         {
-            OutfitData.CardInfoListConvert(DirectoryFinder.Get_Cards_From_Path(StartPath));
+            OutfitData.CardInfoListConvert(DirectoryFinder.Get_Cards_From_Path(startPath));
 
-            StartCoroutine(test());
-            IEnumerator<int> test()
+            StartCoroutine(Test());
+            IEnumerator<int> Test()
             {
-                UpdateInProgress = true;
+                _updateInProgress = true;
                 var testcontrol = new ChaFileCoordinate();
-                InProgressCount = 0;
-                ProgressTotal = OutfitList.Count;
+                _inProgressCount = 0;
+                _progressTotal = OutfitList.Count;
 
-                var csv = OpenCSV(StartPath);
-                if (csv == null) ForceStop = true;
+                var csv = OpenCsv(startPath);
+                if (csv == null) _forceStop = true;
 
-                for (; InProgressCount < ProgressTotal && !ForceStop; InProgressCount++)
+                for (; _inProgressCount < _progressTotal && !_forceStop; _inProgressCount++)
                 {
-                    if (InProgressCount % 50 == 0)
+                    if (_inProgressCount % 50 == 0)
                         yield return 0;
 
                     Migrateable = NeedUpdate = BlackList = false;
 
-                    var card = OutfitList[InProgressCount];
+                    var card = OutfitList[_inProgressCount];
                     Waitforresolver = true;
 
                     testcontrol.LoadFile(card.Path);
@@ -215,12 +215,12 @@ namespace CardUpdateTool
 
                     if (testcontrol.lastLoadErrorCode != 0)
                     {
-                        card.lasterror = testcontrol.lastLoadErrorCode;
+                        card.Lasterror = testcontrol.lastLoadErrorCode;
 
-                        MoveToNewDirectory(StartPath, card, "/BadCardData/", ref csv);
-                        OutfitList.RemoveAt(InProgressCount);
-                        InProgressCount--;
-                        ProgressTotal--;
+                        MoveToNewDirectory(startPath, card, "/BadCardData/", ref csv);
+                        OutfitList.RemoveAt(_inProgressCount);
+                        _inProgressCount--;
+                        _progressTotal--;
                         continue;
                     }
 
@@ -228,17 +228,17 @@ namespace CardUpdateTool
 
                     if (NeedUpdate || BlackList)
                     {
-                        AddToCSV(ref csv, card.Path, CSVLine(card, card.Path));
+                        AddToCsv(ref csv, card.Path, CsvLine(card, card.Path));
                     }
 
-                    if (ForceStop)
+                    if (_forceStop)
                     {
-                        var removecount = ProgressTotal - InProgressCount;
+                        var removecount = _progressTotal - _inProgressCount;
                         if (removecount > 0)
-                            OutfitList.RemoveRange(InProgressCount, removecount);
+                            OutfitList.RemoveRange(_inProgressCount, removecount);
                     }
                 }
-                if (csv != null) WriteCSV(StartPath, csv);
+                if (csv != null) WriteCsv(startPath, csv);
                 Stopcommand();
             }
         }
@@ -246,20 +246,20 @@ namespace CardUpdateTool
         private IEnumerator CharactersCardsUpdate(List<CardInfo> cardInfos, bool coordinates)
         {
             var sing = MakerAPI.GetMakerBase();
-            UpdateInProgress = true;
+            _updateInProgress = true;
             var testcontrol = new ChaFile();
 
-            InProgressCount = 0;
-            ProgressTotal = cardInfos.Count();
+            _inProgressCount = 0;
+            _progressTotal = cardInfos.Count();
 
-            var csv = OpenCSV(CharacterPath);
-            if (csv == null) ForceStop = true;
+            var csv = OpenCsv(_characterPath);
+            if (csv == null) _forceStop = true;
 
-            for (; !ForceStop && InProgressCount < ProgressTotal; InProgressCount++)
+            for (; !_forceStop && _inProgressCount < _progressTotal; _inProgressCount++)
             {
-                var reference = cardInfos[InProgressCount];
+                var reference = cardInfos[_inProgressCount];
 
-                if (InProgressCount % 50 == 0)
+                if (_inProgressCount % 50 == 0)
                     yield return 0;
 
                 var card = CharacterList.First(x => x == reference);
@@ -302,10 +302,10 @@ namespace CardUpdateTool
                     }
                 }
 
-                if (Pause)
+                if (_pause)
                 {
-                    Waiting = true;
-                    while (Waiting) yield return 0;
+                    _waiting = true;
+                    while (_waiting) yield return 0;
                 }
 
                 WaitForSave = true;
@@ -332,10 +332,10 @@ namespace CardUpdateTool
 
                 if (NeedUpdate || BlackList)
                 {
-                    AddToCSV(ref csv, card.Path, CSVLine(card, card.Path));
+                    AddToCsv(ref csv, card.Path, CsvLine(card, card.Path));
                 }
             }
-            if (csv != null) WriteCSV(CharacterPath, csv);
+            if (csv != null) WriteCsv(_characterPath, csv);
             Stopcommand();
         }
 
@@ -343,21 +343,21 @@ namespace CardUpdateTool
         {
             var sing = MakerAPI.GetMakerBase();
 
-            UpdateInProgress = true;
+            _updateInProgress = true;
             var testcontrol = new ChaFileCoordinate();
-            InProgressCount = 0;
-            ProgressTotal = cardInfos.Count();
-            interceptsave = true;
+            _inProgressCount = 0;
+            _progressTotal = cardInfos.Count();
+            _interceptsave = true;
 
-            var csv = OpenCSV(CharacterPath);
-            if (csv == null) ForceStop = true;
+            var csv = OpenCsv(_characterPath);
+            if (csv == null) _forceStop = true;
 
-            for (; !ForceStop && InProgressCount < ProgressTotal; InProgressCount++)
+            for (; !_forceStop && _inProgressCount < _progressTotal; _inProgressCount++)
             {
-                if (InProgressCount % 50 == 0)
+                if (_inProgressCount % 50 == 0)
                     yield return 0;
 
-                var reference = cardInfos[InProgressCount];
+                var reference = cardInfos[_inProgressCount];
                 var card = OutfitList.First(x => x == reference);
 
                 Waitforresolver = true;
@@ -380,17 +380,17 @@ namespace CardUpdateTool
                     yield return 0;
                 }
 
-                if (Pause)
+                if (_pause)
                 {
-                    Waiting = true;
-                    while (Waiting) yield return 0;
+                    _waiting = true;
+                    while (_waiting) yield return 0;
                 }
 
                 WaitForSave = true;
-                interceptpath = Path.GetFullPath(card.Path);
-                coordinate.pngData = PngFile.LoadPngBytes(interceptpath);
-                File.Delete(interceptpath);//delete so recyclebin mod will move it; will just be replaced otherwise
-                coordinate.SaveFile(interceptpath);
+                _interceptpath = Path.GetFullPath(card.Path);
+                coordinate.pngData = PngFile.LoadPngBytes(_interceptpath);
+                File.Delete(_interceptpath);//delete so recyclebin mod will move it; will just be replaced otherwise
+                coordinate.SaveFile(_interceptpath);
 
                 while (WaitForSave)
                 {
@@ -411,10 +411,10 @@ namespace CardUpdateTool
 
                 if (NeedUpdate || BlackList)
                 {
-                    AddToCSV(ref csv, card.Path, CSVLine(card, card.Path));
+                    AddToCsv(ref csv, card.Path, CsvLine(card, card.Path));
                 }
             }
-            if (csv != null) WriteCSV(CoordinatePath, csv);
+            if (csv != null) WriteCsv(_coordinatePath, csv);
             Stopcommand();
         }
 
@@ -433,20 +433,20 @@ namespace CardUpdateTool
             }
         }
 
-        private bool UpdateByGuid(CardInfo card, string GUID, bool missingdata)
+        private bool UpdateByGuid(CardInfo card, string guid, bool missingdata)
         {
             if (card.MissingMods || card.OutdatedMods)
             {
                 return false;
             }
-            var containsdata = card.Plugin_data.TryGetValue(GUID, out var version);
+            var containsdata = card.PluginData.TryGetValue(guid, out var version);
 
-            var updateversion = missingdata && !containsdata || containsdata && version < StaticMaxVersion[GUID].version;
+            var updateversion = missingdata && !containsdata || containsdata && version < StaticMaxVersion[guid].Version;
 
             return updateversion;
         }
 
-        private List<string> OpenCSV(string path)
+        private List<string> OpenCsv(string path)
         {
             path = Path.GetFullPath(path + "/CardUpdateTool.csv");
 
@@ -495,15 +495,15 @@ namespace CardUpdateTool
             return null;
         }
 
-        private void MoveToNewDirectory(string startpath, CardInfo card, string Dest, ref List<string> stringlist)
+        private void MoveToNewDirectory(string startpath, CardInfo card, string dest, ref List<string> stringlist)
         {
             var source = card.Path;
-            var newlocation = Path.GetFullPath(startpath + source.Replace(startpath, Dest));
-            var DirectoryName = Path.GetDirectoryName(newlocation);
+            var newlocation = Path.GetFullPath(startpath + source.Replace(startpath, dest));
+            var directoryName = Path.GetDirectoryName(newlocation);
 
-            if (!Directory.Exists(DirectoryName))
+            if (!Directory.Exists(directoryName))
             {
-                Directory.CreateDirectory(DirectoryName);
+                Directory.CreateDirectory(directoryName);
             }
 
             if (File.Exists(newlocation))
@@ -512,12 +512,12 @@ namespace CardUpdateTool
             }
             File.Move(source, newlocation);
 
-            RemovefromCSV(ref stringlist, source);
+            RemovefromCsv(ref stringlist, source);
 
-            AddToCSV(ref stringlist, newlocation, CSVLine(card, newlocation));
+            AddToCsv(ref stringlist, newlocation, CsvLine(card, newlocation));
         }
 
-        private string CSVLine(CardInfo card, string fullpath)
+        private string CsvLine(CardInfo card, string fullpath)
         {
             var result = $"=HYPERLINK(\"{fullpath}\",\"{Path.GetFileName(fullpath)}\");";
             result += $"=HYPERLINK(\"{Path.GetDirectoryName(fullpath)}\");";
@@ -543,11 +543,11 @@ namespace CardUpdateTool
             }
             result += " ;";
 
-            result += $"{card.lasterror} ;";
+            result += $"{card.Lasterror} ;";
             return result;
         }
 
-        private void RemovefromCSV(ref List<string> stringlist, string originalpath)
+        private void RemovefromCsv(ref List<string> stringlist, string originalpath)
         {
             var index = stringlist.FindIndex(x => x.Contains(originalpath));
             if (index < 0)
@@ -557,7 +557,7 @@ namespace CardUpdateTool
             stringlist.RemoveAt(index);
         }
 
-        private void AddToCSV(ref List<string> stringlist, string path, string csvline)
+        private void AddToCsv(ref List<string> stringlist, string path, string csvline)
         {
             var index = stringlist.FindIndex(x => x.Contains(path));
             if (index < 0)
@@ -569,7 +569,7 @@ namespace CardUpdateTool
 
         }
 
-        private void WriteCSV(string path, List<string> csvlist)
+        private void WriteCsv(string path, List<string> csvlist)
         {
             path = Path.GetFullPath(path + "/CardUpdateTool.csv");
             if (!Directory.Exists(Path.GetDirectoryName(path)) || csvlist == null)

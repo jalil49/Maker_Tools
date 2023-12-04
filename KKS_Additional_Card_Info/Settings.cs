@@ -9,7 +9,7 @@ namespace Additional_Card_Info
     [BepInProcess("KoikatsuSunshine")]
     public partial class Settings
     {
-        private void GameUnique()
+        private static void GameUnique()
         {
             ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported;
         }
@@ -17,7 +17,7 @@ namespace Additional_Card_Info
         private static void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData,
                                                            Dictionary<int, int?> coordinateMapping)
         {
-            if (!importedExtendedData.TryGetValue(GUID, out var aciData) || aciData == null || aciData.version > 1)
+            if (!importedExtendedData.TryGetValue(Guid, out var aciData) || aciData == null || aciData.version > 1)
             {
                 return;
             }

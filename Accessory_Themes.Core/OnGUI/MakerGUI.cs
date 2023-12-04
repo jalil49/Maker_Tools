@@ -21,30 +21,30 @@ namespace Accessory_Themes.OnGUI
 
         private ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
 
-        private readonly Dictionary<CharaEvent, CharaEventControl> CharaEventControls;
+        private readonly Dictionary<CharaEvent, CharaEventControl> _charaEventControls;
 
         private static bool _makerEnabled;
 
-        private readonly Stack<Queue<Color>> UndoACCSkew = new Stack<Queue<Color>>();
+        private readonly Stack<Queue<Color>> _undoAccSkew = new Stack<Queue<Color>>();
 
-        private readonly Stack<Queue<Color>> ClothsUndoSkew = new Stack<Queue<Color>>();
+        private readonly Stack<Queue<Color>> _clothsUndoSkew = new Stack<Queue<Color>>();
 
-        private readonly int[] bulkRange = { 0, 1 };
+        private readonly int[] _bulkRange = { 0, 1 };
 
-        private float Tolerance = 0.1F;
-        private float SaturationSlider;
-        private float ValuesSlider;
-        private int SimpleParent;
-        private Color RelativeSkewColor;
-        private readonly HashSet<string> SelectedParents = new HashSet<string>();
-        private readonly WindowGUI SlotWindow;
+        private float _tolerance = 0.1F;
+        private float _saturationSlider;
+        private float _valuesSlider;
+        private int _simpleParent;
+        private Color _relativeSkewColor;
+        private readonly HashSet<string> _selectedParents = new HashSet<string>();
+        private readonly WindowGUI _slotWindow;
 
         private Dictionary<int, SlotData> SlotDataDict => CharaEvent.SlotDataDict;
 
         private MakerGUI(RegisterSubCategoriesEvent e)
         {
 
-            CharaEventControls = new Dictionary<CharaEvent, CharaEventControl>();
+            _charaEventControls = new Dictionary<CharaEvent, CharaEventControl>();
 
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
             AccessoriesApi.SelectedMakerAccSlotChanged += AccessoriesApi_SelectedMakerAccSlotChanged;
@@ -56,7 +56,7 @@ namespace Accessory_Themes.OnGUI
 
             var guiButton = new MakerButton("Themes GUI", category, owner);
             MakerAPI.AddAccessoryWindowControl(guiButton, true);
-            guiButton.OnClick.AddListener(SlotWindow.ToggleShow);
+            guiButton.OnClick.AddListener(_slotWindow.ToggleShow);
 
             var groupingID = "Maker_Tools_" + Settings.NamingID.Value;
             guiButton.GroupingID = groupingID;
@@ -76,7 +76,7 @@ namespace Accessory_Themes.OnGUI
 
         private void ToggleSlotWindow()
         {
-            SlotWindow.ToggleShow();
+            _slotWindow.ToggleShow();
         }
 
         private void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
@@ -126,8 +126,8 @@ namespace Accessory_Themes.OnGUI
             if(theme == null)
                 return;
             var slotData = SlotDataDict;
-            var small = Math.Max(Math.Min(bulkRange[0], bulkRange[1]), 0);
-            var large = Math.Min(Math.Max(bulkRange[0], bulkRange[1]), 0);
+            var small = Math.Max(Math.Min(_bulkRange[0], _bulkRange[1]), 0);
+            var large = Math.Min(Math.Max(_bulkRange[0], _bulkRange[1]), 0);
 
             for(int slot = small, n = large; slot < n; slot++)
             {
@@ -143,7 +143,7 @@ namespace Accessory_Themes.OnGUI
 
                 data.Theme = theme;
 
-                ChangeACCColor(slot, theme);
+                ChangeAccColor(slot, theme);
             }
         }
 
@@ -171,9 +171,9 @@ namespace Accessory_Themes.OnGUI
 
             var slotData = GetSlotData(slot);
 
-            var BaseColor = Parts[slot].color;
+            var baseColor = Parts[slot].color;
 
-            var theme = new ThemeData($"Gen_Slot {(slot + 1):000}", BaseColor);
+            var theme = new ThemeData($"Gen_Slot {(slot + 1):000}", baseColor);
             CharaEvent.Themes.Add(theme);
 
             slotData.Theme = theme;
@@ -191,7 +191,7 @@ namespace Accessory_Themes.OnGUI
                     continue;
                 }
 
-                if(ColorComparison(BaseColor, Parts[i].color))
+                if(ColorComparison(baseColor, Parts[i].color))
                     GetSlotData(i).Theme = theme;
             }
         }
@@ -210,9 +210,9 @@ namespace Accessory_Themes.OnGUI
             }
         }
 
-        private bool ChangeACCColor(int slot, ThemeData theme)
+        private bool ChangeAccColor(int slot, ThemeData theme)
         {
-            if((!HairAcc.TryGetValue(slot, out var ACISlotInfo) || ACISlotInfo.KeepState != Additional_Card_Info.KeepState.HairKeep))
+            if((!HairAcc.TryGetValue(slot, out var aciSlotInfo) || aciSlotInfo.keepState != Additional_Card_Info.KeepState.HairKeep))
             {
                 var colors = theme.BaseColors;
                 Parts[slot].color = new Color[] { colors[0], colors[1], colors[2], colors[3] };
@@ -228,19 +228,19 @@ namespace Accessory_Themes.OnGUI
             CharaEvent.UpdatePluginData();
         }
 
-        private void ColorSetByParent(ThemeData theme, bool Simple = false)
+        private void ColorSetByParent(ThemeData theme, bool simple = false)
         {
             //TODO: Fix
 
             string[] comparison;
 
-            if(Simple)
+            if(simple)
             {
-                comparison = Constants.Inclusion[SimpleParent].ToArray();
+                comparison = Constants.Inclusion[_simpleParent].ToArray();
             }
             else
             {
-                comparison = SelectedParents.ToArray();
+                comparison = _selectedParents.ToArray();
             }
 
             for(int slot = 0, n = Parts.Length; slot < n; slot++)
@@ -257,23 +257,23 @@ namespace Accessory_Themes.OnGUI
                     SlotDataDict[slot] = slotData = new SlotData();
                 }
 
-                if(ChangeACCColor(slot, theme))
+                if(ChangeAccColor(slot, theme))
                 {
                     slotData.Theme = theme;
                 }
             }
         }
 
-        private bool ColorComparison(Color C1, Color C2)
+        private bool ColorComparison(Color c1, Color c2)
         {
-            return Math.Abs(C1.r - C2.r) <= Tolerance && Math.Abs(C1.g - C2.g) <= Tolerance && Math.Abs(C1.b - C2.b) <= Tolerance && Math.Abs(C1.a - C2.a) <= Tolerance;
+            return Math.Abs(c1.r - c2.r) <= _tolerance && Math.Abs(c1.g - c2.g) <= _tolerance && Math.Abs(c1.b - c2.b) <= _tolerance && Math.Abs(c1.a - c2.a) <= _tolerance;
         }
 
-        private bool ColorComparison(Color[] C1, Color[] C2)
+        private bool ColorComparison(Color[] c1, Color[] c2)
         {
             for(var i = 0; i < 4; i++)
             {
-                if(!ColorComparison(C1[i], C2[i]))
+                if(!ColorComparison(c1[i], c2[i]))
                     return false;
             }
 
@@ -283,18 +283,18 @@ namespace Accessory_Themes.OnGUI
         private void RelativeSkew(bool undo = false)
         {
 
-            var input = RelativeSkewColor;
+            var input = _relativeSkewColor;
 
-            Color.RGBToHSV(input, out var In_Hue, out var _, out var _);
-            var In_S = SaturationSlider;
-            var In_V = ValuesSlider;
+            Color.RGBToHSV(input, out var inHue, out var _, out var _);
+            var inS = _saturationSlider;
+            var inV = _valuesSlider;
             var list = Relative_ACC_Dictionary;
-            var UndoACCQueue = new Queue<Color>();
-            var ClothesUndoQueue = new Queue<Color>();
+            var undoAccQueue = new Queue<Color>();
+            var clothesUndoQueue = new Queue<Color>();
             if(undo)
             {
-                UndoACCQueue = UndoACCSkew.Pop();
-                ClothesUndoQueue = ClothsUndoSkew.Pop();
+                undoAccQueue = _undoAccSkew.Pop();
+                clothesUndoQueue = _clothsUndoSkew.Pop();
             }
 
             for(int i = 0, iN = list.Count; i < iN; i++)
@@ -309,25 +309,25 @@ namespace Accessory_Themes.OnGUI
                     var update = theme.ThemedSlots;
                     var color = theme.BaseColors[colornum];
 
-                    Color.RGBToHSV(color, out var T_Hue, out var T_S, out var T_V);
+                    Color.RGBToHSV(color, out var hue, out var s, out var v);
 
                     if(undo)
                     {
-                        color = UndoACCQueue.Dequeue();
+                        color = undoAccQueue.Dequeue();
                     }
                     else
                     {
-                        UndoACCQueue.Enqueue(new Color(color.r, color.g, color.b, color.a));
-                        T_Hue += In_Hue;
-                        T_S += In_S;
-                        T_V += In_V;
-                        color = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), color.a);
+                        undoAccQueue.Enqueue(new Color(color.r, color.g, color.b, color.a));
+                        hue += inHue;
+                        s += inS;
+                        v += inV;
+                        color = HsvColor.ToRgba(new HsvColor(Math.Abs(hue % 1f) * 360, Mathf.Clamp(s, 0f, 1f), Mathf.Clamp(v, 0f, 1f)), color.a);
                     }
 
                     theme.BaseColors[colornum] = color;
                     for(int k = 0, kn = update.Count; k < kn; k++)
                     {
-                        ChangeACCColor(update[k], themenum);
+                        ChangeAccColor(update[k], themenum);
                     }
                 }
             }
@@ -339,36 +339,36 @@ namespace Accessory_Themes.OnGUI
                 for(var j = 0; j < clothes[i].colorInfo.Length; j++)
                 {
                     var temp = clothes[i].colorInfo[j].baseColor;
-                    Color.RGBToHSV(temp, out var T_Hue, out var T_S, out var T_V);
+                    Color.RGBToHSV(temp, out var hue, out var s, out var v);
                     if(undo)
                     {
-                        temp = ClothesUndoQueue.Dequeue();
+                        temp = clothesUndoQueue.Dequeue();
                     }
                     else
                     {
-                        ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        T_Hue += In_Hue;
-                        T_S += In_S;
-                        T_V += In_V;
-                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
+                        clothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
+                        hue += inHue;
+                        s += inS;
+                        v += inV;
+                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(hue % 1f) * 360, Mathf.Clamp(s, 0f, 1f), Mathf.Clamp(v, 0f, 1f)), temp.a);
                     }
 
                     clothes[i].colorInfo[j].baseColor = temp;
                     clothes2[i].colorInfo[j].baseColor = temp;
 
                     temp = clothes[i].colorInfo[j].patternColor;
-                    Color.RGBToHSV(temp, out T_Hue, out T_S, out T_V);
+                    Color.RGBToHSV(temp, out hue, out s, out v);
                     if(undo)
                     {
-                        temp = ClothesUndoQueue.Dequeue();
+                        temp = clothesUndoQueue.Dequeue();
                     }
                     else
                     {
-                        ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        T_Hue += In_Hue;
-                        T_S += In_S;
-                        T_V += In_V;
-                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
+                        clothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
+                        hue += inHue;
+                        s += inS;
+                        v += inV;
+                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(hue % 1f) * 360, Mathf.Clamp(s, 0f, 1f), Mathf.Clamp(v, 0f, 1f)), temp.a);
                     }
 
                     clothes[i].colorInfo[j].patternColor = temp;
@@ -379,8 +379,8 @@ namespace Accessory_Themes.OnGUI
             ChaControl.ChangeClothes();
             if(!undo)
             {
-                UndoACCSkew.Push(UndoACCQueue);
-                ClothsUndoSkew.Push(ClothesUndoQueue);
+                _undoAccSkew.Push(undoAccQueue);
+                _clothsUndoSkew.Push(clothesUndoQueue);
             }
         }
 
@@ -439,7 +439,7 @@ namespace Accessory_Themes.OnGUI
                 var update = theme.ThemedSlots;
                 for(int j = 0, n = update.Count; j < n; j++)
                 {
-                    ChangeACCColor(update[j], themenum);
+                    ChangeAccColor(update[j], themenum);
                 }
             }
         }

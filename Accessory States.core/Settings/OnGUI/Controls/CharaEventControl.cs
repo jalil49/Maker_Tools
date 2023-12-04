@@ -22,6 +22,9 @@ namespace Accessory_States.OnGUI
         public int SelectedDropDown;
         public int SelectedSlot;
 
-        public CharaEventControl(CharaEvent charaEvent) => CharaEvent = charaEvent;
+        public CharaEventControl(CharaEvent charaEvent)
+        {
+            CharaEvent = charaEvent;
+        }
     }
 }

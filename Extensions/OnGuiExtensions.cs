@@ -51,10 +51,7 @@ namespace Extensions
             GUILayout.BeginHorizontal();
             {
                 var buttonText = value ? "Enabled: " : "Disabled: ";
-                if (Button(buttonText + text, tooltip, expandwidth))
-                {
-                    value = !value;
-                }
+                if (Button(buttonText + text, tooltip, expandwidth)) value = !value;
             }
 
             GUILayout.EndHorizontal();
@@ -65,32 +62,42 @@ namespace Extensions
         ///     Creates a Button with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
-        public static bool Button(string text, string tooltip = " ", bool expandwidth = true) =>
-            GUILayout.Button(new GUIContent(text, tooltip), ButtonStyle, GUILayout.ExpandWidth(expandwidth));
+        public static bool Button(string text, string tooltip = " ", bool expandwidth = true)
+        {
+            return GUILayout.Button(new GUIContent(text, tooltip), ButtonStyle, GUILayout.ExpandWidth(expandwidth));
+        }
 
         /// <summary>
         ///     Creates a TextField with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
-        public static string TextField(string text, bool expandwidth = true) => GUILayout.TextField(text,
-            TextFieldStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(10));
+        public static string TextField(string text, bool expandwidth = true)
+        {
+            return GUILayout.TextField(text,
+                TextFieldStyle, GUILayout.ExpandWidth(expandwidth), GUILayout.MinWidth(10));
+        }
 
         /// <summary>
         ///     Creates a HorizontalSlider with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
         public static int
-            HorizontalSlider(int value, int start, int stop, bool expandWidth = true, int minWidth = 100) =>
-            Mathf.RoundToInt(GUILayout.HorizontalSlider(value, start, stop, SliderStyle, SliderThumbStyle,
+            HorizontalSlider(int value, int start, int stop, bool expandWidth = true, int minWidth = 100)
+        {
+            return Mathf.RoundToInt(GUILayout.HorizontalSlider(value, start, stop, SliderStyle, SliderThumbStyle,
                 GUILayout.ExpandWidth(expandWidth), GUILayout.MinWidth(minWidth)));
+        }
 
         /// <summary>
         ///     Creates a HorizontalSlider with default style
         /// </summary>
         /// <returns>value of GUI element</returns>
         public static float HorizontalSlider(float value, float start, float stop, bool expandWidth = true,
-                                             int minWidth = 100) => GUILayout.HorizontalSlider(value, start, stop,
-            SliderStyle, SliderThumbStyle, GUILayout.ExpandWidth(expandWidth), GUILayout.MinWidth(minWidth));
+            int minWidth = 100)
+        {
+            return GUILayout.HorizontalSlider(value, start, stop,
+                SliderStyle, SliderThumbStyle, GUILayout.ExpandWidth(expandWidth), GUILayout.MinWidth(minWidth));
+        }
 
         /// <summary>
         ///     Creates a Label with default style

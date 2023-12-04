@@ -6,24 +6,25 @@ namespace Extensions.GUI_Classes
 {
     public class ButtonGUI<T>
     {
+        public Action<T> Action;
+        public GUILayoutOption[] LayoutOptions;
+        public GUIStyle Style;
         public string Text = "Default Text";
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
-        public Action<T> action;
-        public ButtonGUI(string _text, params GUILayoutOption[] options)
+
+        public ButtonGUI(string text, params GUILayoutOption[] options)
         {
-            style = ButtonStyle;
-            Text = _text;
-            layoutOptions = options;
+            Style = ButtonStyle;
+            Text = text;
+            LayoutOptions = options;
         }
 
         public void Draw(T invoke)
         {
-            if(GUILayout.Button(Text, style, layoutOptions))
+            if (GUILayout.Button(Text, Style, LayoutOptions))
             {
-                if(action == null)
+                if (Action == null)
                     return;
-                action.Invoke(invoke);
+                Action.Invoke(invoke);
             }
         }
     }

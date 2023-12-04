@@ -20,7 +20,7 @@ namespace Accessory_States
 
         private void ExtendedSave_CardBeingSaved(ChaFile file)
         {
-            var pluginData = ExtendedSave.GetExtendedDataById(file, GUID);
+            var pluginData = ExtendedSave.GetExtendedDataById(file, Guid);
             if(pluginData == null || pluginData.version != -1)
                 return;
 
@@ -31,7 +31,7 @@ namespace Accessory_States
                 foreach(var item in temp)
                 {
                     var accessory = file.coordinate[item.Key].accessory;
-                    accessory.SetExtendedDataById(GUID, item.Value.CoordinateData.Serialize());
+                    accessory.SetExtendedDataById(Guid, item.Value.CoordinateData.Serialize());
                     var parts = accessory.parts;
                     foreach(var slotData in item.Value.SlotData)
                     {
@@ -42,33 +42,33 @@ namespace Accessory_States
                         if(part.type == 120)
                             continue;
 
-                        part.SetExtendedDataById(GUID, slotData.Value.Serialize());
+                        part.SetExtendedDataById(Guid, slotData.Value.Serialize());
                     }
                 }
             }
 
-            ExtendedSave.SetExtendedDataById(file, GUID, new PluginData() { version = Constants.SaveVersion });
+            ExtendedSave.SetExtendedDataById(file, Guid, new PluginData() { version = Constants.SaveVersion });
         }
 
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
-            var attemptASS = false;
-            if(!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null)
-                attemptASS = true;
+            var attemptAss = false;
+            if(!importedExtendedData.TryGetValue(Guid, out var data) || data == null)
+                attemptAss = true;
 
-            Dictionary<int, TempMigration> DataStore;
+            Dictionary<int, TempMigration> dataStore;
 
-            if(!attemptASS)
+            if(!attemptAss)
             {
-                var Coordinate = new Dictionary<int, CoordinateDataV1>();
+                var coordinate = new Dictionary<int, CoordinateDataV1>();
                 foreach(var item in coordinateMapping)
                 {
-                    Coordinate[item.Key] = new CoordinateDataV1();
+                    coordinate[item.Key] = new CoordinateDataV1();
                 }
 
-                if(Data.version >= 0 && Data.version < 2)
+                if(data.version >= 0 && data.version < 2)
                 {
-                    ImportMigrator.StandardCharaMigrator(Data, out DataStore);
+                    ImportMigrator.StandardCharaMigrator(data, out dataStore);
                 }
                 else
                 {
@@ -77,65 +77,65 @@ namespace Accessory_States
             }
             else
             {
-                if(!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null)
+                if(!importedExtendedData.TryGetValue("madevil.kk.ass", out var assData) || assData == null)
                     return;
 
-                var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+                var triggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                var triggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                if(ASSData.version > 7)
+                if(assData.version > 7)
                 {
                     Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
                     return;
                 }
-                else if(ASSData.version < 6)
+                else if(assData.version < 6)
                 {
-                    AccStateSync.Migration.ConvertCharaPluginData(ASSData, ref TriggerPropertyList, ref TriggerGroupList);
+                    AccStateSync.Migration.ConvertCharaPluginData(assData, ref triggerPropertyList, ref triggerGroupList);
                 }
                 else
                 {
-                    if(ASSData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                    if(assData.data.TryGetValue("TriggerPropertyList", out var loadedTriggerProperty) && loadedTriggerProperty != null)
                     {
-                        var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                        if(_tempTriggerProperty?.Count > 0)
-                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+                        var tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])loadedTriggerProperty);
+                        if(tempTriggerProperty?.Count > 0)
+                            triggerPropertyList.AddRange(tempTriggerProperty);
 
-                        if(ASSData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                        if(assData.data.TryGetValue("TriggerGroupList", out var loadedTriggerGroup) && loadedTriggerGroup != null)
                         {
-                            var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                            if(_tempTriggerGroup?.Count > 0)
+                            var tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])loadedTriggerGroup);
+                            if(tempTriggerGroup?.Count > 0)
                             {
-                                foreach(var _group in _tempTriggerGroup)
+                                foreach(var group in tempTriggerGroup)
                                 {
-                                    if(_group.GUID.IsNullOrEmpty())
-                                        _group.GUID = Guid.NewGuid().ToString("D").ToUpper();
+                                    if(group.Guid.IsNullOrEmpty())
+                                        group.Guid = System.Guid.NewGuid().ToString("D").ToUpper();
                                 }
 
-                                TriggerGroupList.AddRange(_tempTriggerGroup);
+                                triggerGroupList.AddRange(tempTriggerGroup);
                             }
                         }
                     }
                 }
 
-                if(TriggerPropertyList == null)
-                    TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                if(TriggerGroupList == null)
-                    TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+                if(triggerPropertyList == null)
+                    triggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                if(triggerGroupList == null)
+                    triggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                ImportMigrator.FullAssCardLoad(TriggerPropertyList, TriggerGroupList, out DataStore);
+                ImportMigrator.FullAssCardLoad(triggerPropertyList, triggerGroupList, out dataStore);
             }
 
             var transfer = new Dictionary<int, TempMigration>();
 
             foreach(var item in coordinateMapping)
             {
-                if(!item.Value.HasValue || !DataStore.TryGetValue(item.Key, out var coord))
+                if(!item.Value.HasValue || !dataStore.TryGetValue(item.Key, out var coord))
                     continue;
                 transfer[item.Value.Value] = coord;
             }
 
-            Data = importedExtendedData[GUID] = new PluginData() { version = -1 };
-            Data.data["TempMigration"] = MessagePackSerializer.Serialize(transfer);
+            data = importedExtendedData[Guid] = new PluginData() { version = -1 };
+            data.data["TempMigration"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

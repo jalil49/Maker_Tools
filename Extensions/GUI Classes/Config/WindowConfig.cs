@@ -34,16 +34,13 @@ namespace Extensions.GUI_Classes.Config
             });
         }
 
-        public static ConfigEntry<WindowConfig> GetConfigEntry(ConfigFile Config, string section, string key,
-                                                               WindowConfig DefaultWindow)
+        public static ConfigEntry<WindowConfig> GetConfigEntry(ConfigFile config, string section, string key,
+            WindowConfig defaultWindow)
         {
             var keyval = new KeyValuePair<string, string>(section, key);
-            if (ConfigDictionary.TryGetValue(keyval, out var configEntry))
-            {
-                return configEntry;
-            }
+            if (ConfigDictionary.TryGetValue(keyval, out var configEntry)) return configEntry;
 
-            return ConfigDictionary[keyval] = Config.Bind(new ConfigDefinition(section, key), DefaultWindow,
+            return ConfigDictionary[keyval] = config.Bind(new ConfigDefinition(section, key), defaultWindow,
                 new ConfigDescription(string.Empty, null, new ConfigurationManagerAttributes { Browsable = false }));
         }
 

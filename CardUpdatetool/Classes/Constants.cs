@@ -49,17 +49,17 @@ namespace CardUpdateTool
             public bool Outfitvisible;
             public int KnownVersion = 0;
 
-            public ReadableInfo(string _name, bool _chara, bool _outfit)
+            public ReadableInfo(string name, bool chara, bool outfit)
             {
-                Name = _name;
-                Charavisible = _chara;
-                Outfitvisible = _outfit;
+                Name = name;
+                Charavisible = chara;
+                Outfitvisible = outfit;
             }
 
-            public ReadableInfo(string _name, bool _showboth = true)
+            public ReadableInfo(string name, bool showboth = true)
             {
-                Name = _name;
-                Outfitvisible = Charavisible = _showboth;
+                Name = name;
+                Outfitvisible = Charavisible = showboth;
             }
         }
     }

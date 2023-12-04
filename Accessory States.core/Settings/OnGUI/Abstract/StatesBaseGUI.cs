@@ -1,8 +1,8 @@
-﻿using Accessory_States.Classes.PresetStorage;
-using Extensions.GUI_Classes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Accessory_States.Classes.PresetStorage;
+using Extensions.GUI_Classes;
 using UnityEngine;
 using static Extensions.OnGUIExtensions;
 using GL = UnityEngine.GUILayout;
@@ -25,7 +25,7 @@ namespace Accessory_States.OnGUI
         protected readonly Dictionary<PresetFolder, PresetFolderControl> PresetFolderControls =
             new Dictionary<PresetFolder, PresetFolderControl>();
 
-        protected readonly List<PresetFolder> presetFolders = new List<PresetFolder>();
+        protected readonly List<PresetFolder> PresetFolders = new List<PresetFolder>();
         protected readonly ToolbarGUI PresetView;
 
         protected readonly ToolbarGUI ShoeTypeGUI;
@@ -40,7 +40,7 @@ namespace Accessory_States.OnGUI
 
         #region Settings
 
-        protected ToolbarGUI _AssPreference;
+        protected ToolbarGUI AssPreference;
 
         #endregion
 
@@ -51,31 +51,31 @@ namespace Accessory_States.OnGUI
             #region Windows
 
             var config = Settings.Instance.Config;
-            _slotWindow = new WindowGUI(config, section, "Slot",
+            SlotWindow = new WindowGUI(config, section, "Slot",
                 new Rect(Screen.width * 0.33f, Screen.height * 0.1f, Screen.width * 0.14f, Screen.height * 0.2f), 1f,
                 SlotWindowDraw, new GUIContent("Slot 0", "Modify data attached to this Accessory"),
                 new ScrollGUI(SlotWindowScroll));
 
-            _presetWindow = new WindowGUI(config, section, "Preset",
+            PresetWindow = new WindowGUI(config, section, "Preset",
                 new Rect(Screen.width * 0.33f, Screen.height * 0.3f, Screen.width * 0.14f, Screen.height * 0.2f), 1f,
                 PresetWindowDraw, new GUIContent("Presets", "Apply, Create or Modify Presets"),
                 new[] { new ScrollGUI(PresetFolderScroll), new ScrollGUI(PresetSingleScroll) });
 
-            _groupGUI = new WindowGUI(config, section, "Group Data",
+            GroupGUI = new WindowGUI(config, section, "Group Data",
                 new Rect(Screen.width * 0.475f, Screen.height * 0.3f, Screen.width * 0.128f, Screen.height * 0.2f), 1f,
                 GroupWindowDraw, new GUIContent("Custom Group Data", "Modify Custom Groups"),
                 new ScrollGUI(GroupWindowScroll));
 
-            _settingWindow = new WindowGUI(config, section, "Settings",
+            SettingWindow = new WindowGUI(config, section, "Settings",
                 new Rect(Screen.width * 0.57f, Screen.height * 0.1f, Screen.width * 0.14f, Screen.height * 0.2f), 1f,
                 SettingWindowDraw, new GUIContent("Settings", "Modify Plugin Settings"), new ScrollGUI(SettingScroll));
 
-            _addBinding = new WindowGUI(config, section, "Group Select",
+            AddBinding = new WindowGUI(config, section, "Group Select",
                 new Rect(Screen.width * 0.475f, Screen.height * 0.1f, Screen.width * 0.075f, Screen.height * 0.2f), 1f,
                 SelectBindingWindowDraw, new GUIContent("Group Select", "Select a group to Show"),
                 new ScrollGUI(BindingWindowScroll));
 
-            _previewWindow = new WindowGUI(config, section, "Preview",
+            PreviewWindow = new WindowGUI(config, section, "Preview",
                 new Rect(Screen.width * 0.80f, Screen.height * 0.2f, Screen.width * 0.076f, Screen.height * 0.75f),
                 0.6f, PreviewWindowDraw, new GUIContent("State Preview", "Adjust State Values"),
                 new ScrollGUI(PreviewScroll));
@@ -104,9 +104,9 @@ namespace Accessory_States.OnGUI
             };
 
 #if KK
-            _AssPreference = new ToolbarGUI(0, assContent);
+            AssPreference = new ToolbarGUI(0, assContent);
 #else
-            _AssPreference = new ToolbarGUI(1, assContent);
+            AssPreference = new ToolbarGUI(1, assContent);
 #endif
 
             var presetContent = new[]
@@ -122,10 +122,7 @@ namespace Accessory_States.OnGUI
             ShoeTypeGUI = new ToolbarGUI(2, shoeTypeGUIContext, (oldValue, newValue) =>
             {
                 var control = GetController.ChaControl;
-                if(newValue >= 2)
-                {
-                    return;
-                }
+                if (newValue >= 2) return;
 #if KK
                 control.fileStatus.shoesType = (byte)newValue;
 #endif
@@ -142,59 +139,50 @@ namespace Accessory_States.OnGUI
 
         public virtual void TogglePreviewWindow()
         {
-            _previewWindow.ToggleShow();
+            PreviewWindow.ToggleShow();
         }
 
         public virtual void ToggleSlotWindow()
         {
-            _slotWindow.ToggleShow();
+            SlotWindow.ToggleShow();
         }
 
         protected virtual void ToggleGroupWindow()
         {
-            _groupGUI.ToggleShow();
+            GroupGUI.ToggleShow();
         }
 
         protected virtual void ToggleSettingsWindow()
         {
-            _settingWindow.ToggleShow();
+            SettingWindow.ToggleShow();
         }
 
         protected virtual void TogglePresetWindow()
         {
-            _presetWindow.ToggleShow();
+            PresetWindow.ToggleShow();
         }
 
         protected virtual void ToggleAddBindingWindow()
         {
-            _addBinding.ToggleShow();
+            AddBinding.ToggleShow();
         }
 
         protected virtual WindowReturn SlotWindowDraw()
         {
-            _slotWindow.SetWindowName("Slot " + (SelectedSlot + 1));
+            SlotWindow.SetWindowName($"Slot {(SelectedSlot + 1)}");
             var slotData = SelectedSlotData;
             var bData = GetSelectedBindingData(slotData);
 
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
-                if(Button("Preview", "Open preview window to modify states", false))
-                {
-                    TogglePreviewWindow();
-                }
+                if (Button("Preview", "Open preview window to modify states", false)) TogglePreviewWindow();
 
-                if(Button("Settings", "Open Settings", false))
-                {
-                    ToggleSettingsWindow();
-                }
+                if (Button("Settings", "Open Settings", false)) ToggleSettingsWindow();
 
                 GL.Space(10);
 
-                if(Button("X", "Close this window", false))
-                {
-                    ToggleSlotWindow();
-                }
+                if (Button("X", "Close this window", false)) ToggleSlotWindow();
             }
 
             GL.EndHorizontal();
@@ -203,10 +191,10 @@ namespace Accessory_States.OnGUI
             {
                 ShoeTypeGUI.Draw();
                 GL.Space(10);
-                if(Toggle(slotData.Parented, "Hide by Parent", "Hide by accessory parent group toggle") ^
-                    slotData.Parented)
+                if (Toggle(slotData.parented, "Hide by Parent", "Hide by accessory parent group toggle") ^
+                    slotData.parented)
                 {
-                    slotData.Parented = !slotData.Parented;
+                    slotData.parented = !slotData.parented;
                     GetController.UpdateParentedDict();
                     GetController.SaveSlotData(SelectedSlot);
                 }
@@ -214,7 +202,7 @@ namespace Accessory_States.OnGUI
 
             GL.EndHorizontal();
 #if !KK
-            if(ShoeTypeGUI.Value != 2)
+            if (ShoeTypeGUI.Value != 2)
             {
 #if KKS
                 Label("KK Functionality, KKS only uses Outdoor ATM by default");
@@ -224,7 +212,7 @@ namespace Accessory_States.OnGUI
 
                 GL.BeginHorizontal();
                 {
-                    if(ShoeTypeGUI.Value == 0)
+                    if (ShoeTypeGUI.Value == 0)
                     {
 #if KKS
                         Label("Non-functioning: May be implemented in the future");
@@ -233,7 +221,7 @@ namespace Accessory_States.OnGUI
 #endif
                     }
 
-                    if(ShoeTypeGUI.Value == 1)
+                    if (ShoeTypeGUI.Value == 1)
                     {
 #if KKS
                         Label("Default State: May implement Indoor in the future");
@@ -248,15 +236,10 @@ namespace Accessory_States.OnGUI
 #endif
             GL.BeginHorizontal();
             {
-                if(Button("Group Data", "Create and Modify Custom Groups"))
-                {
-                    ToggleGroupWindow();
-                }
+                if (Button("Group Data", "Create and Modify Custom Groups")) ToggleGroupWindow();
 
-                if(Button("Use Presets Bindings", "Create and Use Predefine Presets to apply common settings."))
-                {
+                if (Button("Use Presets Bindings", "Create and Use Predefine Presets to apply common settings."))
                     TogglePresetWindow();
-                }
             }
 
             GL.EndHorizontal();
@@ -264,38 +247,23 @@ namespace Accessory_States.OnGUI
             GL.BeginHorizontal();
             {
                 var dropDownName = "None";
-                if(bData != null)
-                {
-                    dropDownName = bData.NameData.Name;
-                }
+                if (bData != null) dropDownName = bData.NameData.Name;
 
-                if(Button("<", "Previous binding for this accessory") && slotData.bindingDatas.Count > 0)
-                {
+                if (Button("<", "Previous binding for this accessory") && slotData.bindingDatas.Count > 0)
                     SelectedDropDown = SelectedDropDown == 0 ? slotData.bindingDatas.Count - 1 : SelectedDropDown - 1;
-                }
 
-                if(Button(dropDownName, "Click to open window to apply binding groups"))
-                {
-                    ToggleAddBindingWindow();
-                }
+                if (Button(dropDownName, "Click to open window to apply binding groups")) ToggleAddBindingWindow();
 
-                if(Button(">", "Next binding for this accessory") && slotData.bindingDatas.Count > 0)
-                {
+                if (Button(">", "Next binding for this accessory") && slotData.bindingDatas.Count > 0)
                     SelectedDropDown = SelectedDropDown == slotData.bindingDatas.Count - 1 ? 0 : SelectedDropDown + 1;
-                }
             }
 
             GL.EndHorizontal();
 
-            if(bData == null)
-            {
-                return new WindowReturn();
-            }
+            if (bData == null) return new WindowReturn();
 
-            if(!NameControls.TryGetValue(bData.NameData, out var controls))
-            {
+            if (!NameControls.TryGetValue(bData.NameData, out var controls))
                 NameControls[bData.NameData] = controls = new NameDataControl(bData.NameData, GetControl);
-            }
 
             GL.BeginHorizontal();
             {
@@ -310,33 +278,21 @@ namespace Accessory_States.OnGUI
         protected virtual void SlotWindowScroll()
         {
             var bData = GetSelectedBindingData(SelectedSlotData);
-            if(bData == null)
-            {
-                return;
-            }
+            if (bData == null) return;
 
             GL.BeginVertical(GUI.skin.box);
-            for(var i = 0; i < bData.States.Count; i++)
+            for (var i = 0; i < bData.States.Count; i++)
             {
                 var item = bData.States[i];
-                if(!(ShoeTypeGUI.Value == 2 || item.ShoeType == ShoeTypeGUI.Value || item.ShoeType == 2))
-                {
-                    continue;
-                }
+                if (!(ShoeTypeGUI.Value == 2 || item.ShoeType == ShoeTypeGUI.Value || item.ShoeType == 2)) continue;
 
-                if(!StateControls.TryGetValue(item, out var controls))
-                {
+                if (!StateControls.TryGetValue(item, out var controls))
                     StateControls[item] = controls = new StateInfoControl(bData, item, SelectedSlot, GetControl);
-                }
 
-                if(bData.NameData.CurrentState == i)
-                {
+                if (bData.NameData.currentState == i)
                     GL.BeginHorizontal(GUI.skin.box);
-                }
                 else
-                {
                     GL.BeginHorizontal();
-                }
 
                 controls.Draw(ShoeTypeGUI.Value);
                 GL.EndHorizontal();
@@ -350,20 +306,17 @@ namespace Accessory_States.OnGUI
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
-                if(Button("X", "Close this window", false))
-                {
-                    ToggleGroupWindow();
-                }
+                if (Button("X", "Close this window", false)) ToggleGroupWindow();
 
                 GL.EndHorizontal();
 
                 GL.BeginHorizontal();
                 {
-                    if(Button("Add New Group"))
+                    if (Button("Add New Group"))
                     {
                         var names = GetController.NameDataList;
-                        var max = names.Max(x => x.Binding) + 1;
-                        names.Add(new NameData { Binding = max, Name = "Group " + max });
+                        var max = names.Max(x => x.binding) + 1;
+                        names.Add(new NameData { binding = max, Name = "Group " + max });
                     }
                 }
             }
@@ -375,17 +328,12 @@ namespace Accessory_States.OnGUI
         protected virtual void GroupWindowScroll()
         {
             var names = GetController.NameDataList;
-            for(var i = 0; i < names.Count; i++)
+            for (var i = 0; i < names.Count; i++)
             {
-                if(names[i].Binding < Constants.ClothingLength)
-                {
-                    continue;
-                }
+                if (names[i].binding < Constants.ClothingLength) continue;
 
-                if(!NameControls.TryGetValue(names[i], out var controls))
-                {
+                if (!NameControls.TryGetValue(names[i], out var controls))
                     NameControls[names[i]] = controls = new NameDataControl(names[i], GetControl);
-                }
 
                 GL.BeginVertical(GUI.skin.box);
                 {
@@ -412,16 +360,10 @@ namespace Accessory_States.OnGUI
                 PresetView.Draw();
 
                 GL.FlexibleSpace();
-                if(Button("Settings", "Open Settings", false))
-                {
-                    ToggleSettingsWindow();
-                }
+                if (Button("Settings", "Open Settings", false)) ToggleSettingsWindow();
 
                 GL.Space(10);
-                if(Button("X", "Close this window", false))
-                {
-                    TogglePresetWindow();
-                }
+                if (Button("X", "Close this window", false)) TogglePresetWindow();
             }
 
             GL.EndHorizontal();
@@ -434,7 +376,7 @@ namespace Accessory_States.OnGUI
 
             GL.EndHorizontal();
 
-            switch(PresetView.Value)
+            switch (PresetView.Value)
             {
                 case 0:
                     PresetFolderDraw();
@@ -452,13 +394,13 @@ namespace Accessory_States.OnGUI
         {
             GL.BeginHorizontal();
             {
-                if(Button("New Preset Folder", "Create new folder group"))
+                if (Button("New Preset Folder", "Create new folder group"))
                 {
                     var presetFolder = new PresetFolder
                     {
                         Name = $"Slot {SelectedSlot} Folder Preset"
                     };
-                    presetFolders.Add(presetFolder);
+                    PresetFolders.Add(presetFolder);
                 }
             }
 
@@ -469,7 +411,7 @@ namespace Accessory_States.OnGUI
         {
             GL.BeginHorizontal();
             {
-                if(Button("New Preset"))
+                if (Button("New Preset"))
                 {
                     var presetData = PresetData.ConvertSlotData(SelectedSlotData, SelectedSlot);
                     SinglePresetDatas.Add(presetData);
@@ -483,18 +425,13 @@ namespace Accessory_States.OnGUI
         {
             var filter = PresetFilter.GUIContent.text.Trim();
             var validfilter = filter.Length > 0;
-            for(var i = 0; i < SinglePresetDatas.Count; i++)
+            for (var i = 0; i < SinglePresetDatas.Count; i++)
             {
-                if(!SingleControls.TryGetValue(SinglePresetDatas[i], out var preset))
-                {
+                if (!SingleControls.TryGetValue(SinglePresetDatas[i], out var preset))
                     preset = SingleControls[SinglePresetDatas[i]] =
                         new PresetContol(SinglePresetDatas[i], SinglePresetDatas);
-                }
 
-                if(validfilter && preset.Filter(filter))
-                {
-                    continue;
-                }
+                if (validfilter && preset.Filter(filter)) continue;
 
                 GL.BeginVertical(GUI.skin.box);
                 {
@@ -510,38 +447,30 @@ namespace Accessory_States.OnGUI
             var filter = PresetFilter.GUIContent.text.Trim();
             var validfilter = filter.Length > 0;
 
-            for(var i = 0; i < presetFolders.Count; i++)
+            for (var i = 0; i < PresetFolders.Count; i++)
             {
-                var folder = presetFolders[i];
-                if(!PresetFolderControls.TryGetValue(folder, out var folderPreset))
-                {
-                    folderPreset = PresetFolderControls[folder] = new PresetFolderControl(folder, presetFolders);
-                }
+                var folder = PresetFolders[i];
+                if (!PresetFolderControls.TryGetValue(folder, out var folderPreset))
+                    folderPreset = PresetFolderControls[folder] = new PresetFolderControl(folder, PresetFolders);
 
-                if(validfilter && folderPreset.Filter(filter))
-                {
-                    continue;
-                }
+                if (validfilter && folderPreset.Filter(filter)) continue;
 
                 GL.BeginVertical(GUI.skin.box);
                 {
                     folderPreset.Draw(SelectedSlotData, SelectedSlot);
-                    if(folderPreset.ShowContents)
+                    if (folderPreset.ShowContents)
                     {
                         var presets = folder.PresetDatas;
-                        for(var j = 0; j < presets.Count; j++)
+                        for (var j = 0; j < presets.Count; j++)
                         {
                             var singlePreset = presets[j];
-                            if(!SingleControls.TryGetValue(singlePreset, out var singlePresetControl))
+                            if (!SingleControls.TryGetValue(singlePreset, out var singlePresetControl))
                             {
                                 singlePresetControl = new PresetContol(singlePreset, presets);
                                 SingleControls[singlePreset] = singlePresetControl;
                             }
 
-                            if(singlePreset.Filter(filter))
-                            {
-                                continue;
-                            }
+                            if (singlePreset.Filter(filter)) continue;
 
                             GL.BeginHorizontal(GUI.skin.box);
                             {
@@ -572,10 +501,7 @@ namespace Accessory_States.OnGUI
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
-                if(Button("X", "Close this window", false))
-                {
-                    ToggleAddBindingWindow();
-                }
+                if (Button("X", "Close this window", false)) ToggleAddBindingWindow();
             }
 
             GL.EndHorizontal();
@@ -585,51 +511,40 @@ namespace Accessory_States.OnGUI
         protected virtual void BindingWindowScroll()
         {
             var slotData = SelectedSlotData;
-            foreach(var item in GetController.NameDataList)
+            foreach (var item in GetController.NameDataList)
             {
-                if(item.Binding < 0)
-                {
-                    continue;
-                }
+                if (item.binding < 0) continue;
 
                 var nameDataIndex = slotData.bindingDatas.FindIndex(x => x.NameData == item);
-                if(SelectedDropDown == nameDataIndex)
-                {
+                if (SelectedDropDown == nameDataIndex)
                     GL.BeginHorizontal(GUI.skin.box);
-                }
                 else
-                {
                     GL.BeginHorizontal();
-                }
 
                 {
                     Label(item.Name);
-                    if(nameDataIndex > -1)
+                    if (nameDataIndex > -1)
                     {
-                        if(SelectedDropDown != nameDataIndex && Button("Select", expandwidth: false))
-                        {
+                        if (SelectedDropDown != nameDataIndex && Button("Select", expandwidth: false))
                             SelectedDropDown = nameDataIndex;
-                        }
 
-                        if(Button("Remove", "Remove data associated with this group from accessory", false))
+                        if (Button("Remove", "Remove data associated with this group from accessory", false))
                         {
                             item.AssociatedSlots.Remove(SelectedSlot);
                             slotData.bindingDatas.RemoveAt(nameDataIndex);
                             GetController.SaveSlotData(SelectedSlot);
-                            if(SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
-                            {
+                            if (SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
                                 SelectedDropDown = 0;
-                            }
                         }
                     }
                     else
                     {
                         GL.FlexibleSpace();
-                        if(Button("Add", "Add this binding type to accessory", false))
+                        if (Button("Add", "Add this binding type to accessory", false))
                         {
                             item.AssociatedSlots.Add(SelectedSlot);
                             slotData.bindingDatas.Add(new BindingData
-                            { NameData = item, States = item.GetDefaultStates(SelectedSlot) });
+                                { NameData = item, States = item.GetDefaultStates(SelectedSlot) });
                             GetController.SaveSlotData(SelectedSlot);
                         }
                     }
@@ -646,10 +561,7 @@ namespace Accessory_States.OnGUI
                 GL.FlexibleSpace();
 
                 GL.Space(10);
-                if(Button("X", "Close this window", false))
-                {
-                    TogglePreviewWindow();
-                }
+                if (Button("X", "Close this window", false)) TogglePreviewWindow();
             }
 
             GL.EndHorizontal();
@@ -661,26 +573,17 @@ namespace Accessory_States.OnGUI
             var nameDatas = GetController.NameDataList;
             var bindingDatas = SelectedSlotData.bindingDatas;
 
-            foreach(var nameData in nameDatas)
+            foreach (var nameData in nameDatas)
             {
-                if(!NameControls.TryGetValue(nameData, out var controls))
-                {
+                if (!NameControls.TryGetValue(nameData, out var controls))
                     NameControls[nameData] = controls = new NameDataControl(nameData, GetControl);
-                }
 
-                if(nameData.Binding < 0)
-                {
-                    continue;
-                }
+                if (nameData.binding < 0) continue;
 
-                if(bindingDatas.Any(x => x.NameData == nameData))
-                {
+                if (bindingDatas.Any(x => x.NameData == nameData))
                     GL.BeginHorizontal(GUI.skin.box);
-                }
                 else
-                {
                     GL.BeginHorizontal();
-                }
 
                 controls.DrawStatePreview();
                 GL.EndHorizontal();
@@ -688,22 +591,18 @@ namespace Accessory_States.OnGUI
 
             var currentParent = GetController.PartsArray[SelectedSlot].parentKey;
             var dict = GetController.ParentedNameDictionary;
-            for(var i = 0; i < dict.Count; i++)
+            for (var i = 0; i < dict.Count; i++)
             {
                 var keyValue = dict.ElementAt(i);
-                if(currentParent == keyValue.Key)
-                {
+                if (currentParent == keyValue.Key)
                     GL.BeginHorizontal(GUI.skin.box);
-                }
                 else
-                {
                     GL.BeginHorizontal();
-                }
 
                 {
                     Label(keyValue.Key, "Display accessory if parented toggle is also enabled", false);
-                    if(Button(keyValue.Value.Show ? "Show" : "Hide",
-                        "If accessory should be shown or hidden with current state"))
+                    if (Button(keyValue.Value.Show ? "Show" : "Hide",
+                            "If accessory should be shown or hidden with current state"))
                     {
                         keyValue.Value.Toggle();
                         GetController.RefreshSlots(keyValue.Value.AssociateSlots);
@@ -720,7 +619,7 @@ namespace Accessory_States.OnGUI
             {
                 GL.FlexibleSpace();
 
-                if(Button("G-", "Decrease GUI size", false))
+                if (Button("G-", "Decrease GUI size", false))
                 {
                     Settings.MakerFontSize.Value = Math.Max(0, Settings.MakerFontSize.Value - 1);
                     Settings.Logger.LogMessage(Settings.MakerFontSize.Value);
@@ -728,7 +627,7 @@ namespace Accessory_States.OnGUI
                     WindowGUI.SaveEvent = false;
                 }
 
-                if(Button("G+", "Increase GUI size", false))
+                if (Button("G+", "Increase GUI size", false))
                 {
                     Settings.MakerFontSize.Value += 1;
                     Settings.Logger.LogMessage(Settings.MakerFontSize.Value);
@@ -738,10 +637,7 @@ namespace Accessory_States.OnGUI
 
                 GL.Space(10);
 
-                if(Button("X", "Close this window", false))
-                {
-                    ToggleSettingsWindow();
-                }
+                if (Button("X", "Close this window", false)) ToggleSettingsWindow();
             }
 
             GL.EndHorizontal();
@@ -759,15 +655,9 @@ namespace Accessory_States.OnGUI
                 }
 
                 GL.EndHorizontal();
-                if(Button("Open Preset Folder", "Open file directory for "))
-                {
-                    Presets.OpenPresetFolder();
-                }
+                if (Button("Open Preset Folder", "Open file directory for ")) Presets.OpenPresetFolder();
 
-                foreach(var item in WindowGUI.windowGUIs)
-                {
-                    item.TransparencyDraw();
-                }
+                foreach (var item in WindowGUI.WindowGuIs) item.TransparencyDraw();
             }
 
             GL.EndVertical();
@@ -776,13 +666,13 @@ namespace Accessory_States.OnGUI
             {
                 Label("Accessory State Sync:");
 
-                Settings.ASS_SAVE.Value = Toggle(Settings.ASS_SAVE.Value, "Save Accessory State Sync Format",
+                Settings.AssSave.Value = Toggle(Settings.AssSave.Value, "Save Accessory State Sync Format",
                     "Enable attempting to save using Madevil's format so it can maybe work with ASS");
                 GL.BeginHorizontal();
                 {
                     Label("On ASS Save: ShoeType ",
                         "Chose which shoetype should be used when saving with Madevil's format");
-                    _AssPreference.Draw();
+                    AssPreference.Draw();
                 }
 
                 GL.EndHorizontal();
@@ -798,11 +688,11 @@ namespace Accessory_States.OnGUI
                 {
                     Label("Clear Loaded Presets", string.Empty, false);
                     GL.FlexibleSpace();
-                    if(Button("Clear", "Empty Loaded Preset list", false))
+                    if (Button("Clear", "Empty Loaded Preset list", false))
                     {
                         SinglePresetDatas.Clear();
                         SingleControls.Clear();
-                        presetFolders.Clear();
+                        PresetFolders.Clear();
                         PresetFolderControls.Clear();
                     }
                 }
@@ -813,8 +703,9 @@ namespace Accessory_States.OnGUI
                 {
                     Label("Load Default Presets", string.Empty, false);
                     GL.FlexibleSpace();
-                    if(Button("Load Defaults", "Recreate Hard Coded Presets", false))
-                    { }
+                    if (Button("Load Defaults", "Recreate Hard Coded Presets", false))
+                    {
+                    }
                 }
 
                 GL.EndHorizontal();
@@ -823,10 +714,7 @@ namespace Accessory_States.OnGUI
                 {
                     Label("Load Presets From disk", string.Empty, false);
                     GL.FlexibleSpace();
-                    if(Button("Disk Load", "Reload Presets from Disk", false))
-                    {
-                        DiskLoad();
-                    }
+                    if (Button("Disk Load", "Reload Presets from Disk", false)) DiskLoad();
                 }
 
                 GL.EndHorizontal();
@@ -835,10 +723,7 @@ namespace Accessory_States.OnGUI
                 {
                     Label("Delete Saved Presets", string.Empty, false);
                     GL.FlexibleSpace();
-                    if(Button("Disk Delete", "Delete Preset Cache from disk", false))
-                    {
-                        Presets.DeleteCache();
-                    }
+                    if (Button("Disk Delete", "Delete PreStudioGUIset Cache from disk", false)) Presets.DeleteCache();
                 }
 
                 GL.EndHorizontal();
@@ -850,24 +735,14 @@ namespace Accessory_States.OnGUI
         protected void DiskLoad()
         {
             Presets.LoadAllPresets(out var singles, out var folders);
-            foreach(var preset in singles)
+            foreach (var preset in singles.Where(preset => !SinglePresetDatas.Any(x => x.FileName == preset.FileName)))
             {
-                if(SinglePresetDatas.Any(x => x.FileName == preset.FileName))
-                {
-                    continue;
-                }
-
                 SinglePresetDatas.Add(preset);
             }
 
-            foreach(var preset in folders)
+            foreach (var preset in folders.Where(preset => !PresetFolders.Any(x => x.FileName == preset.FileName)))
             {
-                if(presetFolders.Any(x => x.FileName == preset.FileName))
-                {
-                    continue;
-                }
-
-                presetFolders.Add(preset);
+                PresetFolders.Add(preset);
             }
         }
 
@@ -875,30 +750,22 @@ namespace Accessory_States.OnGUI
 
         protected BindingData GetSelectedBindingData(SlotData slotData)
         {
-            if(SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0)
-            {
-                SelectedDropDown = 0;
-            }
+            if (SelectedDropDown >= slotData.bindingDatas.Count || SelectedDropDown < 0) SelectedDropDown = 0;
 
-            if(slotData.bindingDatas.Count == 0)
-            {
-                return null;
-            }
-
-            return slotData.bindingDatas[SelectedDropDown];
+            return slotData.bindingDatas.Count == 0 ? null : slotData.bindingDatas[SelectedDropDown];
         }
 
         #region Windows
 
-        protected readonly WindowGUI _slotWindow; //main SelectedSlot window
+        protected readonly WindowGUI SlotWindow; //main SelectedSlot window
 
         protected readonly WindowGUI
-            _groupGUI; //General NameData window, add, change, remove Namedata and other modifications
+            GroupGUI; //General NameData window, add, change, remove Namedata and other modifications
 
-        protected readonly WindowGUI _presetWindow;
-        protected readonly WindowGUI _addBinding;
-        protected readonly WindowGUI _previewWindow;
-        protected readonly WindowGUI _settingWindow;
+        protected readonly WindowGUI PresetWindow;
+        protected readonly WindowGUI AddBinding;
+        protected readonly WindowGUI PreviewWindow;
+        protected readonly WindowGUI SettingWindow;
 
         #endregion
     }

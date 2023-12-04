@@ -8,12 +8,12 @@ namespace Accessory_Shortcuts
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        static bool Skip = false;
+        static bool _skip = false;
         public static CustomAcsChangeSlot CustomAcs { get; internal set; }
 
         internal void Update_Stored_Accessory(int slotNo, int type, int id, string parentKey)
         {
-            if (type == 120 || Skip)
+            if (type == 120 || _skip)
             {
                 return;
             }
@@ -70,23 +70,23 @@ namespace Accessory_Shortcuts
                     NextSlot(slot);
                     return;
                 }
-                var Emptyandvalid = slot < Parts.Length && Parts[slot].type == 120;
-                if (Emptyandvalid)
+                var emptyandvalid = slot < Parts.Length && Parts[slot].type == 120;
+                if (emptyandvalid)
                 {
-                    Skip = true;
+                    _skip = true;
 
-                    var CVS_Slot = CustomAcs.cvsAccessory[slot];
+                    var cvsSlot = CustomAcs.cvsAccessory[slot];
                     if (int.TryParse(Input.inputString, out var kind) && kind < 10 && kind > -1)
                     {
                         if (kind == 0)
                         {
                             kind = 10;
                         }
-                        CVS_Slot.UpdateSelectAccessoryType(kind);
-                        CVS_Slot.UpdateCustomUI();
-                        CVS_Slot.tglAcsKind.isOn = true;
+                        cvsSlot.UpdateSelectAccessoryType(kind);
+                        cvsSlot.UpdateCustomUI();
+                        cvsSlot.tglAcsKind.isOn = true;
                     }
-                    Skip = false;
+                    _skip = false;
                 }
             }
             base.Update();

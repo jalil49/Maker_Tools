@@ -2,15 +2,16 @@
 using Additional_Card_Info.Classes.Migration;
 using KKAPI.Chara;
 using KKAPI.Maker;
+using UnityEngine.Serialization;
 using static ExtensibleSaveFormat.Extensions;
 
 namespace Additional_Card_Info
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        public CardData CardData = new CardData();
+        [FormerlySerializedAs("CardData")] public CardData cardData = new CardData();
 
-        public CoordinateInfo NowCoordinateInfo = new CoordinateInfo();
+        [FormerlySerializedAs("NowCoordinateInfo")] public CoordinateInfo nowCoordinateInfo = new CoordinateInfo();
 
         public readonly Dictionary<int, SlotData> SlotData = new Dictionary<int, SlotData>();
 
@@ -20,40 +21,40 @@ namespace Additional_Card_Info
 
         public RestrictionData NowRestrictionData
         {
-            get => NowCoordinateInfo.RestrictionData;
-            set => NowCoordinateInfo.RestrictionData = value;
+            get => nowCoordinateInfo.restrictionData;
+            set => nowCoordinateInfo.restrictionData = value;
         }
 
         #region Cardinfo
 
         public bool CosplayReady
         {
-            get => CardData.CosplayReady;
-            set => CardData.CosplayReady = value;
+            get => cardData.cosplayReady;
+            set => cardData.cosplayReady = value;
         }
 
         public bool[] PersonalClothingBools
         {
-            get => CardData.PersonalClothingBools;
-            set => CardData.PersonalClothingBools = value;
+            get => cardData.personalClothingBools;
+            set => cardData.personalClothingBools = value;
         }
 
         public Dictionary<string, string> ReferenceAdvDirectory
         {
-            get => CardData.AdvancedFolderDirectory;
-            set => CardData.AdvancedFolderDirectory = value;
+            get => cardData.AdvancedFolderDirectory;
+            set => cardData.AdvancedFolderDirectory = value;
         }
 
         public bool AdvancedDirectory
         {
-            get => CardData.AdvancedDirectory;
-            set => CardData.AdvancedDirectory = value;
+            get => cardData.advancedDirectory;
+            set => cardData.advancedDirectory = value;
         }
 
         public string SimpleFolderDirectory
         {
-            get => CardData.SimpleFolderDirectory;
-            set => CardData.SimpleFolderDirectory = value;
+            get => cardData.simpleFolderDirectory;
+            set => cardData.simpleFolderDirectory = value;
         }
 
         #endregion
@@ -62,14 +63,14 @@ namespace Additional_Card_Info
 
         public bool MakeUpKeep
         {
-            get => NowCoordinateInfo.MakeUpKeep;
-            set => NowCoordinateInfo.MakeUpKeep = value;
+            get => nowCoordinateInfo.makeUpKeep;
+            set => nowCoordinateInfo.makeUpKeep = value;
         }
 
         public bool[] CoordinateSaveBools
         {
-            get => NowCoordinateInfo.CoordinateSaveBools;
-            set => NowCoordinateInfo.CoordinateSaveBools = value;
+            get => nowCoordinateInfo.coordinateSaveBools;
+            set => nowCoordinateInfo.coordinateSaveBools = value;
         }
 
         /// <summary>
@@ -77,26 +78,26 @@ namespace Additional_Card_Info
         /// </summary>
         public bool[] ClothNotData
         {
-            get => NowCoordinateInfo.ClothNotData;
-            set => NowCoordinateInfo.ClothNotData = value;
+            get => nowCoordinateInfo.clothNotData;
+            set => nowCoordinateInfo.clothNotData = value;
         }
 
         public List<string> CreatorNames
         {
-            get => NowCoordinateInfo.CreatorNames;
-            set => NowCoordinateInfo.CreatorNames = value;
+            get => nowCoordinateInfo.creatorNames;
+            set => nowCoordinateInfo.creatorNames = value;
         }
 
         public string SetNames
         {
-            get => NowCoordinateInfo.SetNames;
-            set => NowCoordinateInfo.SetNames = value;
+            get => nowCoordinateInfo.setNames;
+            set => nowCoordinateInfo.setNames = value;
         }
 
         public string SubSetNames
         {
-            get => NowCoordinateInfo.SubSetNames;
-            set => NowCoordinateInfo.SubSetNames = value;
+            get => nowCoordinateInfo.subSetNames;
+            set => nowCoordinateInfo.subSetNames = value;
         }
 
         #endregion
@@ -105,62 +106,62 @@ namespace Additional_Card_Info
 
         public int CoordinateType
         {
-            get => NowRestrictionData.CoordinateType;
-            set => NowRestrictionData.CoordinateType = value;
+            get => NowRestrictionData.coordinateType;
+            set => NowRestrictionData.coordinateType = value;
         }
 
         public int CoordinateSubType
         {
-            get => NowRestrictionData.CoordinateSubType;
-            set => NowRestrictionData.CoordinateSubType = value;
+            get => NowRestrictionData.coordinateSubType;
+            set => NowRestrictionData.coordinateSubType = value;
         }
 
         public Dictionary<int, int> PersonalityTypeRestriction
         {
-            get => NowRestrictionData.PersonalityType_Restriction;
-            set => NowRestrictionData.PersonalityType_Restriction = value;
+            get => NowRestrictionData.PersonalityTypeRestriction;
+            set => NowRestrictionData.PersonalityTypeRestriction = value;
         }
 
         public Dictionary<int, int> TraitTypeRestriction
         {
-            get => NowRestrictionData.TraitType_Restriction;
-            set => NowRestrictionData.TraitType_Restriction = value;
+            get => NowRestrictionData.TraitTypeRestriction;
+            set => NowRestrictionData.TraitTypeRestriction = value;
         }
 
         public Dictionary<int, int> InterestRestriction
         {
-            get => NowRestrictionData.Interest_Restriction;
-            set => NowRestrictionData.Interest_Restriction = value;
+            get => NowRestrictionData.InterestRestriction;
+            set => NowRestrictionData.InterestRestriction = value;
         }
 
         public bool[] HeightRestriction
         {
-            get => NowRestrictionData.Height_Restriction;
-            set => NowRestrictionData.Height_Restriction = value;
+            get => NowRestrictionData.heightRestriction;
+            set => NowRestrictionData.heightRestriction = value;
         }
 
         public bool[] BreastsizeRestriction
         {
-            get => NowRestrictionData.BreastSize_Restriction;
-            set => NowRestrictionData.BreastSize_Restriction = value;
+            get => NowRestrictionData.breastSizeRestriction;
+            set => NowRestrictionData.breastSizeRestriction = value;
         }
 
         public int HstateTypeRestriction
         {
-            get => NowRestrictionData.HStateType_Restriction;
-            set => NowRestrictionData.HStateType_Restriction = value;
+            get => NowRestrictionData.hStateTypeRestriction;
+            set => NowRestrictionData.hStateTypeRestriction = value;
         }
 
         public int ClubTypeRestriction
         {
-            get => NowRestrictionData.ClubType_Restriction;
-            set => NowRestrictionData.ClubType_Restriction = value;
+            get => NowRestrictionData.clubTypeRestriction;
+            set => NowRestrictionData.clubTypeRestriction = value;
         }
 
         public int GenderType
         {
-            get => NowRestrictionData.GenderType;
-            set => NowRestrictionData.GenderType = value;
+            get => NowRestrictionData.genderType;
+            set => NowRestrictionData.genderType = value;
         }
 
         #endregion
@@ -215,11 +216,11 @@ namespace Additional_Card_Info
         {
             if (!SlotData.TryGetValue(slot, out var slotData))
             {
-                Parts[slot].SetExtendedDataById(Settings.GUID, null);
+                Parts[slot].SetExtendedDataById(Settings.Guid, null);
                 return;
             }
 
-            Parts[slot].SetExtendedDataById(Settings.GUID, slotData.Serialize());
+            Parts[slot].SetExtendedDataById(Settings.Guid, slotData.Serialize());
         }
 
         internal void LoadSlot(int slot)
@@ -230,7 +231,7 @@ namespace Additional_Card_Info
                 return;
             }
 
-            if (Parts[slot].TryGetExtendedDataById(Settings.GUID, out var pluginData))
+            if (Parts[slot].TryGetExtendedDataById(Settings.Guid, out var pluginData))
             {
                 var slotData = Migrator.SlotInfoMigrate(pluginData);
                 if (slotData != null)
@@ -245,43 +246,43 @@ namespace Additional_Card_Info
 
         private void SaveCoordinate()
         {
-            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.GUID,
-                NowCoordinateInfo.Serialize(CreatorName));
+            ChaControl.nowCoordinate.accessory.SetExtendedDataById(Settings.Guid,
+                nowCoordinateInfo.Serialize(Settings.CreatorName.Value));
         }
 
         private void LoadCoordinate()
         {
-            if (ChaControl.nowCoordinate.accessory.TryGetExtendedDataById(Settings.GUID, out var pluginData))
+            if (ChaControl.nowCoordinate.accessory.TryGetExtendedDataById(Settings.Guid, out var pluginData))
             {
                 var newInfo = Migrator.CoordinateInfoMigrate(pluginData);
                 if (newInfo != null)
                 {
-                    NowCoordinateInfo = newInfo;
+                    nowCoordinateInfo = newInfo;
                     return;
                 }
             }
 
-            NowCoordinateInfo.Clear();
+            nowCoordinateInfo.Clear();
         }
 
         private void SaveCard()
         {
-            ChaControl.fileParam.SetExtendedDataById(Settings.GUID, CardData.Serialize());
+            ChaControl.fileParam.SetExtendedDataById(Settings.Guid, cardData.Serialize());
         }
 
         private void LoadCard()
         {
-            if (ChaControl.fileParam.TryGetExtendedDataById(Settings.GUID, out var plugin))
+            if (ChaControl.fileParam.TryGetExtendedDataById(Settings.Guid, out var plugin))
             {
                 var card = Migrator.CardInfoMigrate(plugin);
                 if (card != null)
                 {
-                    CardData = card;
+                    cardData = card;
                     return;
                 }
             }
 
-            CardData.Clear();
+            cardData.Clear();
         }
 
         #endregion

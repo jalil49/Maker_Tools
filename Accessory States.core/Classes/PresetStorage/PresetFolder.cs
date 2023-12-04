@@ -1,42 +1,21 @@
-﻿using Extensions;
-using MessagePack;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using Extensions;
+using MessagePack;
 
 namespace Accessory_States.Classes.PresetStorage
 {
     [MessagePackObject(true)]
     public class PresetFolder
     {
-        public string FileName
-        {
-            set
-            {
-                if(_fileName.IsNullOrWhiteSpace())
-                    _fileName = Name;
-                if(_fileName.Length == 0)
-                    _fileName = this.GetHashCode().ToString();
-
-                _fileName = string.Concat(value.Split(System.IO.Path.GetInvalidFileNameChars())).Trim();
-            }
-            get
-            {
-                if(_fileName.IsNullOrWhiteSpace())
-                    _fileName = Name;
-                if(_fileName.Length == 0)
-                    _fileName = this.GetHashCode().ToString();
-
-                return _fileName;
-            }
-        }
+        public const string SerializeKey = "Folder";
         private string _fileName;
+        public string Description;
         public string Name;
         public List<PresetData> PresetDatas;
-        public string Description;
 
-        public const string SerializeKey = "Folder";
-
-        [IgnoreMember]
-        public bool SavedOnDisk;
+        [IgnoreMember] public bool SavedOnDisk;
 
         public PresetFolder()
         {
@@ -46,17 +25,39 @@ namespace Accessory_States.Classes.PresetStorage
             Description = "Default Description";
             SavedOnDisk = false;
         }
+
+        public string FileName
+        {
+            set
+            {
+                if (_fileName.IsNullOrWhiteSpace())
+                    _fileName = Name;
+                if (_fileName.Length == 0)
+                    _fileName = GetHashCode().ToString();
+
+                _fileName = string.Concat(value.Split(Path.GetInvalidFileNameChars())).Trim();
+            }
+            get
+            {
+                if (_fileName.IsNullOrWhiteSpace())
+                    _fileName = Name;
+                if (_fileName.Length == 0)
+                    _fileName = GetHashCode().ToString();
+
+                return _fileName;
+            }
+        }
+
         public bool Filter(string filter)
         {
-
-            if(Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || FileName.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || Description.Contains(filter, System.StringComparison.OrdinalIgnoreCase))
+            if (Name.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                FileName.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                Description.Contains(filter, StringComparison.OrdinalIgnoreCase))
                 return false;
 
-            foreach(var item in PresetDatas)
-            {
-                if(!item.Filter(filter))
+            foreach (var item in PresetDatas)
+                if (!item.Filter(filter))
                     return false;
-            }
 
             return true;
         }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using ExtensibleSaveFormat;
 using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Additional_Card_Info
 {
@@ -22,13 +23,13 @@ namespace Additional_Card_Info
 
         public void Clear()
         {
-            ClothNotData = new bool[3];
-            CoordinateSaveBools = new bool[9];
-            AdvancedFolder = string.Empty;
-            CreatorNames.Clear();
-            SetNames = string.Empty;
-            SubSetNames = string.Empty;
-            RestrictionData = new RestrictionData();
+            clothNotData = new bool[3];
+            coordinateSaveBools = new bool[9];
+            advancedFolder = string.Empty;
+            creatorNames.Clear();
+            setNames = string.Empty;
+            subSetNames = string.Empty;
+            restrictionData = new RestrictionData();
         }
 
         internal void CleanUp()
@@ -37,33 +38,33 @@ namespace Additional_Card_Info
 
             foreach (var item in invalidPath)
             {
-                SetNames = SetNames.Replace(item, '_');
-                SubSetNames = SubSetNames.Replace(item, '_');
+                setNames = setNames.Replace(item, '_');
+                subSetNames = subSetNames.Replace(item, '_');
             }
         }
 
         private void NullCheck()
         {
-            ClothNotData = ClothNotData ?? new bool[3];
+            clothNotData = clothNotData ?? new bool[3];
 
-            CoordinateSaveBools = CoordinateSaveBools ?? new bool[9];
+            coordinateSaveBools = coordinateSaveBools ?? new bool[9];
 
-            AdvancedFolder = AdvancedFolder ?? string.Empty;
+            advancedFolder = advancedFolder ?? string.Empty;
 
-            CreatorNames = CreatorNames ?? new List<string>();
+            creatorNames = creatorNames ?? new List<string>();
 
-            SetNames = SetNames ?? string.Empty;
+            setNames = setNames ?? string.Empty;
 
-            SubSetNames = SubSetNames ?? string.Empty;
+            subSetNames = subSetNames ?? string.Empty;
 
-            RestrictionData = RestrictionData ?? new RestrictionData();
+            restrictionData = restrictionData ?? new RestrictionData();
         }
 
         public PluginData Serialize(string creatorName = null)
         {
-            if (!creatorName.IsNullOrEmpty() && (CreatorNames.Count == 0 || CreatorNames.Last() != creatorName))
+            if (!creatorName.IsNullOrEmpty() && (creatorNames.Count == 0 || creatorNames.Last() != creatorName))
             {
-                CreatorNames.Add(creatorName);
+                creatorNames.Add(creatorName);
             }
 
             return new PluginData
@@ -79,21 +80,21 @@ namespace Additional_Card_Info
 
         #region fields
 
-        public bool MakeUpKeep;
+        [FormerlySerializedAs("MakeUpKeep")] public bool makeUpKeep;
 
-        public bool[] ClothNotData;
+        [FormerlySerializedAs("ClothNotData")] public bool[] clothNotData;
 
-        public bool[] CoordinateSaveBools;
+        [FormerlySerializedAs("CoordinateSaveBools")] public bool[] coordinateSaveBools;
 
-        public List<string> CreatorNames;
+        [FormerlySerializedAs("CreatorNames")] public List<string> creatorNames;
 
-        public string SetNames;
+        [FormerlySerializedAs("SetNames")] public string setNames;
 
-        public string SubSetNames;
+        [FormerlySerializedAs("SubSetNames")] public string subSetNames;
 
-        public string AdvancedFolder;
+        [FormerlySerializedAs("AdvancedFolder")] public string advancedFolder;
 
-        public RestrictionData RestrictionData;
+        [FormerlySerializedAs("RestrictionData")] public RestrictionData restrictionData;
 
         #endregion
     }

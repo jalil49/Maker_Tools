@@ -13,7 +13,7 @@ namespace Extensions.GUI_Classes
         private readonly int _xCount;
 
         public MultiToolbarGUI(int defaultValue, GUIContent[] text, Action<int, int> onValueChange, int xCount,
-                               params GUILayoutOption[] options)
+            params GUILayoutOption[] options)
         {
             Value = defaultValue;
             _text = text;
@@ -30,10 +30,7 @@ namespace Extensions.GUI_Classes
             var newValue = GUILayout.SelectionGrid(Value, _text, _xCount, _style, _layoutOptions);
             if (newValue != Value)
             {
-                if (_onValueChange != null)
-                {
-                    _onValueChange.Invoke(Value, newValue);
-                }
+                if (_onValueChange != null) _onValueChange.Invoke(Value, newValue);
 
                 Value = newValue;
             }

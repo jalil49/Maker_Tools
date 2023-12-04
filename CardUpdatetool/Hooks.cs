@@ -30,8 +30,8 @@ namespace CardUpdateTool
         internal static bool Resolverinprogress = false;
         internal static bool Waitforresolver = false;
 
-        private static bool Compatibilitinprogressy = false;
-        private static bool Migratedatainprogress = false;
+        private static bool _compatibilitinprogressy = false;
+        private static bool _migratedatainprogress = false;
 
 
         [HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile))]
@@ -69,12 +69,12 @@ namespace CardUpdateTool
         {
             internal static void Prefix()
             {
-                Compatibilitinprogressy = true;
+                _compatibilitinprogressy = true;
             }
 
             internal static void Postfix()
             {
-                Compatibilitinprogressy = false;
+                _compatibilitinprogressy = false;
             }
         }
 
@@ -83,12 +83,12 @@ namespace CardUpdateTool
         {
             internal static void Prefix()
             {
-                Migratedatainprogress = true;
+                _migratedatainprogress = true;
             }
 
             internal static void Postfix()
             {
-                Migratedatainprogress = false;
+                _migratedatainprogress = false;
             }
         }
 
@@ -112,13 +112,13 @@ namespace CardUpdateTool
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Sideloader.Sideloader), nameof(Sideloader.Sideloader.GetManifest))]
-        internal static void GetManifestHook(Sideloader.Manifest __result)
+        internal static void GetManifestHook(Sideloader.Manifest result)
         {
-            if (!Migratedatainprogress)
+            if (!_migratedatainprogress)
             {
                 return;
             }
-            if (__result != null)
+            if (result != null)
             //Useable
             {
                 Migrateable = true;
@@ -129,9 +129,9 @@ namespace CardUpdateTool
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UniversalAutoResolver), nameof(UniversalAutoResolver.TryGetResolutionInfo), typeof(int), typeof(string), typeof(ChaListDefine.CategoryNo), typeof(string))]
-        internal static void MigrationHook(ResolveInfo __result)
+        internal static void MigrationHook(ResolveInfo result)
         {
-            if (__result == null || !Resolverinprogress || !Compatibilitinprogressy)
+            if (result == null || !Resolverinprogress || !_compatibilitinprogressy)
             {
                 return;
             }

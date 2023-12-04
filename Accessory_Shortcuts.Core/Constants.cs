@@ -16,10 +16,10 @@ namespace Accessory_Shortcuts
     }
     public class Data
     {
-        public Data(string _ParentKey)
+        public Data(string parentKey)
         {
             Id = 0;
-            ParentKey = _ParentKey;
+            ParentKey = parentKey;
         }
         public int Id { get; set; }
         public string ParentKey { get; set; }

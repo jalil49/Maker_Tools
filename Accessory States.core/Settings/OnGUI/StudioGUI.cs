@@ -41,19 +41,13 @@ namespace Accessory_States
         {
             get
             {
-                if (GetControl == null)
-                {
-                    return -1;
-                }
+                if (GetControl == null) return -1;
 
                 return GetControl.SelectedDropDown;
             }
             set
             {
-                if (GetControl == null)
-                {
-                    return;
-                }
+                if (GetControl == null) return;
 
                 GetControl.SelectedDropDown = value;
             }
@@ -63,19 +57,13 @@ namespace Accessory_States
         {
             get
             {
-                if (GetControl == null)
-                {
-                    return -1;
-                }
+                if (GetControl == null) return -1;
 
                 return GetControl.SelectedSlot;
             }
             set
             {
-                if (GetControl == null)
-                {
-                    return;
-                }
+                if (GetControl == null) return;
 
                 GetControl.SelectedSlot = value;
             }
@@ -86,15 +74,10 @@ namespace Accessory_States
             get
             {
                 var control = GetController;
-                if (control == null || SelectedSlot < 0)
-                {
-                    return null;
-                }
+                if (control == null || SelectedSlot < 0) return null;
 
                 if (!control.SlotBindingData.TryGetValue(SelectedSlot, out var slotData))
-                {
                     slotData = GetController.SlotBindingData[SelectedSlot] = new SlotData();
-                }
 
                 return slotData;
             }
@@ -114,32 +97,20 @@ namespace Accessory_States
             GL.BeginHorizontal();
             {
                 var dropDownName = "No Chara Selected";
-                if (GetController != null)
-                {
-                    dropDownName = GetController.ChaControl.fileParam.fullname;
-                }
+                if (GetController != null) dropDownName = GetController.ChaControl.fileParam.fullname;
 
                 if (Button("<", "Previous Character") && _charaEvents.Length > 0)
                 {
-                    if (--_selectedChara < 0)
-                    {
-                        _selectedChara = _charaEvents.Length - 1;
-                    }
+                    if (--_selectedChara < 0) _selectedChara = _charaEvents.Length - 1;
 
                     GetControl = GetCharaEventControl();
                 }
 
-                if (Button(dropDownName, "Click to open Chara Select window"))
-                {
-                    ToggleCharacterSelectWindow();
-                }
+                if (Button(dropDownName, "Click to open Chara Select window")) ToggleCharacterSelectWindow();
 
                 if (Button(">", "Next Character") && _charaEvents.Length > 0)
                 {
-                    if (++_selectedChara >= _charaEvents.Length)
-                    {
-                        _selectedChara = 0;
-                    }
+                    if (++_selectedChara >= _charaEvents.Length) _selectedChara = 0;
 
                     GetControl = GetCharaEventControl();
                 }
@@ -155,18 +126,12 @@ namespace Accessory_States
 
         private WindowReturn CharaSelectWindowDraw()
         {
-            if (GetController == null || _charaEvents.Length < 2)
-            {
-                _characterSelect.ToggleShow(false);
-            }
+            if (GetController == null || _charaEvents.Length < 2) _characterSelect.ToggleShow(false);
 
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
-                if (Button("X", "Close this window", false))
-                {
-                    ToggleCharacterSelectWindow();
-                }
+                if (Button("X", "Close this window", false)) ToggleCharacterSelectWindow();
             }
 
             GL.EndHorizontal();
@@ -181,13 +146,9 @@ namespace Accessory_States
                 var charaEvent = _charaEvents[i];
                 var selected = _selectedChara == i;
                 if (selected)
-                {
                     GL.BeginHorizontal(GUI.skin.box);
-                }
                 else
-                {
                     GL.BeginHorizontal();
-                }
 
                 {
                     GL.FlexibleSpace();
@@ -206,10 +167,7 @@ namespace Accessory_States
 
         private void DrawAccessorySelectMenu()
         {
-            if (GetController == null)
-            {
-                return;
-            }
+            if (GetController == null) return;
 
             GL.BeginHorizontal();
             {
@@ -219,9 +177,7 @@ namespace Accessory_States
                     var listInfoBase = GetController.ChaControl.infoAccessory[GetControl.SelectedSlot];
                     var parts = GetController.PartsArray;
                     if (parts[GetControl.SelectedSlot].type != 120)
-                    {
                         dropDownName = listInfoBase != null ? listInfoBase.Name : "Unknown";
-                    }
                 }
 
                 if (Button("<", "Previous Accessory"))
@@ -231,36 +187,25 @@ namespace Accessory_States
 
                     for (var i = GetControl.SelectedSlot - 1; i >= 0; i--)
                     {
-                        if (parts[i].type == 120)
-                        {
-                            continue;
-                        }
+                        if (parts[i].type == 120) continue;
 
                         slot = i;
                         break;
                     }
 
                     if (slot == -1) //wrap around
-                    {
                         for (var i = parts.Length - 1; i >= GetControl.SelectedSlot; i--)
                         {
-                            if (parts[i].type == 120)
-                            {
-                                continue;
-                            }
+                            if (parts[i].type == 120) continue;
 
                             slot = i;
                             break;
                         }
-                    }
 
                     GetControl.SelectedSlot = Math.Max(slot, 0);
                 }
 
-                if (Button(dropDownName, "Click to open Accessory Select window"))
-                {
-                    ToggleAccessorySelectWindow();
-                }
+                if (Button(dropDownName, "Click to open Accessory Select window")) ToggleAccessorySelectWindow();
 
                 if (Button(">", "Next Accessory"))
                 {
@@ -268,28 +213,20 @@ namespace Accessory_States
                     var slot = -1;
                     for (var i = GetControl.SelectedSlot + 1; i < parts.Length; i++)
                     {
-                        if (parts[i].type == 120)
-                        {
-                            continue;
-                        }
+                        if (parts[i].type == 120) continue;
 
                         slot = i;
                         break;
                     }
 
                     if (slot == -1) //wrap around
-                    {
                         for (var i = 0; i <= GetControl.SelectedSlot; i++)
                         {
-                            if (parts[i].type == 120)
-                            {
-                                continue;
-                            }
+                            if (parts[i].type == 120) continue;
 
                             slot = i;
                             break;
                         }
-                    }
 
                     GetControl.SelectedSlot = Math.Max(slot, 0);
                 }
@@ -308,10 +245,7 @@ namespace Accessory_States
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
-                if (Button("X", "Close this window", false))
-                {
-                    _accessorySelectWindow.ToggleShow();
-                }
+                if (Button("X", "Close this window", false)) _accessorySelectWindow.ToggleShow();
             }
 
             GL.EndHorizontal();
@@ -326,31 +260,21 @@ namespace Accessory_States
             var listInfoBases = GetController.ChaControl.infoAccessory;
             for (var i = 0; i < parts.Length; i++)
             {
-                if (parts[i].type == 120)
-                {
-                    continue;
-                }
+                if (parts[i].type == 120) continue;
 
                 var listInfoBase = listInfoBases[i];
                 var selected = GetControl.SelectedSlot == i;
                 if (selected)
-                {
                     GL.BeginHorizontal(GUI.skin.box);
-                }
                 else
-                {
                     GL.BeginHorizontal();
-                }
 
                 {
                     var name = listInfoBase != null ? listInfoBase.Name : "Unknown";
                     Label($"SLOT {i + 1}: ", string.Empty, false);
                     Label(name);
 
-                    if (!selected && Button("Select", "Select this Accessory", false))
-                    {
-                        GetControl.SelectedSlot = i;
-                    }
+                    if (!selected && Button("Select", "Select this Accessory", false)) GetControl.SelectedSlot = i;
                 }
 
                 GL.EndHorizontal();
@@ -366,7 +290,7 @@ namespace Accessory_States
                 return new WindowReturn();
             }
 
-            _slotWindow.SetWindowName($"Slot {SelectedSlot + 1}");
+            SlotWindow.SetWindowName($"Slot {SelectedSlot + 1}");
 
             var bData = GetSelectedBindingData(slotData);
             GL.BeginHorizontal();
@@ -374,22 +298,13 @@ namespace Accessory_States
                 Label(GetController.ChaControl.fileParam.fullname, string.Empty, false);
 
                 GL.FlexibleSpace();
-                if (Button("Preview", "Open preview window to modify states", false))
-                {
-                    TogglePreviewWindow();
-                }
+                if (Button("Preview", "Open preview window to modify states", false)) TogglePreviewWindow();
 
-                if (Button("Settings", "Open Settings", false))
-                {
-                    ToggleSettingsWindow();
-                }
+                if (Button("Settings", "Open Settings", false)) ToggleSettingsWindow();
 
                 GL.Space(10);
 
-                if (Button("X", "Close this window", false))
-                {
-                    ToggleSlotWindow();
-                }
+                if (Button("X", "Close this window", false)) ToggleSlotWindow();
             }
 
             GL.EndHorizontal();
@@ -397,10 +312,10 @@ namespace Accessory_States
             GL.BeginHorizontal();
             {
                 ShoeTypeGUI.Draw();
-                if (Toggle(slotData.Parented, "Enable Hide by Parent", "Enable Toggle to hide by parent") ^
-                    slotData.Parented)
+                if (Toggle(slotData.parented, "Enable Hide by Parent", "Enable Toggle to hide by parent") ^
+                    slotData.parented)
                 {
-                    slotData.Parented = !slotData.Parented;
+                    slotData.parented = !slotData.parented;
                     GetController.UpdateParentedDict();
                     GetController.SaveSlotData(SelectedSlot);
                 }
@@ -443,15 +358,10 @@ namespace Accessory_States
 
             GL.BeginHorizontal();
             {
-                if (Button("Group Data", "Create and Modify Custom Groups"))
-                {
-                    ToggleGroupWindow();
-                }
+                if (Button("Group Data", "Create and Modify Custom Groups")) ToggleGroupWindow();
 
                 if (Button("Use Presets Bindings", "Create and Use Predefine Presets to apply common settings."))
-                {
                     TogglePresetWindow();
-                }
             }
 
             GL.EndHorizontal();
@@ -463,40 +373,25 @@ namespace Accessory_States
             GL.BeginHorizontal();
             {
                 var dropDownName = "None";
-                if (bData != null)
-                {
-                    dropDownName = bData.NameData.Name;
-                }
+                if (bData != null) dropDownName = bData.NameData.Name;
 
                 if (Button("<", "Previous binding for this accessory") && slotData.bindingDatas.Count > 0)
-                {
                     SelectedDropDown = SelectedDropDown == 0 ? slotData.bindingDatas.Count - 1 : SelectedDropDown - 1;
-                }
 
-                if (Button(dropDownName, "Click to open window to apply binding groups"))
-                {
-                    ToggleAddBindingWindow();
-                }
+                if (Button(dropDownName, "Click to open window to apply binding groups")) ToggleAddBindingWindow();
 
                 if (Button(">", "Next binding for this accessory") && slotData.bindingDatas.Count > 0)
-                {
                     SelectedDropDown = SelectedDropDown == slotData.bindingDatas.Count - 1 ? 0 : SelectedDropDown + 1;
-                }
             }
 
             GL.EndHorizontal();
 
-            if (bData == null)
-            {
-                return new WindowReturn();
-            }
+            if (bData == null) return new WindowReturn();
 
             ;
 
             if (!NameControls.TryGetValue(bData.NameData, out var controls))
-            {
                 NameControls[bData.NameData] = controls = new NameDataControl(bData.NameData, GetControl);
-            }
 
             GL.BeginHorizontal();
             {
@@ -506,7 +401,7 @@ namespace Accessory_States
 
             GL.EndHorizontal();
 
-            _slotWindow.Draw();
+            SlotWindow.Draw();
             return new WindowReturn();
         }
 
@@ -521,18 +416,15 @@ namespace Accessory_States
 
         public override void OnGUI()
         {
-            if (Event.current.type == (EventType)8)
-            {
-                UpdateCharaEvents();
-            }
+            if (Event.current.type == (EventType)8) UpdateCharaEvents();
 
-            _previewWindow.Draw();
+            PreviewWindow.Draw();
 
-            _slotWindow.Draw();
-            _groupGUI.Draw();
-            _presetWindow.Draw();
-            _addBinding.Draw();
-            _settingWindow.Draw();
+            SlotWindow.Draw();
+            GroupGUI.Draw();
+            PresetWindow.Draw();
+            AddBinding.Draw();
+            SettingWindow.Draw();
             _accessorySelectWindow.Draw();
             _characterSelect.Draw();
         }
@@ -553,37 +445,23 @@ namespace Accessory_States
         private void UpdateCharaEvents()
         {
             var charaevents = StudioAPI.GetSelectedControllers<CharaEvent>().ToArray();
-            if (Equals(_charaEvents, charaevents))
-            {
-                return;
-            }
+            if (Equals(_charaEvents, charaevents)) return;
 
             _charaEvents = charaevents;
             GetControl = null;
-            if (GetController != null)
-            {
-                _selectedChara = Array.FindIndex(charaevents, x => x == GetController);
-            }
+            if (GetController != null) _selectedChara = Array.FindIndex(charaevents, x => x == GetController);
 
             GetControl = GetCharaEventControl();
         }
 
         private CharaEventControl GetCharaEventControl()
         {
-            if (_selectedChara < 0 || _selectedChara >= _charaEvents.Length)
-            {
-                _selectedChara = 0;
-            }
+            if (_selectedChara < 0 || _selectedChara >= _charaEvents.Length) _selectedChara = 0;
 
-            if (_charaEvents.Length == 0)
-            {
-                return null;
-            }
+            if (_charaEvents.Length == 0) return null;
 
             if (!CharaEventControls.TryGetValue(GetController, out var charaEventControl))
-            {
                 CharaEventControls[GetController] = charaEventControl = new CharaEventControl(GetController);
-            }
 
             return charaEventControl;
         }

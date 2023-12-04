@@ -15,11 +15,11 @@ namespace Additional_Card_Info
             {
                 if (aciData.version <= Constants.MasterSaveVersion)
                 {
-                    CardData = Migrator.StandardCharaMigrate(ChaControl, aciData);
+                    cardData = Migrator.StandardCharaMigrate(ChaControl, aciData);
                 }
                 else
                 {
-                    CardData.Clear();
+                    cardData.Clear();
                 }
             }
 
@@ -31,14 +31,14 @@ namespace Additional_Card_Info
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            SetExtendedData(CardData.Serialize());
+            SetExtendedData(cardData.Serialize());
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate) { }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            NowCoordinateInfo.Clear();
+            nowCoordinateInfo.Clear();
             var aciData = GetCoordinateExtendedData(coordinate);
             if (aciData != null)
             {
@@ -56,6 +56,11 @@ namespace Additional_Card_Info
             }
 
             UpdateSlots();
+        }
+
+        public void Slot_ACC_Change(int slotNo, int type)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

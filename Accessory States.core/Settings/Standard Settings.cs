@@ -22,21 +22,20 @@ namespace Accessory_States
     [BepInIncompatibility("madevil.kk.ass")]
     [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
     [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
-    [BepInPlugin(GUID, "Accessory States", Version)]
+    [BepInPlugin(Guid, "Accessory States", Version)]
 #if Studio
     [BepInProcess("CharaStudio")]
 #endif
     public partial class Settings : BaseUnityPlugin
     {
-        public const string GUID = "Accessory_States";
-        public const string Version = "2.0";
+        public const string Guid = "Accessory_States";
+        private const string Version = "2.0";
         internal static Settings Instance;
         internal new static ManualLogSource Logger;
-        internal static bool showstacktrace = false;
 
         public static ConfigEntry<string> NamingID { get; private set; }
         public static ConfigEntry<bool> Enable { get; private set; }
-        public static ConfigEntry<bool> ASS_SAVE { get; private set; }
+        public static ConfigEntry<bool> AssSave { get; private set; }
 
         #region Maker Data Save
 
@@ -54,6 +53,8 @@ namespace Accessory_States
         internal static ConfigEntry<int> StudioFontSize { get; set; }
 
         #endregion
+        
+        internal static StudioGUI Studio { get; set; }
 
 #endif
 
@@ -61,15 +62,15 @@ namespace Accessory_States
         {
             Instance = this;
             Logger = base.Logger;
-            CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
+            CharacterApi.RegisterExtraBehaviour<CharaEvent>(Guid);
             StartCoroutine(DelayedInit());
             StartCoroutine(Wait());
-            GameAPI.RegisterExtraBehaviour<GameEvent>(GUID);
+            GameAPI.RegisterExtraBehaviour<GameEvent>(Guid);
 
             WindowConfig.Register();
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "2", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");
-            ASS_SAVE = Config.Bind("Setting", "Accessory State Sync Save", true, "Save ASS format as well.");
+            AssSave = Config.Bind("Setting", "Accessory State Sync Save", true, "Save ASS format as well.");
             PreviewWindowHotKey = Config.Bind("HotKeys", "Preview Window", new KeyboardShortcut(KeyCode.None),
                 "Toggle the visibility of the Preview Window");
             SlotWindowHotKey = Config.Bind("HotKeys", "Slot Window", new KeyboardShortcut(KeyCode.None),
@@ -81,19 +82,13 @@ namespace Accessory_States
             GUISetup(MakerFontSize.Value);
             GameUnique();
 #if Studio
-            if (!StudioAPI.InsideStudio)
-            {
-                return;
-            }
+            if (!StudioAPI.InsideStudio) return;
 
             StudioWindowSetup();
             GUISetup(StudioFontSize.Value);
             StudioAPI.StudioLoadedChanged += (val, val2) =>
             {
-                if (_studio == null)
-                {
-                    _studio = new StudioGUI();
-                }
+                if (Studio == null) Studio = new StudioGUI();
             };
 #endif
         }
@@ -121,12 +116,8 @@ namespace Accessory_States
         {
             Chainloader.PluginInfos.TryGetValue(pluginName, out var target);
             if (null != target)
-            {
                 if (target.Metadata.Version >= minimumVersion)
-                {
                     return true;
-                }
-            }
 
             return false;
         }
@@ -140,12 +131,10 @@ namespace Accessory_States
         private IEnumerator<int> Wait()
         {
             yield return 0;
-            var ASS_Exists = CharaEvent.ASSExists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
-            if (!ASS_Exists)
-            {
+            var assExists = CharaEvent.AssExists = TryfindPluginInstance("madevil.kk.ass", new Version("4.1.0.0"));
+            if (!assExists)
                 //Create Dummy Controller to make data visible outside of maker
                 CharacterApi.RegisterExtraBehaviour<Dummy>("madevil.kk.ass");
-            }
         }
     }
 }

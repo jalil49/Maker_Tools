@@ -1,46 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>dde006d7-3af0-423a-8071-1c0012d78f61</SharedGUID>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Accessory_States</Import_RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\AccStateSync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\Migration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\StateData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\NameData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\SlotDataV1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\CoordinateDataV1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetFolder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Abstract\StatesBaseGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\NameDataControl.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\PresetControl.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\PresetFolderControl.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\CharaEventControl.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\StateInfoControl.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\MakerGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGui.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Presets.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\StudioGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordianteData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Events.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GameEvent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Abstract\" />
-  </ItemGroup>
+    <PropertyGroup>
+        <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <HasSharedItems>true</HasSharedItems>
+        <SharedGUID>dde006d7-3af0-423a-8071-1c0012d78f61</SharedGUID>
+    </PropertyGroup>
+    <PropertyGroup Label="Configuration">
+        <Import_RootNamespace>Accessory_States</Import_RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\AccStateSync.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)ACC_State_Sync\Migration.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\StateData.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\BindingData.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\NameData.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\SlotData.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\SlotDataV1.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\CoordinateDataV1.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Version1\NameDataV1.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetData.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\PresetStorage\PresetFolder.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Abstract\StatesBaseGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\NameDataControl.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\PresetControl.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\PresetFolderControl.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\CharaEventControl.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Controls\StateInfoControl.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\MakerGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\OnGui.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Presets.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\OnGUI\StudioGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStorage\CoordianteData.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Events.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GameEvent.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Migration\Migrator.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="$(MSBuildThisFileDirectory)Settings\OnGUI\Abstract\"/>
+    </ItemGroup>
 </Project>

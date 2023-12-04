@@ -1,28 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>c6d77e52-9bf4-4b2b-b1c3-345218550e10</SharedGUID>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Extensions</Import_RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\AreaGui.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\Config\WindowConfig.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\MultiToolBarGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ScrollGui.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IntTextFieldGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextAreaGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToolBarGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\WindowGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\LabelGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextFieldGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IDraw.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ButtonGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToggleGUI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OnGuiExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
-  </ItemGroup>
+    <PropertyGroup>
+        <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <HasSharedItems>true</HasSharedItems>
+        <SharedGUID>c6d77e52-9bf4-4b2b-b1c3-345218550e10</SharedGUID>
+    </PropertyGroup>
+    <PropertyGroup Label="Configuration">
+        <Import_RootNamespace>Extensions</Import_RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\AreaGui.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\Config\WindowConfig.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\MultiToolBarGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ScrollGui.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IntTextFieldGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextAreaGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToolBarGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\WindowGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\LabelGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\TextFieldGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\IDraw.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ButtonGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GUI Classes\ToggleGUI.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)OnGuiExtensions.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs"/>
+    </ItemGroup>
 </Project>

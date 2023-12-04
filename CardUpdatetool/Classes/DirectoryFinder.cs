@@ -5,53 +5,53 @@ namespace CardUpdateTool
 {
     static class DirectoryFinder
     {
-        public static List<string> Grab_All_Directories(string OriginalPath)
+        public static List<string> Grab_All_Directories(string originalPath)
         {
-            var FoldersPath = new List<string>
+            var foldersPath = new List<string>
             {
-                OriginalPath
+                originalPath
             };
-            FoldersPath.AddRange(Directory.GetDirectories(OriginalPath, "*", SearchOption.AllDirectories)); //grab child folders
-            for (var i = 0; i < FoldersPath.Count; i++)
+            foldersPath.AddRange(Directory.GetDirectories(originalPath, "*", SearchOption.AllDirectories)); //grab child folders
+            for (var i = 0; i < foldersPath.Count; i++)
             {
-                if (FoldersPath[i].EndsWith(@"\Sets"))
+                if (foldersPath[i].EndsWith(@"\Sets"))
                 {
-                    FoldersPath.RemoveAt(i--);
+                    foldersPath.RemoveAt(i--);
                     continue;
                 }
-                if (Directory.GetFiles(FoldersPath[i], "*.png").Length == 0)
+                if (Directory.GetFiles(foldersPath[i], "*.png").Length == 0)
                 {
-                    FoldersPath.RemoveAt(i--);
+                    foldersPath.RemoveAt(i--);
                 }
             }
-            if (FoldersPath.Count == 0)
+            if (foldersPath.Count == 0)
             {
-                FoldersPath.Add(OriginalPath);
+                foldersPath.Add(originalPath);
             }
 
-            return FoldersPath;
+            return foldersPath;
         }
 
-        public static List<string> Get_Cards_From_Path(string OriginalPath)
+        public static List<string> Get_Cards_From_Path(string originalPath)
         {
-            var Choosen = new List<string>();
-            var Paths = new List<string>();
-            if (Directory.Exists(OriginalPath))
+            var choosen = new List<string>();
+            var paths = new List<string>();
+            if (Directory.Exists(originalPath))
             {
-                Paths.Add(OriginalPath);
-                Paths.AddRange(Directory.GetDirectories(OriginalPath, "*", SearchOption.AllDirectories)); //grab child folders
+                paths.Add(originalPath);
+                paths.AddRange(Directory.GetDirectories(originalPath, "*", SearchOption.AllDirectories)); //grab child folders
             }
             //step through each folder and grab files
-            foreach (var path in Paths)
+            foreach (var path in paths)
             {
                 if (path.Contains("BadCardData") || path.Contains("MissingMods") || path.Contains("OutdatedMods"))
                 {
                     continue;
                 }
                 var files = Directory.GetFiles(path, "*.png");
-                Choosen.AddRange(files);
+                choosen.AddRange(files);
             }
-            return Choosen;
+            return choosen;
         }
     }
 }

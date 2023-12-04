@@ -2,6 +2,7 @@
 using ExtensibleSaveFormat;
 using MessagePack;
 using System.Collections.Generic;
+using static Accessory_Themes.Migrator.Migrator;
 
 namespace Accessory_Themes
 {
@@ -12,36 +13,36 @@ namespace Accessory_Themes
 
         private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
         {
-            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null || Data.version >= 2) return;
+            if (!importedExtendedData.TryGetValue(Guid, out var data) || data == null || data.version >= 2) return;
 
-            var Coordinate = new Dictionary<int, Migrator.CoordinateDataV1>();
+            var coordinate = new Dictionary<int, CoordinateDataV1>();
 
-            switch (Data.version)
+            switch (data.version)
             {
                 case 1:
-                    if (Data.data.TryGetValue(Constants.CoordinateKey, out var ByteData) && ByteData != null)
+                    if (data.data.TryGetValue(Constants.CoordinateKey, out var byteData) && byteData != null)
                     {
-                        Migrator.StandardCharaMigrateV0(Data, ref Coordinate, coordinateMapping.Count);
+                        StandardCharaMigrateV0(data, ref coordinate, coordinateMapping.Count);
                     }
                     break;
                 case 2:
-                    if (Data.data.TryGetValue(Constants.CoordinateKey, out ByteData) && ByteData != null)
+                    if (data.data.TryGetValue(Constants.CoordinateKey, out byteData) && byteData != null)
                     {
-                        Coordinate = Migrator.CoordinateDataV1.DictDeserialize(ByteData);
+                        coordinate = CoordinateDataV1.DictDeserialize(byteData);
                     }
                     break;
             }
 
-            var transfer = new Dictionary<int, Migrator.CoordinateDataV1>();
+            var transfer = new Dictionary<int, CoordinateDataV1>();
 
             foreach (var item in coordinateMapping)
             {
-                if (!Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
+                if (!coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
                 transfer[item.Value.Value] = coord;
             }
 
-            Data.data.Clear();
-            Data.data[Constants.CoordinateKey] = MessagePackSerializer.Serialize(transfer);
+            data.data.Clear();
+            data.data[Constants.CoordinateKey] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

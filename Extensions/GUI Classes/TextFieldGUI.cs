@@ -14,7 +14,7 @@ namespace Extensions.GUI_Classes
         public string ButtonText = "Rename";
 
         public TextFieldGUI(GUIContent text, Action<string, string> onValueChange,
-                            params GUILayoutOption[] gUILayoutOptions)
+            params GUILayoutOption[] gUILayoutOptions)
         {
             _style = TextFieldStyle;
             GUIContent = text;
@@ -26,10 +26,7 @@ namespace Extensions.GUI_Classes
         public void ActiveDraw()
         {
             var textField = GUILayout.TextField(GUIContent.text, _style, _layoutOptions);
-            if (textField == GUIContent.text)
-            {
-                return;
-            }
+            if (textField == GUIContent.text) return;
 
             _onValueChange?.Invoke(GUIContent.text, textField);
 
@@ -42,10 +39,7 @@ namespace Extensions.GUI_Classes
 
             if (_newText != GUIContent.text && Button(ButtonText, expandwidth: false))
             {
-                if (_onValueChange != null)
-                {
-                    _onValueChange.Invoke(GUIContent.text, _newText);
-                }
+                if (_onValueChange != null) _onValueChange.Invoke(GUIContent.text, _newText);
 
                 GUIContent.text = _newText;
             }

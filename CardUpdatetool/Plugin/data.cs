@@ -8,13 +8,13 @@ namespace CardUpdateTool
 {
     public partial class CardUpdateTool
     {
-        private static bool ShowGui = false;
+        private static bool _showGui = false;
 
         private static readonly DataType CharacterData = new DataType();
         private static readonly DataType OutfitData = new DataType();
 
-        private static List<CardInfo> CharacterList { get { return CharacterData.Cardlist; } set { CharacterData.Cardlist = value; } }
-        private static List<CardInfo> OutfitList { get { return OutfitData.Cardlist; } set { OutfitData.Cardlist = value; } }
+        private static List<CardInfo> CharacterList { get { return CharacterData.CardList; } set { CharacterData.CardList = value; } }
+        private static List<CardInfo> OutfitList { get { return OutfitData.CardList; } set { OutfitData.CardList = value; } }
         private static List<string> GuidList { get { return DataType.GuidList; } set { DataType.GuidList = value; } }
 
         private static Dictionary<string, VersionData> StaticMaxVersion { get { return DataType.StaticMaxVersion; } set { DataType.StaticMaxVersion = value; } }
@@ -48,10 +48,10 @@ namespace CardUpdateTool
         private static int CurrentCoordinate => ChaControl.fileStatus.coordinateType;
         private static ChaFileControl ChaFileControl => ChaControl.chaFile;
 
-        private static bool interceptsave = false;
-        private static string interceptpath;
-        private static SidebarToggle toggle;
-        private static bool UpdateInProgress = false;
-        private static WaitForSeconds waitFor01s = new WaitForSeconds(0.1f);
+        private static bool _interceptsave = false;
+        private static string _interceptpath;
+        private static SidebarToggle _toggle;
+        private static bool _updateInProgress = false;
+        private static WaitForSeconds _waitFor01S = new WaitForSeconds(0.1f);
     }
 }

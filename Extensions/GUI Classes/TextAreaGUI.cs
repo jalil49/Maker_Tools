@@ -6,46 +6,48 @@ namespace Extensions.GUI_Classes
 {
     public class TextAreaGUI
     {
-        public string Text = "Default Text";
+        public Action<string> Action;
         public string ButtonText = "Rename";
-        private string newText;
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
-        public Action<string> action;
-        public TextAreaGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
+        public GUILayoutOption[] LayoutOptions;
+        private string _newText;
+        public GUIStyle Style;
+        public string Text = "Default Text";
+
+        public TextAreaGUI(string text, params GUILayoutOption[] gUILayoutOptions)
         {
-            style = TextAreaStyle;
-            Text = _text;
-            newText = _text;
-            layoutOptions = gUILayoutOptions;
+            Style = TextAreaStyle;
+            Text = text;
+            _newText = text;
+            LayoutOptions = gUILayoutOptions;
         }
 
         public void ActiveDraw()
         {
-            var newText = GUILayout.TextArea(Text, style, layoutOptions);
-            if(newText != Text)
+            var newText = GUILayout.TextArea(Text, Style, LayoutOptions);
+            if (newText != Text)
             {
                 Text = newText;
-                if(action == null)
+                if (Action == null)
                     return;
-                action.Invoke(Text);
+                Action.Invoke(Text);
             }
         }
+
         public void ConfirmDraw()
         {
-            newText = GUILayout.TextArea(newText, style, layoutOptions);
-            if(newText != Text && Button(ButtonText, expandwidth: false))
+            _newText = GUILayout.TextArea(_newText, Style, LayoutOptions);
+            if (_newText != Text && Button(ButtonText, expandwidth: false))
             {
-                Text = newText;
-                if(action == null)
+                Text = _newText;
+                if (Action == null)
                     return;
-                action.Invoke(Text);
+                Action.Invoke(Text);
             }
         }
 
         internal void ManuallySetNewText(string text)
         {
-            newText = text;
+            _newText = text;
         }
     }
 }

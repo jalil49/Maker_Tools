@@ -1,38 +1,19 @@
-﻿using Extensions;
-using MessagePack;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using Extensions;
+using MessagePack;
 
 namespace Accessory_States.Classes.PresetStorage
 {
     [MessagePackObject(true)]
     public class PresetData
     {
-        public string Name;
-        public string Description;
-        public SlotData Data;
-        public string FileName
-        {
-            set
-            {
-                if(_fileName.IsNullOrWhiteSpace())
-                    _fileName = Name;
-                if(_fileName.Length == 0)
-                    _fileName = this.GetHashCode().ToString();
-
-                _fileName = string.Concat(value.Split(System.IO.Path.GetInvalidFileNameChars())).Trim();
-            }
-            get
-            {
-                if(_fileName.IsNullOrWhiteSpace())
-                    _fileName = Name;
-                if(_fileName.Length == 0)
-                    _fileName = this.GetHashCode().ToString();
-
-                return _fileName;
-            }
-        }
-        private string _fileName;
         public const string SerializeKey = "Single";
+        private string _fileName;
+        public SlotData Data;
+        public string Description;
+        public string Name;
         public bool SavedOnDisk;
 
         public PresetData()
@@ -43,12 +24,38 @@ namespace Accessory_States.Classes.PresetStorage
             Data = null;
             SavedOnDisk = false;
         }
+
+        public string FileName
+        {
+            set
+            {
+                if (_fileName.IsNullOrWhiteSpace())
+                    _fileName = Name;
+                if (_fileName.Length == 0)
+                    _fileName = GetHashCode().ToString();
+
+                _fileName = string.Concat(value.Split(Path.GetInvalidFileNameChars())).Trim();
+            }
+            get
+            {
+                if (_fileName.IsNullOrWhiteSpace())
+                    _fileName = Name;
+                if (_fileName.Length == 0)
+                    _fileName = GetHashCode().ToString();
+
+                return _fileName;
+            }
+        }
+
         public bool Filter(string filter)
         {
-            if(Name.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || FileName.Contains(filter, System.StringComparison.OrdinalIgnoreCase) || Description.Contains(filter, System.StringComparison.OrdinalIgnoreCase))
+            if (Name.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                FileName.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                Description.Contains(filter, StringComparison.OrdinalIgnoreCase))
                 return false;
             return true;
         }
+
         public void SaveFile()
         {
             Presets.SaveFile(FileName, MessagePackSerializer.Serialize(Serialize()));
@@ -62,7 +69,7 @@ namespace Accessory_States.Classes.PresetStorage
 
         public static PresetData ConvertSlotData(SlotData slotData, int selectedSlot)
         {
-            var presetData = new PresetData()
+            var presetData = new PresetData
             {
                 Name = $"Slot {selectedSlot} Preset",
                 Data = MessagePackSerializer.Deserialize<SlotData>(MessagePackSerializer.Serialize(slotData))

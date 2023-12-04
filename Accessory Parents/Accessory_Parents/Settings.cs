@@ -8,6 +8,8 @@ namespace Accessory_Parents
     [BepInProcess("Koikatsu Party VR")]
     public partial class Settings : BaseUnityPlugin
     {
-        private void GameUnique() { }
+        private void GameUnique()
+        {
+        }
     }
 }

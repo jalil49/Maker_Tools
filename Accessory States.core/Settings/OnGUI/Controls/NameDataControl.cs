@@ -11,70 +11,55 @@ namespace Accessory_States.OnGUI
     {
         private readonly IntTextFieldGUI _currentState;
         private readonly IntTextFieldGUI _defaultState;
-        private readonly CharaEventControl CharaEventControl;
-        private readonly Dictionary<int, TextFieldGUI> StatesRename = new Dictionary<int, TextFieldGUI>();
+        private readonly CharaEventControl _charaEventControl;
+        private readonly Dictionary<int, TextFieldGUI> _statesRename = new Dictionary<int, TextFieldGUI>();
         public NameData NameData;
-        private string newName;
+        private string _newName;
 
         public NameDataControl(NameData name, CharaEventControl charaEventControl)
         {
             NameData = name;
-            newName = name.Name;
-            _currentState = new IntTextFieldGUI(NameData.CurrentState.ToString(), GL.ExpandWidth(false))
+            _newName = name.Name;
+            _currentState = new IntTextFieldGUI(NameData.currentState.ToString(), GL.ExpandWidth(false))
             {
-                action = val => { NameData.CurrentState = val; }
+                Action = val => { NameData.currentState = val; }
             };
             _defaultState = new IntTextFieldGUI(name.DefaultState.ToString(), GL.ExpandWidth(false))
             {
-                action = val =>
+                Action = val =>
                 {
-                    if (val < 0)
-                    {
-                        val = 0;
-                    }
+                    if (val < 0) val = 0;
 
-                    if (val >= NameData.StateLength)
-                    {
-                        val = NameData.StateLength - 1;
-                    }
+                    if (val >= NameData.StateLength) val = NameData.StateLength - 1;
 
                     NameData.DefaultState = val;
                 }
             };
-            CharaEventControl = charaEventControl;
+            _charaEventControl = charaEventControl;
         }
 
-        private CharaEvent CharaEvent => CharaEventControl.CharaEvent;
+        private CharaEvent CharaEvent => _charaEventControl.CharaEvent;
 
-        public void Save(int SelectedSlot)
+        public void Save(int selectedSlot)
         {
             foreach (var item in CharaEvent.SlotBindingData)
             {
-                if (!item.Value.TryGetBinding(NameData, out var binding))
-                {
-                    continue;
-                }
+                if (!item.Value.TryGetBinding(NameData, out var binding)) continue;
 
                 var states = binding.States;
                 var sort = false;
 
                 for (var i = 0; i < NameData.StateLength; i++)
                 {
-                    if (states.Any(x => x.State == i))
-                    {
-                        continue;
-                    }
+                    if (states.Any(x => x.State == i)) continue;
 
-                    states.Add(new StateInfo { State = i, Binding = NameData.Binding, Slot = SelectedSlot });
+                    states.Add(new StateInfo { State = i, Binding = NameData.binding, Slot = selectedSlot });
                     sort = true;
                 }
 
                 states.RemoveAll(x => x.State >= NameData.StateLength);
 
-                if (sort)
-                {
-                    binding.Sort();
-                }
+                if (sort) binding.Sort();
 
                 CharaEvent.SaveSlotData(item.Key);
             }
@@ -85,36 +70,30 @@ namespace Accessory_States.OnGUI
             foreach (var item in CharaEvent.SlotBindingData)
             {
                 var result = item.Value.bindingDatas.RemoveAll(x => x.NameData == NameData);
-                if (result > 0)
-                {
-                    CharaEvent.SaveSlotData(item.Key);
-                }
+                if (result > 0) CharaEvent.SaveSlotData(item.Key);
             }
         }
 
-        public void DrawGroupRename(int SelectedSlot)
+        public void DrawGroupRename(int selectedSlot)
         {
-            newName = TextField(newName);
-            if (!newName.Equals(NameData.Name) && Button("Update Name",
-                "Updates Name for all accessories as well as saving current data", false))
+            _newName = TextField(_newName);
+            if (!_newName.Equals(NameData.Name) && Button("Update Name",
+                    "Updates Name for all accessories as well as saving current data", false))
             {
-                NameData.Name = newName;
-                Save(SelectedSlot);
+                NameData.Name = _newName;
+                Save(selectedSlot);
             }
 
             if (Button("Add State", "Adds a new state to this group for related accessories", false))
             {
                 for (int j = 0, n = NameData.StateLength + 1; j < n; j++)
                 {
-                    if (NameData.StateNames.ContainsKey(j))
-                    {
-                        continue;
-                    }
+                    if (NameData.StateNames.ContainsKey(j)) continue;
 
                     NameData.StateNames[j] = "State " + j;
                 }
 
-                Save(SelectedSlot);
+                Save(selectedSlot);
             }
 
             ;
@@ -132,17 +111,13 @@ namespace Accessory_States.OnGUI
             {
                 GL.FlexibleSpace();
                 if (Button("Set Main", "Change all accessory parts in group to Main Hide Category", false))
-                {
                     CharaEvent.ChangeBindingSub(0, NameData);
-                }
 
                 if (Button("Set Sub", "Change all accessory parts in group to Sub Hide Category", false))
-                {
                     CharaEvent.ChangeBindingSub(1, NameData);
-                }
 
                 GL.Space(10);
-                NameData.StopCollision = Toggle(NameData.StopCollision, "Unique Group",
+                NameData.stopCollision = Toggle(NameData.stopCollision, "Unique Group",
                     "None-Unique Groups will be merged when possible by Name");
             }
 
@@ -156,20 +131,14 @@ namespace Accessory_States.OnGUI
                 if (Button("<", "Decrease Default State", false))
                 {
                     NameData.DefaultState--;
-                    if (NameData.DefaultState < 0)
-                    {
-                        NameData.DefaultState = NameData.StateLength - 1;
-                    }
+                    if (NameData.DefaultState < 0) NameData.DefaultState = NameData.StateLength - 1;
                 }
 
                 _defaultState.Draw(NameData.DefaultState);
                 if (Button(">", "Increase Default State", false))
                 {
                     NameData.DefaultState++;
-                    if (NameData.DefaultState >= NameData.StateLength)
-                    {
-                        NameData.DefaultState = 0;
-                    }
+                    if (NameData.DefaultState >= NameData.StateLength) NameData.DefaultState = 0;
                 }
             }
 
@@ -189,7 +158,7 @@ namespace Accessory_States.OnGUI
                     if (j == NameData.StateLength - 1 && Button("Remove", expandwidth: false))
                     {
                         NameData.StateNames.Remove(j);
-                        StatesRename.Remove(j);
+                        _statesRename.Remove(j);
                         Save(selectedSlot);
                     }
                 }
@@ -202,25 +171,25 @@ namespace Accessory_States.OnGUI
             GL.BeginHorizontal();
             {
                 GL.FlexibleSpace();
-                Label(NameData.Name + ": " + NameData.GetStateName(NameData.CurrentState), string.Empty, false);
+                Label(NameData.Name + ": " + NameData.GetStateName(NameData.currentState), string.Empty, false);
                 if (Button("<", "Previous State", false))
                 {
                     NameData.DecrementCurrentState();
-                    if (NameData.Binding < Constants.ClothingLength)
+                    if (NameData.binding < Constants.ClothingLength)
                     {
-                        CharaEvent.ChaControl.SetClothesStatePrev(NameData.Binding);
-                        NameData.CurrentState = CharaEvent.ChaControl.fileStatus.clothesState[NameData.Binding];
+                        CharaEvent.ChaControl.SetClothesStatePrev(NameData.binding);
+                        NameData.currentState = CharaEvent.ChaControl.fileStatus.clothesState[NameData.binding];
                     }
                 }
 
-                _currentState.Draw(NameData.CurrentState);
+                _currentState.Draw(NameData.currentState);
                 if (Button(">", "Next State", false))
                 {
                     NameData.IncrementCurrentState();
-                    if (NameData.Binding < Constants.ClothingLength)
+                    if (NameData.binding < Constants.ClothingLength)
                     {
-                        CharaEvent.ChaControl.SetClothesStateNext(NameData.Binding);
-                        NameData.CurrentState = CharaEvent.ChaControl.fileStatus.clothesState[NameData.Binding];
+                        CharaEvent.ChaControl.SetClothesStateNext(NameData.binding);
+                        NameData.currentState = CharaEvent.ChaControl.fileStatus.clothesState[NameData.binding];
                     }
                 }
             }
@@ -228,12 +197,12 @@ namespace Accessory_States.OnGUI
             GL.EndHorizontal();
         }
 
-        private TextFieldGUI TryGetTextField(int state, int SelectedSlot)
+        private TextFieldGUI TryGetTextField(int state, int selectedSlot)
         {
-            if (!StatesRename.TryGetValue(state, out var newStateName))
-            {
-                StatesRename[state] = newStateName = new TextFieldGUI(new GUIContent(NameData.GetStateName(state), string.Empty),null, GL.ExpandWidth(true), GL.MinWidth(30));
-            }
+            if (!_statesRename.TryGetValue(state, out var newStateName))
+                _statesRename[state] = newStateName = new TextFieldGUI(
+                    new GUIContent(NameData.GetStateName(state), string.Empty), null, GL.ExpandWidth(true),
+                    GL.MinWidth(30));
 
             return newStateName;
         }

@@ -12,70 +12,60 @@ namespace Accessory_States.OnGUI
 {
     public class PresetContol
     {
-        private readonly List<PresetData> Container;
-        private readonly TextAreaGUI Description;
-        private readonly TextFieldGUI FileName;
-        private readonly TextFieldGUI Name;
+        private readonly List<PresetData> _container;
+        private readonly TextAreaGUI _description;
+        private readonly TextFieldGUI _fileName;
+        private readonly TextFieldGUI _name;
         public readonly PresetData PresetData;
 
         public PresetContol(PresetData presetData, List<PresetData> container)
         {
             PresetData = presetData;
-            Container = container;
+            _container = container;
 
-            Name = new TextFieldGUI(new GUIContent(presetData.Name),
+            _name = new TextFieldGUI(new GUIContent(presetData.Name),
                 (oldValue, newValue) => { presetData.Name = newValue; }, GL.ExpandWidth(true));
 
-            FileName = new TextFieldGUI(new GUIContent(presetData.FileName), (oldVal, newVal) =>
+            _fileName = new TextFieldGUI(new GUIContent(presetData.FileName), (oldVal, newVal) =>
             {
-                if (newVal.IsNullOrWhiteSpace())
-                {
-                    newVal = PresetData.Name;
-                }
+                if (newVal.IsNullOrWhiteSpace()) newVal = PresetData.Name;
 
-                if (newVal.Length == 0)
-                {
-                    newVal = PresetData.GetHashCode().ToString();
-                }
+                if (newVal.Length == 0) newVal = PresetData.GetHashCode().ToString();
 
                 newVal = string.Concat(newVal.Split(Path.GetInvalidFileNameChars())).Trim();
 
-                if (PresetData.SavedOnDisk)
-                {
-                    Presets.Rename(oldVal, newVal);
-                }
+                if (PresetData.SavedOnDisk) Presets.Rename(oldVal, newVal);
 
                 PresetData.FileName = newVal;
-                FileName.ManuallySetNewText(PresetData.FileName);
+                _fileName.ManuallySetNewText(PresetData.FileName);
             });
 
-            Description = new TextAreaGUI(presetData.Description)
+            _description = new TextAreaGUI(presetData.Description)
             {
-                action = val => { presetData.Description = val; }
+                Action = val => { presetData.Description = val; }
             };
         }
 
-        public bool Filter(string filter) => PresetData.Filter(filter);
+        public bool Filter(string filter)
+        {
+            return PresetData.Filter(filter);
+        }
 
-        public void Draw(CharaEvent chara, int SelectedSlot)
+        public void Draw(CharaEvent chara, int selectedSlot)
         {
             GL.BeginHorizontal();
             {
-                Name.ActiveDraw();
+                _name.ActiveDraw();
 
-                var index = Container.IndexOf(PresetData);
+                var index = _container.IndexOf(PresetData);
 
                 if (Button("Apply", "Apply this preset's data to slot, No collision check", false))
                 {
-                    if (chara.SlotBindingData.TryGetValue(SelectedSlot, out var undoReference))
-                    {
+                    if (chara.SlotBindingData.TryGetValue(selectedSlot, out var undoReference))
                         foreach (var item in undoReference.bindingDatas)
-                        {
-                            item.NameData.AssociatedSlots.Remove(SelectedSlot);
-                        }
-                    }
+                            item.NameData.AssociatedSlots.Remove(selectedSlot);
 
-                    var slotData = chara.SlotBindingData[SelectedSlot] = PresetData.Data.DeepClone();
+                    var slotData = chara.SlotBindingData[selectedSlot] = PresetData.Data.DeepClone();
                     var names = chara.NameDataList;
                     foreach (var item in slotData.bindingDatas)
                     {
@@ -83,54 +73,44 @@ namespace Accessory_States.OnGUI
                         if (reference != null)
                         {
                             item.NameData = reference;
-                            item.NameData.CollisionString =
+                            item.NameData.collisionString =
                                 Guid.NewGuid().ToString("D")
                                     .ToUpper(); //replace Collision string from preset to prevent collisions from shared presets
-                            item.NameData.AssociatedSlots.Add(SelectedSlot);
-                            item.SetSlot(SelectedSlot);
+                            item.NameData.AssociatedSlots.Add(selectedSlot);
+                            item.SetSlot(selectedSlot);
                             continue;
                         }
 
-                        item.NameData.Binding = names.Max(x => x.Binding) + 1;
+                        item.NameData.binding = names.Max(x => x.binding) + 1;
                         item.SetBinding();
                         names.Add(item.NameData);
-                        item.NameData.AssociatedSlots.Add(SelectedSlot);
+                        item.NameData.AssociatedSlots.Add(selectedSlot);
                     }
 
-                    Save(chara, slotData.bindingDatas, SelectedSlot);
+                    Save(chara, slotData.bindingDatas, selectedSlot);
                     chara.RefreshSlots();
                 }
 
                 if (Button("Override", "Apply this slots data to preset", false))
-                {
-                    PresetData.Data = chara.SlotBindingData[SelectedSlot].DeepClone();
-                }
+                    PresetData.Data = chara.SlotBindingData[selectedSlot].DeepClone();
 
                 if (Button("↑", $"Move Up: Index {index}, Hold Shift to move to top", false) && index > 0)
                 {
-                    Container.RemoveAt(index);
+                    _container.RemoveAt(index);
                     if (Event.current.shift)
-                    {
-                        Container.Insert(0, PresetData);
-                    }
+                        _container.Insert(0, PresetData);
                     else
-                    {
-                        Container.Insert(index - 1, PresetData);
-                    }
+                        _container.Insert(index - 1, PresetData);
                 }
 
                 if (Button("↓", $"Move Down: Index {index}, Hold Shift to move to bottom", false) &&
-                    index < Container.Count - 1)
+                    index < _container.Count - 1)
                 {
-                    Container.RemoveAt(index);
+                    _container.RemoveAt(index);
                     if (Event.current.shift)
-                    {
-                        Container.Add(PresetData);
-                    }
+                        _container.Add(PresetData);
                     else
-                    {
-                        Container.Insert(index + 1, PresetData);
-                    }
+                        _container.Insert(index + 1, PresetData);
                 }
             }
 
@@ -140,21 +120,16 @@ namespace Accessory_States.OnGUI
             {
                 GL.FlexibleSpace();
 
-                if (FileName.GUIContent.text.Length > 0 && Button("Save", "Save Preset to disk", false))
-                {
+                if (_fileName.GUIContent.text.Length > 0 && Button("Save", "Save Preset to disk", false))
                     PresetData.SaveFile();
-                }
 
-                if (Button("Remove", "Unload Reference", false))
-                {
-                    Container.Remove(PresetData);
-                }
+                if (Button("Remove", "Unload Reference", false)) _container.Remove(PresetData);
 
                 GL.Space(10);
 
                 if (PresetData.SavedOnDisk && Button("Delete", "Delete from disk", false))
                 {
-                    Container.Remove(PresetData);
+                    _container.Remove(PresetData);
                     PresetData.Delete();
                 }
             }
@@ -165,7 +140,7 @@ namespace Accessory_States.OnGUI
             {
                 GL.Space(10);
                 Label("File Name:", string.Empty, false);
-                FileName.ConfirmDraw();
+                _fileName.ConfirmDraw();
             }
 
             GL.EndHorizontal();
@@ -174,52 +149,40 @@ namespace Accessory_States.OnGUI
             {
                 GL.Space(10);
                 Label("Description:", string.Empty, false);
-                Description.ActiveDraw();
+                _description.ActiveDraw();
             }
 
             GL.EndHorizontal();
         }
 
-        private void Save(CharaEvent chara, List<BindingData> bindingDatas, int SelectedSlot)
+        private void Save(CharaEvent chara, List<BindingData> bindingDatas, int selectedSlot)
         {
             foreach (var item in chara.SlotBindingData)
             {
                 var save = false;
                 foreach (var item2 in item.Value.bindingDatas)
                 {
-                    if (!bindingDatas.Any(x => x == item2))
-                    {
-                        continue;
-                    }
+                    if (!bindingDatas.Any(x => x == item2)) continue;
 
-                    var NameData = item2.NameData;
+                    var nameData = item2.NameData;
                     var states = item2.States;
                     var sort = false;
 
-                    for (var i = 0; i < NameData.StateLength; i++)
+                    for (var i = 0; i < nameData.StateLength; i++)
                     {
-                        if (states.Any(x => x.State == i))
-                        {
-                            continue;
-                        }
+                        if (states.Any(x => x.State == i)) continue;
 
-                        states.Add(new StateInfo { State = i, Binding = NameData.Binding, Slot = SelectedSlot });
+                        states.Add(new StateInfo { State = i, Binding = nameData.binding, Slot = selectedSlot });
                         sort = true;
                         save = true;
                     }
 
-                    states.RemoveAll(x => x.State >= NameData.StateLength);
+                    states.RemoveAll(x => x.State >= nameData.StateLength);
 
-                    if (sort)
-                    {
-                        item2.Sort();
-                    }
+                    if (sort) item2.Sort();
                 }
 
-                if (save)
-                {
-                    chara.SaveSlotData(item.Key);
-                }
+                if (save) chara.SaveSlotData(item.Key);
             }
         }
     }

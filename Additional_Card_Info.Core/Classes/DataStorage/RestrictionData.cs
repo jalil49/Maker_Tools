@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Additional_Card_Info
 {
@@ -17,65 +18,65 @@ namespace Additional_Card_Info
 
         private void NullCheck()
         {
-            PersonalityType_Restriction = PersonalityType_Restriction ?? new Dictionary<int, int>();
-            Interest_Restriction = Interest_Restriction ?? new Dictionary<int, int>();
-            TraitType_Restriction = TraitType_Restriction ?? new Dictionary<int, int>();
-            Height_Restriction = Height_Restriction ?? new bool[3];
-            BreastSize_Restriction = BreastSize_Restriction ?? new bool[3];
+            PersonalityTypeRestriction = PersonalityTypeRestriction ?? new Dictionary<int, int>();
+            InterestRestriction = InterestRestriction ?? new Dictionary<int, int>();
+            TraitTypeRestriction = TraitTypeRestriction ?? new Dictionary<int, int>();
+            heightRestriction = heightRestriction ?? new bool[3];
+            breastSizeRestriction = breastSizeRestriction ?? new bool[3];
         }
 
         internal void CleanUp()
         {
-            var clean = PersonalityType_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            var clean = PersonalityTypeRestriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
             foreach (var item in clean)
             {
-                PersonalityType_Restriction.Remove(item);
+                PersonalityTypeRestriction.Remove(item);
             }
 
-            clean = TraitType_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            clean = TraitTypeRestriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
             foreach (var item in clean)
             {
-                TraitType_Restriction.Remove(item);
+                TraitTypeRestriction.Remove(item);
             }
 
-            clean = Interest_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            clean = InterestRestriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
             foreach (var item in clean)
             {
-                Interest_Restriction.Remove(item);
+                InterestRestriction.Remove(item);
             }
         }
 
         #region Fields
 
         [Key("_personality")]
-        public Dictionary<int, int> PersonalityType_Restriction;
+        public Dictionary<int, int> PersonalityTypeRestriction;
 
         [Key("_trait")]
-        public Dictionary<int, int> TraitType_Restriction;
+        public Dictionary<int, int> TraitTypeRestriction;
 
         [Key("_interest")]
-        public Dictionary<int, int> Interest_Restriction;
+        public Dictionary<int, int> InterestRestriction;
 
-        [Key("_height")]
-        public bool[] Height_Restriction;
+        [FormerlySerializedAs("Height_Restriction")] [Key("_height")]
+        public bool[] heightRestriction;
 
-        [Key("_breast")]
-        public bool[] BreastSize_Restriction;
+        [FormerlySerializedAs("BreastSize_Restriction")] [Key("_breast")]
+        public bool[] breastSizeRestriction;
 
-        [Key("_htype")]
-        public int HStateType_Restriction;
+        [FormerlySerializedAs("HStateType_Restriction")] [Key("_htype")]
+        public int hStateTypeRestriction;
 
-        [Key("_club")]
-        public int ClubType_Restriction;
+        [FormerlySerializedAs("ClubType_Restriction")] [Key("_club")]
+        public int clubTypeRestriction;
 
-        [Key("_gender")]
-        public int GenderType;
+        [FormerlySerializedAs("GenderType")] [Key("_gender")]
+        public int genderType;
 
-        [Key("_coordtype")]
-        public int CoordinateType;
+        [FormerlySerializedAs("CoordinateType")] [Key("_coordtype")]
+        public int coordinateType;
 
-        [Key("_coordsubtype")]
-        public int CoordinateSubType;
+        [FormerlySerializedAs("CoordinateSubType")] [Key("_coordsubtype")]
+        public int coordinateSubType;
 
         #endregion
     }

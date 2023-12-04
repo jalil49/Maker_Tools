@@ -1,7 +1,9 @@
-﻿using HarmonyLib;
+﻿using System.Diagnostics.CodeAnalysis;
+using HarmonyLib;
 
 namespace Accessory_States
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal static partial class Hooks
     {
         [HarmonyPostfix]

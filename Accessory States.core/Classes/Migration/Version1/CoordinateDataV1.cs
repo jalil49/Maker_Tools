@@ -1,7 +1,8 @@
-﻿using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Accessory_States.Migration.Version1
 {
@@ -9,49 +10,40 @@ namespace Accessory_States.Migration.Version1
     [MessagePackObject]
     public class CoordinateDataV1 : IMessagePackSerializationCallbackReceiver
     {
-        [Key("_slotinfo")]
-        public Dictionary<int, SlotdataV1> SlotData { get; set; }
+        // ReSharper disable once NotAccessedField.Global
+        [FormerlySerializedAs("ForceClothNotUpdate")] [Key("_forceclothnotupdate")] public bool forceClothNotUpdate = true;
 
-        [Key("_names")]
-        public Dictionary<int, NameDataV1> Names { get; set; }
+        [Key("_slotinfo")] public Dictionary<int, SlotdataV1> SlotData { get; set; } = new Dictionary<int, SlotdataV1>();
 
-        [Key("_clothnotdata")]
-        public bool[] ClothNotData { get; set; }
+        [Key("_names")] public Dictionary<int, NameDataV1> Names { get; set; } = new Dictionary<int, NameDataV1>();
 
-        [Key("_forceclothnotupdate")]
-        public bool ForceClothNotUpdate = true;
+        [Key("_clothnotdata")] public bool[] ClothNotData { get; set; } = new[] { false, false, false };
 
-        public CoordinateDataV1()
+        public void OnBeforeSerialize()
         {
-            SlotData = new Dictionary<int, SlotdataV1>();
-            Names = new Dictionary<int, NameDataV1>();
-            ClothNotData = new bool[3] { false, false, false };
-            ForceClothNotUpdate = true;
+            CleanUp();
+        }
+
+        public void OnAfterDeserialize()
+        {
+            NullCheck();
         }
 
         public void CleanUp()
         {
-            var removelist = SlotData.Where(x => x.Value.Binding == -1 && !x.Value.Parented).Select(x => x.Key).ToList();
-            foreach(var item in removelist)
-            {
-                SlotData.Remove(item);
-            }
+            var removeList = SlotData.Where(x => x.Value.Binding == -1 && !x.Value.parented).Select(x => x.Key)
+                .ToList();
+            foreach (var item in removeList) SlotData.Remove(item);
 
-            removelist = Names.Where(x => !SlotData.Any(y => y.Value.Binding == x.Key)).Select(x => x.Key).ToList();
-            foreach(var item in removelist)
-            {
-                Names.Remove(item);
-            }
+            removeList = Names.Where(x => SlotData.All(y => y.Value.Binding != x.Key)).Select(x => x.Key).ToList();
+            foreach (var item in removeList) Names.Remove(item);
 
-            foreach(var item in Names)
+            foreach (var item in Names)
             {
                 var max = MaxState(item.Key);
-                var statenames = item.Value.Statenames;
-                removelist = statenames.Keys.Where(x => x > max).ToList();
-                foreach(var key in removelist)
-                {
-                    statenames.Remove(key);
-                }
+                var stateNames = item.Value.Statenames;
+                removeList = stateNames.Keys.Where(x => x > max).ToList();
+                foreach (var key in removeList) stateNames.Remove(key);
             }
         }
 
@@ -59,32 +51,20 @@ namespace Accessory_States.Migration.Version1
         {
             SlotData = SlotData ?? new Dictionary<int, SlotdataV1>();
             Names = Names ?? new Dictionary<int, NameDataV1>();
-            ClothNotData = ClothNotData ?? new bool[3] { false, false, false };
-            if(ClothNotData.Length > 3)
-            {
-                ClothNotData = new bool[3] { ClothNotData[0], ClothNotData[1], ClothNotData[2] };
-            }
+            ClothNotData = ClothNotData ?? new[] { false, false, false };
+            if (ClothNotData.Length > 3)
+                ClothNotData = new[] { ClothNotData[0], ClothNotData[1], ClothNotData[2] };
         }
 
         private int MaxState(int binding)
         {
-            if(binding < 9)
-            {
-                return 3;
-            }
+            if (binding < 9) return 3;
 
             var max = 0;
-            var bindinglist = SlotData.Values.Where(x => x.Binding == binding);
-            foreach(var item in bindinglist)
-            {
-                item.States.ForEach(x => max = Math.Max(x[1], max));
-            }
+            var bindingList = SlotData.Values.Where(x => x.Binding == binding);
+            foreach (var item in bindingList) item.States.ForEach(x => max = Math.Max(x[1], max));
 
             return max;
         }
-
-        public void OnBeforeSerialize() { CleanUp(); }
-
-        public void OnAfterDeserialize() { NullCheck(); }
     }
 }

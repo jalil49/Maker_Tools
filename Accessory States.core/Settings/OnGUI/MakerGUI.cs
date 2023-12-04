@@ -1,12 +1,12 @@
-﻿using Accessory_States.OnGUI;
+﻿using System;
+using System.Collections.Generic;
+using Accessory_States.OnGUI;
 using Extensions.GUI_Classes;
 using Extensions.GUI_Classes.Config;
 using KKAPI;
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using KKAPI.Maker.UI.Sidebar;
-using System;
-using System.Collections.Generic;
 using UniRx;
 
 namespace Accessory_States
@@ -33,15 +33,10 @@ namespace Accessory_States
         {
             get
             {
-                if(SelectedSlot < 0)
-                {
-                    return null;
-                }
+                if (SelectedSlot < 0) return null;
 
-                if(!GetController.SlotBindingData.TryGetValue(SelectedSlot, out var slotData))
-                {
+                if (!GetController.SlotBindingData.TryGetValue(SelectedSlot, out var slotData))
                     slotData = GetController.SlotBindingData[SelectedSlot] = new SlotData();
-                }
 
                 return slotData;
             }
@@ -59,10 +54,7 @@ namespace Accessory_States
         {
             get
             {
-                if(CharaEventControls.TryGetValue(CharaEvent, out var control))
-                {
-                    return control;
-                }
+                if (CharaEventControls.TryGetValue(CharaEvent, out var control)) return control;
 
                 return CharaEventControls[CharaEvent] = new CharaEventControl(CharaEvent);
             }
@@ -90,10 +82,7 @@ namespace Accessory_States
         public static bool ClothingUnlocker(int kind, ChaListDefine.KeyType value)
         {
             var listInfoBase = GetListInfoBase(kind);
-            if(listInfoBase == null)
-            {
-                return false;
-            }
+            if (listInfoBase == null) return false;
 
             var intValue = GetClothingNot(listInfoBase, value);
             return intValue != listInfoBase.GetInfoInt(value);
@@ -106,16 +95,11 @@ namespace Accessory_States
 
         public static int GetClothingNot(ListInfoBase listInfo, ChaListDefine.KeyType key)
         {
-            if(listInfo == null)
-            {
-                return 0;
-            }
+            if (listInfo == null) return 0;
 
-            if(!(listInfo.dictInfo.TryGetValue((int)key, out var stringValue) &&
+            if (!(listInfo.dictInfo.TryGetValue((int)key, out var stringValue) &&
                   int.TryParse(stringValue, out var intValue)))
-            {
                 return 0;
-            }
 
             return intValue;
         }
@@ -123,40 +107,31 @@ namespace Accessory_States
         public static ListInfoBase GetListInfoBase(int kind)
         {
             var lists = CharaEvent.ChaControl.infoClothes;
-            if(kind >= lists.Length || kind < 0)
-            {
-                return null;
-            }
+            if (kind >= lists.Length || kind < 0) return null;
 
             return lists[kind];
         }
 
         public override void OnGUI()
         {
-            _previewWindow.Draw();
+            PreviewWindow.Draw();
 
-            if(!_slotWindow.Show || !AccessoriesApi.AccessoryCanvasVisible)
-            {
-                return;
-            }
+            if (!SlotWindow.Show || !AccessoriesApi.AccessoryCanvasVisible) return;
 
             var parts = CharaEvent.PartsArray;
-            if(SelectedSlot < 0 || SelectedSlot >= parts.Length || parts[SelectedSlot].type == 120)
-            {
-                return;
-            }
+            if (SelectedSlot < 0 || SelectedSlot >= parts.Length || parts[SelectedSlot].type == 120) return;
 
-            _slotWindow.Draw();
-            _groupGUI.Draw();
-            _presetWindow.Draw();
-            _addBinding.Draw();
-            _settingWindow.Draw();
+            SlotWindow.Draw();
+            GroupGUI.Draw();
+            PresetWindow.Draw();
+            AddBinding.Draw();
+            SettingWindow.Draw();
         }
 
         public override void TogglePreviewWindow()
         {
             base.TogglePreviewWindow();
-            _sidebarToggle.SetValue(_previewWindow.Show);
+            _sidebarToggle.SetValue(PreviewWindow.Show);
         }
 
         #region KKAPI Events
@@ -171,7 +146,7 @@ namespace Accessory_States
             guiButton.OnClick.AddListener(ToggleSlotWindow);
 
             _sidebarToggle = e.AddSidebarControl(new SidebarToggle("Show States Preview Menu", false, owner));
-            _sidebarToggle.ValueChanged.Subscribe(x => _previewWindow.ToggleShow(x));
+            _sidebarToggle.ValueChanged.Subscribe(x => PreviewWindow.ToggleShow(x));
 
             var groupingID = "Maker_Tools_" + Settings.NamingID.Value;
             guiButton.GroupingID = groupingID;
@@ -180,10 +155,7 @@ namespace Accessory_States
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
             _makerEnabled = Settings.Enable.Value;
-            if(!_makerEnabled)
-            {
-                return;
-            }
+            if (!_makerEnabled) return;
 
             Instance = new MakerGUI(e);
         }
@@ -191,10 +163,7 @@ namespace Accessory_States
         public static void Maker_started()
         {
             _makerEnabled = Settings.Enable.Value;
-            if(!_makerEnabled)
-            {
-                return;
-            }
+            if (!_makerEnabled) return;
 
             Settings.Instance.enabled = true;
             MakerAPI.MakerExiting += Maker_Ended;
@@ -225,20 +194,16 @@ namespace Accessory_States
             _makerEnabled = false;
             Instance = null;
             Settings.Instance.enabled = false;
-            WindowGUI.windowGUIs.Clear();
+            WindowGUI.WindowGuIs.Clear();
             WindowConfig.Clear();
         }
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
         {
             var controller = CharaEvent;
-            if(controller.SlotBindingData.TryGetValue(e.DestinationSlotIndex, out var slotData))
-            {
-                foreach(var item in slotData.bindingDatas)
-                {
+            if (controller.SlotBindingData.TryGetValue(e.DestinationSlotIndex, out var slotData))
+                foreach (var item in slotData.bindingDatas)
                     item.NameData.AssociatedSlots.Remove(e.DestinationSlotIndex);
-                }
-            }
 
             controller.SlotBindingData.Remove(e.DestinationSlotIndex);
             controller.LoadSlotData(e.DestinationSlotIndex);
@@ -248,22 +213,16 @@ namespace Accessory_States
         private static void AccessoriesApi_AccessoriesCopied(object sender, AccessoryCopyEventArgs e)
         {
             var controller = CharaEvent;
-            if(e.CopyDestination == controller.CurrentCoordinate.Value)
-            {
-                foreach(var slot in e.CopiedSlotIndexes)
+            if (e.CopyDestination == controller.CurrentCoordinate.Value)
+                foreach (var slot in e.CopiedSlotIndexes)
                 {
-                    if(controller.SlotBindingData.TryGetValue(slot, out var slotData))
-                    {
-                        foreach(var bindingData in slotData.bindingDatas)
-                        {
+                    if (controller.SlotBindingData.TryGetValue(slot, out var slotData))
+                        foreach (var bindingData in slotData.bindingDatas)
                             bindingData.NameData.AssociatedSlots.Remove(slot);
-                        }
-                    }
 
                     controller.SlotBindingData.Remove(slot);
                     controller.LoadSlotData(slot);
                 }
-            }
         }
 
         #endregion
@@ -272,10 +231,7 @@ namespace Accessory_States
 
         internal static void SlotAccTypeChange(int slotNo, int type)
         {
-            if(KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || type != 120)
-            {
-                return;
-            }
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || type != 120) return;
 
             var controller = CharaEvent;
             controller.SlotBindingData.Remove(slotNo);

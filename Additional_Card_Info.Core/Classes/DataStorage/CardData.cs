@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Additional_Card_Info.Classes.Migration;
 using ExtensibleSaveFormat;
 using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Additional_Card_Info
 {
@@ -10,13 +11,13 @@ namespace Additional_Card_Info
     [MessagePackObject(true)]
     public class CardData : IMessagePackSerializationCallbackReceiver
     {
-        public bool CosplayReady;
+        [FormerlySerializedAs("CosplayReady")] public bool cosplayReady;
 
-        public bool AdvancedDirectory;
+        [FormerlySerializedAs("AdvancedDirectory")] public bool advancedDirectory;
 
-        public bool[] PersonalClothingBools;
+        [FormerlySerializedAs("PersonalClothingBools")] public bool[] personalClothingBools;
 
-        public string SimpleFolderDirectory;
+        [FormerlySerializedAs("SimpleFolderDirectory")] public string simpleFolderDirectory;
 
         public Dictionary<string, string>
             AdvancedFolderDirectory; //for folder reference to external card directory not saved on coordinates
@@ -25,10 +26,10 @@ namespace Additional_Card_Info
 
         internal CardData(Migrator.CardInfoV1 oldInfo) : this()
         {
-            CosplayReady = oldInfo.CosplayReady;
-            AdvancedDirectory = oldInfo.AdvancedDirectory;
-            PersonalClothingBools = oldInfo.PersonalClothingBools;
-            SimpleFolderDirectory = oldInfo.SimpleFolderDirectory;
+            cosplayReady = oldInfo.cosplayReady;
+            advancedDirectory = oldInfo.advancedDirectory;
+            personalClothingBools = oldInfo.personalClothingBools;
+            simpleFolderDirectory = oldInfo.simpleFolderDirectory;
             AdvancedFolderDirectory = oldInfo.AdvancedFolderDirectory;
         }
 
@@ -41,19 +42,19 @@ namespace Additional_Card_Info
 
         public void Clear()
         {
-            CosplayReady = false;
-            PersonalClothingBools = new bool[9];
+            cosplayReady = false;
+            personalClothingBools = new bool[9];
         }
 
         private void NullCheck()
         {
-            SimpleFolderDirectory = SimpleFolderDirectory ?? string.Empty;
+            simpleFolderDirectory = simpleFolderDirectory ?? string.Empty;
 
-            PersonalClothingBools = PersonalClothingBools ?? new bool[9];
+            personalClothingBools = personalClothingBools ?? new bool[9];
 
-            if (PersonalClothingBools.Length < 9)
+            if (personalClothingBools.Length < 9)
             {
-                PersonalClothingBools = new bool[9];
+                personalClothingBools = new bool[9];
             }
 
             AdvancedFolderDirectory = AdvancedFolderDirectory ?? new Dictionary<string, string>();

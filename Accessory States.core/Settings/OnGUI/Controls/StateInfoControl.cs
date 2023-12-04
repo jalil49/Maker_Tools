@@ -7,22 +7,22 @@ namespace Accessory_States.OnGUI
 {
     public class StateInfoControl
     {
-        public readonly BindingData bData;
-        private readonly CharaEventControl CharaEventControl;
-        private readonly string nameAppend;
-        private readonly IntTextFieldGUI PriorityField;
-        private readonly int SelectedSlot;
+        public readonly BindingData BData;
+        private readonly CharaEventControl _charaEventControl;
+        private readonly string _nameAppend;
+        private readonly IntTextFieldGUI _priorityField;
+        private readonly int _selectedSlot;
         public readonly StateInfo StateInfo;
 
         public StateInfoControl(BindingData bindingData, StateInfo name, int selectedSlot,
-                                CharaEventControl charaEventControl)
+            CharaEventControl charaEventControl)
         {
-            bData = bindingData;
+            BData = bindingData;
             StateInfo = name;
-            SelectedSlot = selectedSlot;
-            PriorityField = new IntTextFieldGUI(StateInfo.Priority.ToString(), GL.ExpandWidth(false), GL.MinWidth(10))
+            _selectedSlot = selectedSlot;
+            _priorityField = new IntTextFieldGUI(StateInfo.Priority.ToString(), GL.ExpandWidth(false), GL.MinWidth(10))
             {
-                action = val =>
+                Action = val =>
                 {
                     if (val != StateInfo.Priority)
                     {
@@ -32,75 +32,75 @@ namespace Accessory_States.OnGUI
                     }
                 }
             };
-            nameAppend = StateInfo.ShoeType == 2 ? string.Empty : StateInfo.ShoeType == 0 ? " (Indoor)" : " (Outdoor)";
-            CharaEventControl = charaEventControl;
+            _nameAppend = StateInfo.ShoeType == 2 ? string.Empty : StateInfo.ShoeType == 0 ? " (Indoor)" : " (Outdoor)";
+            _charaEventControl = charaEventControl;
         }
 
-        public CharaEvent CharaEvent => CharaEventControl.CharaEvent;
+        public CharaEvent CharaEvent => _charaEventControl.CharaEvent;
 
-        public void Draw(int ShoeType)
+        public void Draw(int shoeType)
         {
             GL.BeginHorizontal();
             {
                 GL.Space(20);
-                Label(StateInfo.State + ": " + bData.NameData.GetStateName(StateInfo.State) + nameAppend);
-                if (ShoeType != 2)
+                Label(StateInfo.State + ": " + BData.NameData.GetStateName(StateInfo.State) + _nameAppend);
+                if (shoeType != 2)
                 {
                     if (StateInfo.ShoeType == 2 && Button("Shoe Split",
-                        "Make this slot distinguish between being indoors and outdoors", false))
+                            "Make this slot distinguish between being indoors and outdoors", false))
                     {
-                        bData.States.Remove(StateInfo);
-                        bData.States.Add(new StateInfo
+                        BData.States.Remove(StateInfo);
+                        BData.States.Add(new StateInfo
                         {
-                            Binding = bData.NameData.Binding, Slot = SelectedSlot, Priority = StateInfo.Priority,
+                            Binding = BData.NameData.binding, Slot = _selectedSlot, Priority = StateInfo.Priority,
                             Show = StateInfo.Show, State = StateInfo.State, ShoeType = 0
                         });
-                        bData.States.Add(new StateInfo
+                        BData.States.Add(new StateInfo
                         {
-                            Binding = bData.NameData.Binding, Slot = SelectedSlot, Priority = StateInfo.Priority,
+                            Binding = BData.NameData.binding, Slot = _selectedSlot, Priority = StateInfo.Priority,
                             Show = StateInfo.Show, State = StateInfo.State, ShoeType = 1
                         });
-                        bData.Sort();
-                        CharaEvent.SaveSlotData(SelectedSlot);
-                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
+                        BData.Sort();
+                        CharaEvent.SaveSlotData(_selectedSlot);
+                        CharaEvent.RefreshSlots(BData.NameData.AssociatedSlots);
                     }
 
                     if (StateInfo.ShoeType != 2 &&
                         Button("Shoe Merge", "Remove association between indoor and outdoors", false))
                     {
-                        bData.States.RemoveAll(x => x.State == StateInfo.State);
-                        bData.States.Add(new StateInfo
+                        BData.States.RemoveAll(x => x.State == StateInfo.State);
+                        BData.States.Add(new StateInfo
                         {
-                            Binding = bData.NameData.Binding, Slot = SelectedSlot, Priority = StateInfo.Priority,
+                            Binding = BData.NameData.binding, Slot = _selectedSlot, Priority = StateInfo.Priority,
                             Show = StateInfo.Show, State = StateInfo.State, ShoeType = 2
                         });
-                        bData.Sort();
-                        CharaEvent.SaveSlotData(SelectedSlot);
-                        CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
+                        BData.Sort();
+                        CharaEvent.SaveSlotData(_selectedSlot);
+                        CharaEvent.RefreshSlots(BData.NameData.AssociatedSlots);
                     }
                 }
 
                 if (Button(StateInfo.Show ? "Show" : "Hide", expandwidth: false))
                 {
                     StateInfo.Show = !StateInfo.Show;
-                    CharaEvent.SaveSlotData(SelectedSlot);
-                    CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
+                    CharaEvent.SaveSlotData(_selectedSlot);
+                    CharaEvent.RefreshSlots(BData.NameData.AssociatedSlots);
                 }
 
                 if (Button("↑", "Increase the priority of this state when comparing", false))
                 {
                     StateInfo.Priority++;
-                    CharaEvent.SaveSlotData(SelectedSlot);
+                    CharaEvent.SaveSlotData(_selectedSlot);
                     CharaEvent.RefreshSlots();
                 }
 
-                PriorityField.Draw(StateInfo.Priority);
+                _priorityField.Draw(StateInfo.Priority);
 
                 if (Button("↓", "Decrease the priority of this state when comparing", false) && StateInfo.Priority != 0)
                 {
                     StateInfo.Priority = Math.Max(0, StateInfo.Priority - 1);
-                    CharaEvent.SaveSlotData(SelectedSlot);
-                    CharaEvent.RefreshSlots(bData.NameData.AssociatedSlots);
+                    CharaEvent.SaveSlotData(_selectedSlot);
+                    CharaEvent.RefreshSlots(BData.NameData.AssociatedSlots);
                 }
             }
 

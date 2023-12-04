@@ -1,6 +1,7 @@
 ﻿using System;
 using ExtensibleSaveFormat;
 using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Additional_Card_Info
 {
@@ -8,19 +9,19 @@ namespace Additional_Card_Info
     [MessagePackObject(true)]
     public class SlotData
     {
-        public bool Keep;
-        public KeepState KeepState;
-        public bool Recolor;
-        public bool HideAccessoryButton;
-        public bool ConstantlyShown;
+        [FormerlySerializedAs("Keep")] public bool keep;
+        [FormerlySerializedAs("KeepState")] public KeepState keepState;
+        [FormerlySerializedAs("Recolor")] public bool recolor;
+        [FormerlySerializedAs("HideAccessoryButton")] public bool hideAccessoryButton;
+        [FormerlySerializedAs("ConstantlyShown")] public bool constantlyShown;
 
         public SlotData() => Init();
 
         public void Init()
         {
-            KeepState = KeepState.DontKeep;
-            HideAccessoryButton = false;
-            ConstantlyShown = false;
+            keepState = KeepState.DontKeep;
+            hideAccessoryButton = false;
+            constantlyShown = false;
         }
 
         public PluginData Serialize() =>

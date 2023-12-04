@@ -2,33 +2,34 @@
 using System.Collections.Generic;
 using ExtensibleSaveFormat;
 using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Accessory_Parents
 {
     [Serializable]
     [MessagePackObject(true)]
-    public class Custom_Name
+    public class CustomName
     {
-        public string CoordinateCheck;
+        [FormerlySerializedAs("CoordinateCheck")] public string coordinateCheck;
 
-        public List<int> ChildSlots;
+        [FormerlySerializedAs("ChildSlots")] public List<int> childSlots;
 
-        public Custom_Name(string _name, int _slot, List<int> _childslots)
+        public CustomName(string name, int slot, List<int> childslots)
         {
-            Name = _name;
-            ParentSlot = _slot;
-            ChildSlots = _childslots ?? new List<int>();
+            Name = name;
+            ParentSlot = slot;
+            childSlots = childslots ?? new List<int>();
             NullCheck();
         }
 
-        public Custom_Name(string _name, int _slot)
+        public CustomName(string name, int slot)
         {
-            Name = _name;
-            ParentSlot = _slot;
+            Name = name;
+            ParentSlot = slot;
             NullCheck();
         }
 
-        public Custom_Name(string name)
+        public CustomName(string name)
         {
             Name = name;
             NullCheck();
@@ -40,28 +41,16 @@ namespace Accessory_Parents
 
         private void NullCheck()
         {
-            if (Name == null)
-            {
-                Name = string.Empty;
-            }
+            if (Name == null) Name = string.Empty;
 
-            if (ChildSlots == null)
-            {
-                ChildSlots = new List<int>();
-            }
+            if (childSlots == null) childSlots = new List<int>();
 
-            if (CoordinateCheck.IsNullOrEmpty())
-            {
-                CoordinateCheck = string.Empty;
-            }
+            if (coordinateCheck.IsNullOrEmpty()) coordinateCheck = string.Empty;
         }
 
         public PluginData Serialize()
         {
-            if (ParentSlot < 0 || ChildSlots.Count == 0)
-            {
-                return null;
-            }
+            if (ParentSlot < 0 || childSlots.Count == 0) return null;
 
             return new PluginData
             {

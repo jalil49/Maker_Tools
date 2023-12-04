@@ -1,6 +1,6 @@
-﻿using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MessagePack;
 
 namespace Accessory_States.Migration.Version1
 {
@@ -8,13 +8,24 @@ namespace Accessory_States.Migration.Version1
     [MessagePackObject]
     public class NameDataV1 : IMessagePackSerializationCallbackReceiver
     {
-        [Key("_name")]
-        public string Name { get; set; }
+        public NameDataV1()
+        {
+            Name = "Default Name";
+            Statenames = new Dictionary<int, string>();
+        }
 
-        [Key("_statenames")]
-        public Dictionary<int, string> Statenames { get; set; }
+        [Key("_name")] public string Name { get; set; }
 
-        public NameDataV1() { Name = "Default Name"; Statenames = new Dictionary<int, string>(); }
+        [Key("_statenames")] public Dictionary<int, string> Statenames { get; set; }
+
+        public void OnBeforeSerialize()
+        {
+        }
+
+        public void OnAfterDeserialize()
+        {
+            NullCheck();
+        }
 
         private void NullCheck()
         {
@@ -24,13 +35,9 @@ namespace Accessory_States.Migration.Version1
 
         public NameData ToNewNameData()
         {
-            var nameData = new NameData() { Name = this.Name, StateNames = this.Statenames };
+            var nameData = new NameData { Name = Name, StateNames = Statenames };
             nameData.NullCheck();
             return nameData;
         }
-
-        public void OnBeforeSerialize() { }
-
-        public void OnAfterDeserialize() { NullCheck(); }
     }
 }

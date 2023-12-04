@@ -5,7 +5,7 @@ namespace Extensions.GUI_Classes
 {
     public abstract class AreaGUI
     {
-        private GUILayoutOption[] layoutOptions;
+        private GUILayoutOption[] _layoutOptions;
         public Rect Rect { get; set; }
 
         public void Draw(Action<bool> action)

@@ -34,13 +34,13 @@ namespace Accessory_Themes
 
         internal void SaveSlot(int slot)
         {
-            if(!SlotDataDict.TryGetValue(slot, out var SlotData))
+            if(!SlotDataDict.TryGetValue(slot, out var slotData))
             {
-                Parts[slot].SetExtendedDataById(Settings.GUID, null);
+                Parts[slot].SetExtendedDataById(Settings.Guid, null);
                 return;
             }
 
-            Parts[slot].SetExtendedDataById(Settings.GUID, SlotData.Serialize());
+            Parts[slot].SetExtendedDataById(Settings.Guid, slotData.Serialize());
         }
 
         internal void LoadSlot(int slot)
@@ -52,7 +52,7 @@ namespace Accessory_Themes
 
             SlotDataDict.Remove(slot);
 
-            if(Parts[slot].TryGetExtendedDataById(Settings.GUID, out var pluginData))
+            if(Parts[slot].TryGetExtendedDataById(Settings.Guid, out var pluginData))
             {
                 var slotdata = Migrator.Migrator.SlotDataMigrate(pluginData);
                 if(slotdata != null)

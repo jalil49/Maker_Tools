@@ -6,26 +6,27 @@ namespace Extensions.GUI_Classes
 {
     public class IntTextFieldGUI
     {
+        public Action<int> Action;
+        public GUILayoutOption[] LayoutOptions;
+        public GUIStyle Style;
         public string Text = "0";
-        public GUILayoutOption[] layoutOptions;
-        public GUIStyle style;
-        public Action<int> action;
-        public IntTextFieldGUI(string _text, params GUILayoutOption[] gUILayoutOptions)
+
+        public IntTextFieldGUI(string text, params GUILayoutOption[] gUILayoutOptions)
         {
-            style = TextFieldStyle;
-            Text = _text;
-            layoutOptions = gUILayoutOptions;
+            Style = TextFieldStyle;
+            Text = text;
+            LayoutOptions = gUILayoutOptions;
         }
 
         public void Draw()
         {
-            var newText = GUILayout.TextField(Text, style, layoutOptions);
-            if(newText != Text && int.TryParse(newText, out var value))
+            var newText = GUILayout.TextField(Text, Style, LayoutOptions);
+            if (newText != Text && int.TryParse(newText, out var value))
             {
                 Text = newText;
-                if(action == null)
+                if (Action == null)
                     return;
-                action.Invoke(value);
+                Action.Invoke(value);
             }
         }
 
