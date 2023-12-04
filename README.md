@@ -1,5 +1,5 @@
 # Maker_Tools
-A series of mods made to help creators of Koikatsu Cards manage more complex designs and add more indentifying information to coordinate cards.
+A series of mods made to help creators of Koikatsu Cards manage more complex designs and add more identifying information to coordinate cards.
 Adding more information to coordinate cards with Additional Card Info.
 
 ## Additional Card Info
@@ -52,6 +52,6 @@ Any added group can have a stupid amount of possible "clothing states" the slide
 Slid too far? No problem when you swap accessories the slider will adjust to the largest state shared by a group. The mod uses the same logic in Hscenes.
 
 ## Accessory Themes
-Color stuff. Currently dependent of Additional Card Info for Hair info to not accidently color it.
+Color stuff. Currently dependent of Additional Card Info for Hair info to not accidentally color it.
 
 https://github.com/jalil49/Maker_Tools/tree/main/Accessory%20Themes#readme
