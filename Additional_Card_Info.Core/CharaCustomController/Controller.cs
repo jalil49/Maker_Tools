@@ -1,10 +1,10 @@
-﻿using ExtensibleSaveFormat;
+﻿using System.Collections.Generic;
+using System.Linq;
+using ExtensibleSaveFormat;
 using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using MessagePack;
-using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 
 namespace Additional_Card_Info
@@ -13,57 +13,46 @@ namespace Additional_Card_Info
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (!MakerAPI.InsideMaker)
-            {
-                return;
-            }
+            if (!MakerAPI.InsideMaker) return;
 
             CosplayReady = false;
             var maxkey = MaxKey;
             var coordlength = ChaFileControl.coordinate.Length;
 
             for (var i = 0; i < coordlength; i++)
-            {
-                if (data.CoordinateInfo.ContainsKey(i))
-                    data.Clearoutfit(i);
+                if (Data.CoordinateInfo.ContainsKey(i))
+                    Data.ClearOutfit(i);
                 else
-                    data.Createoutfit(i);
-            }
+                    Data.CreateOutfit(i);
 
-            for (int i = coordlength, n = maxkey + 1; i <= n; i++)
-            {
-                data.Removeoutfit(i);
-            }
+            for (int i = coordlength, n = maxkey + 1; i <= n; i++) Data.RemoveOutfit(i);
             CardInfo.Clear();
-            CurrentCoordinate.Subscribe(delegate (ChaFileDefine.CoordinateType value)
+            CurrentCoordinate.Subscribe(delegate(ChaFileDefine.CoordinateType value)
             {
-                var CoordinateNum = (int)value;
-                if (!CoordinateInfo.ContainsKey(CoordinateNum))
-                    data.Createoutfit(CoordinateNum);
+                var coordinateNum = (int)value;
+                if (!CoordinateInfo.ContainsKey(coordinateNum))
+                    Data.CreateOutfit(coordinateNum);
 
                 UpdateNowCoordinate();
 
                 StartCoroutine(UpdateSlots());
             });
 
-            var ACI_Data = GetExtendedData();
+            var aciData = GetExtendedData();
 
-            if (ACI_Data != null)
+            if (aciData != null)
             {
-                if (ACI_Data.version == 1)
+                if (aciData.version == 1)
                 {
-                    if (ACI_Data.data.TryGetValue("CardInfo", out var ByteData) && ByteData != null)
-                    {
-                        CardInfo = MessagePackSerializer.Deserialize<Cardinfo>((byte[])ByteData);
-                    }
-                    if (ACI_Data.data.TryGetValue("CoordinateInfo", out ByteData) && ByteData != null)
-                    {
-                        CoordinateInfo = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateInfo>>((byte[])ByteData);
-                    }
+                    if (aciData.data.TryGetValue("CardInfo", out var byteData) && byteData != null)
+                        CardInfo = MessagePackSerializer.Deserialize<CardInfo>((byte[])byteData);
+                    if (aciData.data.TryGetValue("CoordinateInfo", out byteData) && byteData != null)
+                        CoordinateInfo =
+                            MessagePackSerializer.Deserialize<Dictionary<int, CoordinateInfo>>((byte[])byteData);
                 }
-                else if (ACI_Data.version == 0)
+                else if (aciData.version == 0)
                 {
-                    Migrator.MigrateV0(ACI_Data, ref data);
+                    Migrator.MigrateV0(aciData, ref Data);
                 }
                 else
                 {
@@ -78,77 +67,64 @@ namespace Additional_Card_Info
         {
             if (!MakerAPI.InsideMaker)
             {
-                var Data = GetExtendedData();
-                if (Data != null)
-                {
-                    SetExtendedData(Data);
-                }
+                var data = GetExtendedData();
+                if (data != null) SetExtendedData(data);
                 return;
             }
 
-            var ACI_Data = new PluginData
+            var aciData = new PluginData
             {
                 version = 1
             };
-            data.CleanUp();
+            Data.CleanUp();
 
-            if (!Creatorname.IsNullOrEmpty() && MakerAPI.InsideMaker)
-            {
+            if (!_creatorName.IsNullOrEmpty() && MakerAPI.InsideMaker)
                 for (int i = 0, n = ChaFileControl.coordinate.Length; i < n; i++)
                 {
-                    var creatorlist = CoordinateInfo[i].CreatorNames;
-                    if (creatorlist.Count == 0 || creatorlist.Last() != Creatorname)
-                    {
-                        creatorlist.Add(Creatorname);
-                    }
+                    var creatorlist = CoordinateInfo[i].creatorNames;
+                    if (creatorlist.Count == 0 || creatorlist.Last() != _creatorName) creatorlist.Add(_creatorName);
                 }
-            }
 
-            ACI_Data.data.Add("CardInfo", MessagePackSerializer.Serialize(CardInfo));
-            ACI_Data.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(CoordinateInfo));
-            SetExtendedData(ACI_Data);
+            aciData.data.Add("CardInfo", MessagePackSerializer.Serialize(CardInfo));
+            aciData.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(CoordinateInfo));
+            SetExtendedData(aciData);
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            var ACI_Data = new PluginData
+            var aciData = new PluginData
             {
                 version = 1
             };
             UpdateClothingNots();
             var creatorlist = CreatorNames;
 
-            if (Creatorname != "" && (creatorlist.Count == 0 || creatorlist.Last() != Creatorname))
-            {
-                creatorlist.Add(Creatorname);
-            }
-            ACI_Data.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(NowCoordinateInfo));
-            SetCoordinateExtendedData(coordinate, ACI_Data);
+            if (_creatorName != "" && (creatorlist.Count == 0 || creatorlist.Last() != _creatorName))
+                creatorlist.Add(_creatorName);
+            aciData.data.Add("CoordinateInfo", MessagePackSerializer.Serialize(NowCoordinateInfo));
+            SetCoordinateExtendedData(coordinate, aciData);
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
             NowCoordinateInfo.Clear();
             NowRestrictionInfo.Clear();
-            var ACI_Data = GetCoordinateExtendedData(coordinate);
-            if (ACI_Data != null)
-            {
-                switch (ACI_Data.version)
+            var aciData = GetCoordinateExtendedData(coordinate);
+            if (aciData != null)
+                switch (aciData.version)
                 {
                     case 0:
-                        NowCoordinateInfo = Migrator.CoordinateMigrateV0(ACI_Data);
+                        NowCoordinateInfo = Migrator.CoordinateMigrateV0(aciData);
                         break;
                     case 1:
-                        if (ACI_Data.data.TryGetValue("CoordinateInfo", out var ByteData) && ByteData != null)
-                        {
-                            NowCoordinateInfo = MessagePackSerializer.Deserialize<CoordinateInfo>((byte[])ByteData);
-                        }
+                        if (aciData.data.TryGetValue("CoordinateInfo", out var byteData) && byteData != null)
+                            NowCoordinateInfo = MessagePackSerializer.Deserialize<CoordinateInfo>((byte[])byteData);
                         break;
                     default:
                         Settings.Logger.LogWarning("New version detected please update");
                         break;
                 }
-            }
+
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
             {
                 CoordinateInfo[(int)CurrentCoordinate.Value] = NowCoordinateInfo;
@@ -163,6 +139,7 @@ namespace Additional_Card_Info
                 NowCoordinateInfo = CoordinateInfo[(int)CurrentCoordinate.Value];
                 return;
             }
+
             NowCoordinateInfo = new CoordinateInfo(CoordinateInfo[(int)CurrentCoordinate.Value]);
         }
     }

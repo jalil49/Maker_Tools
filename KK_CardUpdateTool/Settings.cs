@@ -6,6 +6,7 @@ namespace CardUpdateTool
     [BepInProcess("Koikatsu Party")]
     [BepInProcess("KoikatuVR")]
     [BepInProcess("Koikatsu Party VR")]
-    public partial class CardUpdateTool : BaseUnityPlugin
-    { }
+    public partial class CardUpdateTool
+    {
+    }
 }

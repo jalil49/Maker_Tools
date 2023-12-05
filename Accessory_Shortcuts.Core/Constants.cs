@@ -4,11 +4,13 @@ namespace Accessory_Shortcuts
 {
     public static class Constants
     {
-        public static Dictionary<int, Data> Parent = new Dictionary<int, Data>();
+        public static readonly Dictionary<int, Data> Parent = new Dictionary<int, Data>();
+
         static Constants()
         {
             Default_Dict();
         }
+
         public static void Default_Dict()
         {
             //Settings.Logger.LogWarning("defaulting");
@@ -25,30 +27,33 @@ namespace Accessory_Shortcuts
             Parent.Add(9, new Data(129, 0, "a_n_hand_L"));
             Parent.Add(10, new Data(130, 0, "a_n_kokan"));
         }
+
         public static void Print_Dict()
         {
             foreach (var item in Parent.Values)
-            {
-                Settings.Logger.LogWarning($"Type: {item.ACC_Type}, ID: {item.Id}, Parent: {item.ParentKey}");
-            }
+                Settings.Logger.LogWarning($"Type: {item.AccType}, ID: {item.Id}, Parent: {item.ParentKey}");
         }
     }
+
     public class Data
     {
-        public Data(int _Acc_type, int _id, string _ParentKey)
+        public Data(int accType, int id, string parentKey)
         {
-            ACC_Type = _Acc_type;
-            Id = _id;
-            ParentKey = _ParentKey;
+            AccType = accType;
+            Id = id;
+            ParentKey = parentKey;
         }
-        public Data(Data data, int _id, string _ParentKey)
+
+        public Data(Data data, int id, string parentKey)
         {
-            ACC_Type = data.ACC_Type;
-            Id = _id;
-            ParentKey = _ParentKey;
+            AccType = data.AccType;
+            Id = id;
+            ParentKey = parentKey;
         }
-        public int ACC_Type { get; }
+
+        public int AccType { get; }
         public int Id { get; set; }
+
         public string ParentKey { get; set; }
         //public static bool ChangingType = false;
     }

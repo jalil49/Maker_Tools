@@ -1,23 +1,23 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Studio;
 
 namespace Accessory_Themes
 {
-    [BepInPlugin(GUID, "Accessory Themes", Version)]
-    [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
-    [BepInDependency("Additional_Card_Info", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInPlugin(Guid, "Accessory Themes", Version)]
+    [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
+    [BepInDependency("Additional_Card_Info")]
     [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
-
     public partial class Settings : BaseUnityPlugin
     {
-        public const string GUID = "Accessory_Themes";
+        private const string Guid = "Accessory_Themes";
         public const string Version = "1.6";
         internal static Settings Instance;
-        internal static new ManualLogSource Logger;
+        internal new static ManualLogSource Logger;
         public static ConfigEntry<string> NamingID { get; private set; }
         public static ConfigEntry<bool> Enable { get; private set; }
 
@@ -28,8 +28,8 @@ namespace Accessory_Themes
 
             if (StudioAPI.InsideStudio) return;
 
-            CharacterApi.RegisterExtraBehaviour<CharaEvent>(GUID);
-            Hooks.Init(Logger);
+            CharacterApi.RegisterExtraBehaviour<CharaEvent>(Guid);
+            Hooks.Init();
 
             NamingID = Config.Bind("Grouping ID", "Grouping ID", "3", "Requires restarting maker");
             Enable = Config.Bind("Setting", "Enable", true, "Requires restarting maker");

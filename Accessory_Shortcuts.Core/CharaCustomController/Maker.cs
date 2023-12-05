@@ -1,22 +1,57 @@
-﻿using ChaCustom;
+﻿using System;
+using ChaCustom;
 using KKAPI.Chara;
 using KKAPI.Maker;
-using System;
 using UnityEngine;
 
 namespace Accessory_Shortcuts
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        static bool Skip = false;
+        private static bool _skip;
         public static CustomAcsChangeSlot CustomAcs { get; internal set; }
+
+        protected override void Update()
+        {
+            if (Input.anyKeyDown && AccessoriesApi.AccessoryCanvasVisible)
+            {
+                var slot = AccessoriesApi.SelectedMakerAccSlot;
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    PrevSlot(slot);
+                    return;
+                }
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    NextSlot(slot);
+                    return;
+                }
+
+                var emptyandvalid = slot < Parts.Length && Parts[slot].type == 120;
+                if (emptyandvalid)
+                {
+                    _skip = true;
+
+                    var cvsSlot = CustomAcs.cvsAccessory[slot];
+                    if (int.TryParse(Input.inputString, out var kind) && kind < 10 && kind > -1)
+                    {
+                        if (kind == 0) kind = 10;
+                        cvsSlot.UpdateSelectAccessoryType(kind);
+                        cvsSlot.UpdateCustomUI();
+                        cvsSlot.tglAcsKind.isOn = true;
+                    }
+
+                    _skip = false;
+                }
+            }
+
+            base.Update();
+        }
 
         internal void Update_Stored_Accessory(int slotNo, int type, int id, string parentKey)
         {
-            if (type == 120 || Skip)
-            {
-                return;
-            }
+            if (type == 120 || _skip) return;
 
             var partsInfo = Parts[slotNo];
 
@@ -29,15 +64,15 @@ namespace Accessory_Shortcuts
 
         internal void Change_To_Stored_Accessory(int slotNo, int type, int id, string parentKey)
         {
-            if (type == 120)
-            {
-                return;
-            }
-            else if (Constants.Parent.TryGetValue(type - 120, out var data) && (id != data.Id || parentKey != data.ParentKey))
+            if (type == 120) return;
+
+            if (Constants.Parent.TryGetValue(type - 120, out var data) &&
+                (id != data.Id || parentKey != data.ParentKey))
             {
                 ChaControl.ChangeAccessory(slotNo, type, data.Id, data.ParentKey);
                 CustomBase.Instance.SetUpdateCvsAccessory(slotNo, true);
-                ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slotNo] = ChaControl.nowCoordinate.accessory.parts[slotNo];
+                ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slotNo] =
+                    ChaControl.nowCoordinate.accessory.parts[slotNo];
             }
         }
 
@@ -49,43 +84,6 @@ namespace Accessory_Shortcuts
         public void NextSlot(int slot)
         {
             CustomAcs.items[Math.Min(slot + 1, Parts.Length - 1)].tglItem.isOn = true;
-        }
-
-        protected override void Update()
-        {
-            if (Input.anyKeyDown && AccessoriesApi.AccessoryCanvasVisible)
-            {
-                var slot = AccessoriesApi.SelectedMakerAccSlot;
-                if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    PrevSlot(slot);
-                    return;
-                }
-                else if (Input.GetKeyDown(KeyCode.E))
-                {
-                    NextSlot(slot);
-                    return;
-                }
-                var Emptyandvalid = slot < Parts.Length && Parts[slot].type == 120;
-                if (Emptyandvalid)
-                {
-                    Skip = true;
-
-                    var CVS_Slot = CustomAcs.cvsAccessory[slot];
-                    if (int.TryParse(Input.inputString, out var kind) && kind < 10 && kind > -1)
-                    {
-                        if (kind == 0)
-                        {
-                            kind = 10;
-                        }
-                        CVS_Slot.UpdateSelectAccessoryType(kind);
-                        CVS_Slot.UpdateCustomUI();
-                        CVS_Slot.tglAcsKind.isOn = true;
-                    }
-                    Skip = false;
-                }
-            }
-            base.Update();
         }
     }
 }

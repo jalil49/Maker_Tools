@@ -4,7 +4,7 @@ namespace Accessory_States
 {
     public static class Constants
     {
-        public static Dictionary<int, string> ConstantOutfitNames = new Dictionary<int, string>()
+        public static readonly Dictionary<int, string> ConstantOutfitNames = new Dictionary<int, string>
         {
             [-1] = "None",
             [0] = "Top",
@@ -15,7 +15,7 @@ namespace Accessory_States
             [5] = "Pantyhose",
             [6] = "Socks",
             [7] = "Inner Shoes",
-            [8] = "Outer Shoes",
+            [8] = "Outer Shoes"
         };
     }
 }

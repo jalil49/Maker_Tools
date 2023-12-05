@@ -1,50 +1,50 @@
-﻿using KKAPI.Chara;
+﻿using System;
+using System.Collections.Generic;
+using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Utilities;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Accessory_Themes
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        static bool ShowCustomGui = false;
-        static public Dictionary<int, int> Gui_states = new Dictionary<int, int>();
+        private static bool _showCustomGui;
+        public static Dictionary<int, int> GuiStates = new Dictionary<int, int>();
 
-        static private Vector2 NameScrolling = new Vector2();
-        static private Vector2 StateScrolling = new Vector2();
-        static private bool mouseassigned = false;
-        static Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
+        private static Vector2 _nameScrolling;
+        private static Vector2 _stateScrolling;
+        private static bool _mouseassigned;
 
-        static bool showdelete = false;
+        private static Rect _screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f),
+            (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
 
-        static GUIStyle labelstyle;
-        static GUIStyle buttonstyle;
-        static GUIStyle fieldstyle;
-        static GUIStyle togglestyle;
+        private static bool _showdelete;
+
+        private static GUIStyle _labelstyle;
+        private static GUIStyle _buttonstyle;
+        private static GUIStyle _fieldstyle;
+        private static GUIStyle _togglestyle;
 
         internal void OnGUI()
         {
-            if (!ShowCustomGui || !AccessoriesApi.AccessoryCanvasVisible || !MakerAPI.IsInterfaceVisible())
-            {
-                return;
-            }
+            if (!_showCustomGui || !AccessoriesApi.AccessoryCanvasVisible || !MakerAPI.IsInterfaceVisible()) return;
 
-            if (labelstyle == null)
+            if (_labelstyle == null)
             {
-                labelstyle = new GUIStyle(GUI.skin.label);
-                buttonstyle = new GUIStyle(GUI.skin.button);
-                fieldstyle = new GUIStyle(GUI.skin.textField);
-                togglestyle = new GUIStyle(GUI.skin.toggle);
-                buttonstyle.hover.textColor = Color.red;
-                buttonstyle.onNormal.textColor = Color.red;
+                _labelstyle = new GUIStyle(GUI.skin.label);
+                _buttonstyle = new GUIStyle(GUI.skin.button);
+                _fieldstyle = new GUIStyle(GUI.skin.textField);
+                _togglestyle = new GUIStyle(GUI.skin.toggle);
+                _buttonstyle.hover.textColor = Color.red;
+                _buttonstyle.onNormal.textColor = Color.red;
 
                 SetFontSize(Screen.height / 108);
             }
 
-            IMGUIUtils.DrawSolidBox(screenRect);
-            screenRect = GUILayout.Window(2902, screenRect, CustomGui, $"Accessory Themes Gui: Slot {AccessoriesApi.SelectedMakerAccSlot + 1}");
+            IMGUIUtils.DrawSolidBox(_screenRect);
+            _screenRect = GUILayout.Window(2902, _screenRect, CustomGui,
+                $"Accessory Themes Gui: Slot {AccessoriesApi.SelectedMakerAccSlot + 1}");
         }
 
         private void CustomGui(int id)
@@ -53,10 +53,7 @@ namespace Accessory_Themes
             var partinfo = AccessoriesApi.GetPartsInfo(slot);
             var valid = partinfo.type != 120;
             var themes = Themes;
-            if (!Theme_Dict.TryGetValue(slot, out var themenum))
-            {
-                themenum = -1;
-            }
+            if (!ThemeDict.TryGetValue(slot, out var themeNum)) themeNum = -1;
             GUILayout.BeginVertical();
             {
                 Topoptions();
@@ -66,16 +63,13 @@ namespace Accessory_Themes
                     {
                         GUILayout.BeginHorizontal();
                         {
-                            if (GUILayout.Button("Add Theme", buttonstyle))
-                            {
-                                AddThemeValueToList(slot, false);
-                            }
+                            if (GUILayout.Button("Add Theme", _buttonstyle)) AddThemeValueToList(slot, false);
                         }
                         GUILayout.EndHorizontal();
 
-                        NameScrolling = GUILayout.BeginScrollView(NameScrolling);
+                        _nameScrolling = GUILayout.BeginScrollView(_nameScrolling);
                         {
-                            DrawParentNames(slot, valid, themenum);
+                            DrawParentNames(slot, valid, themeNum);
                         }
                         GUILayout.EndScrollView();
                     }
@@ -83,14 +77,16 @@ namespace Accessory_Themes
 
                     GUILayout.BeginVertical(GUI.skin.box);
                     {
-                        StateScrolling = GUILayout.BeginScrollView(StateScrolling);
+                        _stateScrolling = GUILayout.BeginScrollView(_stateScrolling);
                         {
-                            if (themenum >= 0)
+                            if (themeNum >= 0)
                             {
-                                var theme = themes[themenum];
-                                GUILayout.Label(theme.ThemeName, labelstyle, GUILayout.ExpandWidth(true));
-                                theme.Isrelative = GUILayout.Toggle(theme.Isrelative, "Theme is relative", togglestyle);
+                                var theme = themes[themeNum];
+                                GUILayout.Label(theme.ThemeName, _labelstyle, GUILayout.ExpandWidth(true));
+                                theme.IsRelative =
+                                    GUILayout.Toggle(theme.IsRelative, "Theme is relative", _togglestyle);
                             }
+
                             Drawbulk();
                         }
                         GUILayout.EndScrollView();
@@ -101,21 +97,18 @@ namespace Accessory_Themes
             }
             GUILayout.EndVertical();
 
-            screenRect = IMGUIUtils.DragResizeEatWindow(2902, screenRect);
+            _screenRect = IMGUIUtils.DragResizeEatWindow(2902, _screenRect);
         }
 
         private void Drawbulk()
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Start", labelstyle);
-                bulkrange[0] = GUILayout.TextField(bulkrange[0], fieldstyle);
-                GUILayout.Label("Stop", labelstyle);
-                bulkrange[1] = GUILayout.TextField(bulkrange[1], fieldstyle);
-                if (GUILayout.Button("Bulk", buttonstyle))
-                {
-                    BulkProcess(ThemesDropdownwrapper.GetSelectedValue() - 1);
-                }
+                GUILayout.Label("Start", _labelstyle);
+                Bulkrange[0] = GUILayout.TextField(Bulkrange[0], _fieldstyle);
+                GUILayout.Label("Stop", _labelstyle);
+                Bulkrange[1] = GUILayout.TextField(Bulkrange[1], _fieldstyle);
+                if (GUILayout.Button("Bulk", _buttonstyle)) BulkProcess(_themesDropdownwrapper.GetSelectedValue() - 1);
             }
             GUILayout.EndHorizontal();
         }
@@ -123,34 +116,33 @@ namespace Accessory_Themes
         private void DrawParentNames(int slot, bool valid, int bindedtheme)
         {
             var themelist = Themes;
-            for (int themenum = 0, n = themelist.Count; themenum < n; themenum++)
+            for (int themeNum = 0, n = themelist.Count; themeNum < n; themeNum++)
             {
-                var theme = themelist[themenum];
-                var ispart = themenum == bindedtheme;
+                var theme = themelist[themeNum];
+                var ispart = themeNum == bindedtheme;
                 if (ispart)
                     GUILayout.BeginHorizontal(GUI.skin.box);
                 else
                     GUILayout.BeginHorizontal();
                 {
-                    theme.ThemeName = GUILayout.TextField(theme.ThemeName, fieldstyle);
-                    if (valid && !ispart && GUILayout.Button("Bind", buttonstyle, GUILayout.ExpandWidth(false)))
+                    theme.ThemeName = GUILayout.TextField(theme.ThemeName, _fieldstyle);
+                    if (valid && !ispart && GUILayout.Button("Bind", _buttonstyle, GUILayout.ExpandWidth(false)))
                     {
-                        if (bindedtheme >= 0)
-                        {
-                            themelist[bindedtheme].ThemedSlots.RemoveAt(slot);
-                        }
-                        Theme_Dict[slot] = themenum;
+                        if (bindedtheme >= 0) themelist[bindedtheme].ThemedSlots.RemoveAt(slot);
+                        ThemeDict[slot] = themeNum;
                         theme.ThemedSlots.Add(slot);
                     }
-                    if (ispart && GUILayout.Button("Unbind", buttonstyle, GUILayout.ExpandWidth(false)))
+
+                    if (ispart && GUILayout.Button("Unbind", _buttonstyle, GUILayout.ExpandWidth(false)))
                     {
-                        Theme_Dict.Remove(slot);
+                        ThemeDict.Remove(slot);
                         theme.ThemedSlots.Remove(slot);
                     }
-                    if (showdelete && GUILayout.Button("Delete", buttonstyle, GUILayout.ExpandWidth(false)))
+
+                    if (_showdelete && GUILayout.Button("Delete", _buttonstyle, GUILayout.ExpandWidth(false)))
                     {
-                        themelist.RemoveAt(themenum);
-                        themenum--;
+                        themelist.RemoveAt(themeNum);
+                        themeNum--;
                         n--;
                         PopulateThemeDict();
                     }
@@ -166,57 +158,45 @@ namespace Accessory_Themes
                 GUILayout.FlexibleSpace();
                 DrawFontSize();
 
-                if (Input.GetMouseButtonDown(0) && !mouseassigned && screenRect.Contains(Input.mousePosition))
-                {
+                if (Input.GetMouseButtonDown(0) && !_mouseassigned && _screenRect.Contains(Input.mousePosition))
                     StartCoroutine(DragEvent());
-                }
 
-                if (GUILayout.Button("X", buttonstyle, GUILayout.ExpandWidth(false)))
-                {
-                    ShowCustomGui = false;
-                }
+                if (GUILayout.Button("X", _buttonstyle, GUILayout.ExpandWidth(false))) _showCustomGui = false;
             }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             {
-                showdelete = GUILayout.Toggle(showdelete, "Enable Delete", togglestyle, GUILayout.ExpandWidth(false));
-                Tolerance = GUILayout.TextField(Tolerance, fieldstyle);
-                GUILayout.Label("Tolerance", labelstyle);
-                if (GUILayout.Button("Auto Generate Themes", buttonstyle))
-                {
-                    AutoTheme();
-                }
-                Clearthemes = GUILayout.Toggle(Clearthemes, "Clear Themes", togglestyle, GUILayout.ExpandWidth(false));
+                _showdelete = GUILayout.Toggle(_showdelete, "Enable Delete", _togglestyle,
+                    GUILayout.ExpandWidth(false));
+                _tolerance = GUILayout.TextField(_tolerance, _fieldstyle);
+                GUILayout.Label("Tolerance", _labelstyle);
+                if (GUILayout.Button("Auto Generate Themes", _buttonstyle)) AutoTheme();
+                _clearthemes = GUILayout.Toggle(_clearthemes, "Clear Themes", _togglestyle,
+                    GUILayout.ExpandWidth(false));
             }
             GUILayout.EndHorizontal();
         }
 
         private static void DrawFontSize()
         {
-            if (GUILayout.Button("GUI-", buttonstyle))
-            {
-                SetFontSize(Math.Max(labelstyle.fontSize - 1, 5));
-            }
-            if (GUILayout.Button("GUI+", buttonstyle))
-            {
-                SetFontSize(1 + labelstyle.fontSize);
-            }
+            if (GUILayout.Button("GUI-", _buttonstyle)) SetFontSize(Math.Max(_labelstyle.fontSize - 1, 5));
+            if (GUILayout.Button("GUI+", _buttonstyle)) SetFontSize(1 + _labelstyle.fontSize);
         }
 
         private static void SetFontSize(int size)
         {
-            labelstyle.fontSize = size;
-            buttonstyle.fontSize = size;
-            fieldstyle.fontSize = size;
-            togglestyle.fontSize = size;
+            _labelstyle.fontSize = size;
+            _buttonstyle.fontSize = size;
+            _fieldstyle.fontSize = size;
+            _togglestyle.fontSize = size;
         }
 
         private IEnumerator<int> DragEvent()
         {
             var pos = Input.mousePosition;
             Vector2 mousepos = pos;
-            mouseassigned = true;
+            _mouseassigned = true;
             var mousebuttonup = false;
             for (var i = 0; i < 20; i++)
             {
@@ -227,12 +207,13 @@ namespace Accessory_Themes
             while (!mousebuttonup)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
-                screenRect.position += (Vector2)pos - mousepos;
+                _screenRect.position += (Vector2)pos - mousepos;
                 mousepos = pos;
                 yield return 0;
             }
+
             yield return 0;
-            mouseassigned = false;
+            _mouseassigned = false;
         }
     }
 }

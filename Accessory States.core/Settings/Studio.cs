@@ -1,61 +1,43 @@
-﻿using KKAPI.Studio;
+﻿using System;
+using System.Collections.Generic;
+using KKAPI.Studio;
 using KKAPI.Studio.UI;
 using KKAPI.Utilities;
-using Studio;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
+using ObservableExtensions = UniRx.ObservableExtensions;
 
 namespace Accessory_States
 {
     public partial class Settings
     {
         internal static bool ShowStudioGui;
+        private static Vector2 _nameScrolling;
 
-        private Rect screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f), (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
-        static private Vector2 NameScrolling = new Vector2();
+        internal static GUIStyle Labelstyle;
+        internal static GUIStyle Buttonstyle;
+        internal static GUIStyle Fieldstyle;
+        internal static GUIStyle Togglestyle;
+        internal static GUIStyle Sliderstyle;
+        internal static GUIStyle Sliderthumbstyle;
+        private readonly List<CharaEvent> _studioList = new List<CharaEvent>();
+        private bool _mouseassigned;
 
-        internal static GUIStyle labelstyle;
-        internal static GUIStyle buttonstyle;
-        internal static GUIStyle fieldstyle;
-        internal static GUIStyle togglestyle;
-        internal static GUIStyle sliderstyle;
-        internal static GUIStyle sliderthumbstyle;
-        private bool mouseassigned;
-        private readonly List<CharaEvent> StudioList = new List<CharaEvent>();
-        private void CreateStudioControls()
-        {
-            var currentStateCategory = StudioAPI.GetOrCreateCurrentStateCategory("Acc. States");
-            var button = new CurrentStateCategorySwitch("GUI Toggle", delegate (OCIChar chara)
-            {
-                return ShowStudioGui;
-            });
-            UniRx.ObservableExtensions.Subscribe(button.Value, delegate (bool value)
-            {
-                StudioList.Clear();
-                foreach (var Controller in StudioAPI.GetSelectedControllers<CharaEvent>())
-                {
-                    ShowStudioGui = value;
-                    StudioList.Add(Controller);
-                }
-            });
-
-            var test = currentStateCategory.AddControl(button);
-        }
+        private Rect _screenRect = new Rect((int)(Screen.width * 0.33f), (int)(Screen.height * 0.09f),
+            (int)(Screen.width * 0.225), (int)(Screen.height * 0.273));
 
 
         internal void OnGUI()
         {
-            if (labelstyle == null)
+            if (Labelstyle == null)
             {
-                labelstyle = new GUIStyle(GUI.skin.label);
-                buttonstyle = new GUIStyle(GUI.skin.button);
-                fieldstyle = new GUIStyle(GUI.skin.textField);
-                togglestyle = new GUIStyle(GUI.skin.toggle);
-                sliderstyle = new GUIStyle(GUI.skin.horizontalSlider);
-                sliderthumbstyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
-                buttonstyle.hover.textColor = Color.red;
-                buttonstyle.onNormal.textColor = Color.red;
+                Labelstyle = new GUIStyle(GUI.skin.label);
+                Buttonstyle = new GUIStyle(GUI.skin.button);
+                Fieldstyle = new GUIStyle(GUI.skin.textField);
+                Togglestyle = new GUIStyle(GUI.skin.toggle);
+                Sliderstyle = new GUIStyle(GUI.skin.horizontalSlider);
+                Sliderthumbstyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
+                Buttonstyle.hover.textColor = Color.red;
+                Buttonstyle.onNormal.textColor = Color.red;
 
                 SetFontSize(Screen.height / 108);
             }
@@ -65,90 +47,99 @@ namespace Accessory_States
             DrawStudioGUI();
         }
 
+        private void CreateStudioControls()
+        {
+            var currentStateCategory = StudioAPI.GetOrCreateCurrentStateCategory("Acc. States");
+            var button = new CurrentStateCategorySwitch("GUI Toggle", delegate { return ShowStudioGui; });
+            ObservableExtensions.Subscribe(button.Value, delegate(bool value)
+            {
+                _studioList.Clear();
+                foreach (var controller in StudioAPI.GetSelectedControllers<CharaEvent>())
+                {
+                    ShowStudioGui = value;
+                    _studioList.Add(controller);
+                }
+            });
+
+            var test = currentStateCategory.AddControl(button);
+        }
+
         internal static void DrawFontSize()
         {
-            if (GUILayout.Button("GUI-", buttonstyle))
-            {
-                SetFontSize(Math.Max(labelstyle.fontSize - 1, 5));
-            }
-            if (GUILayout.Button("GUI+", buttonstyle))
-            {
-                SetFontSize(1 + labelstyle.fontSize);
-            }
+            if (GUILayout.Button("GUI-", Buttonstyle)) SetFontSize(Math.Max(Labelstyle.fontSize - 1, 5));
+            if (GUILayout.Button("GUI+", Buttonstyle)) SetFontSize(1 + Labelstyle.fontSize);
         }
 
         internal static void SetFontSize(int size)
         {
-            labelstyle.fontSize = size;
-            buttonstyle.fontSize = size;
-            fieldstyle.fontSize = size;
-            togglestyle.fontSize = size;
-            sliderstyle.fontSize = size;
-            sliderthumbstyle.fontSize = size;
+            Labelstyle.fontSize = size;
+            Buttonstyle.fontSize = size;
+            Fieldstyle.fontSize = size;
+            Togglestyle.fontSize = size;
+            Sliderstyle.fontSize = size;
+            Sliderthumbstyle.fontSize = size;
         }
 
         private void DrawStudioGUI()
         {
-            IMGUIUtils.DrawSolidBox(screenRect);
-            screenRect = GUILayout.Window(2901, screenRect, StudioGUI, "Accessory States GUI");
+            IMGUIUtils.DrawSolidBox(_screenRect);
+            _screenRect = GUILayout.Window(2901, _screenRect, StudioGUI, "Accessory States GUI");
         }
 
         private void StudioGUI(int id)
         {
             Topoptions();
-            NameScrolling = GUILayout.BeginScrollView(NameScrolling);
+            _nameScrolling = GUILayout.BeginScrollView(_nameScrolling);
             GUILayout.BeginVertical();
             {
-                foreach (var controller in StudioList)
+                foreach (var controller in _studioList)
                 {
-                    var Names = controller.Names;
-                    var Now_Parented_Name_Dictionary = controller.Now_Parented_Name_Dictionary;
-                    var GUI_Custom_Dict = controller.GUI_Custom_Dict;
-                    var GUI_Parent_Dict = controller.GUI_Parent_Dict;
-                    if (Names.Count == 0 && Now_Parented_Name_Dictionary.Count == 0)
+                    var names = controller.Names;
+                    var nowParentedNameDictionary = controller.NowParentedNameDictionary;
+                    var guiCustomDict = controller.GUICustomDict;
+                    var guiParentDict = controller.GUIParentDict;
+                    if (names.Count == 0 && nowParentedNameDictionary.Count == 0)
                     {
-                        GUILayout.Label($"No custom data found for {controller.ChaFileControl.parameter.fullname}", labelstyle);
+                        GUILayout.Label($"No custom data found for {controller.ChaFileControl.parameter.fullname}",
+                            Labelstyle);
                         continue;
                     }
-                    GUILayout.Label($"Character: {controller.ChaFileControl.parameter.fullname}", labelstyle);
-                    foreach (var item in Names)
+
+                    GUILayout.Label($"Character: {controller.ChaFileControl.parameter.fullname}", Labelstyle);
+                    foreach (var item in names)
                     {
-                        if (!GUI_Custom_Dict.TryGetValue(item.Key, out var array))
-                        {
-                            GUI_Custom_Dict[item.Key] = array = new int[] { 0, controller.MaxState(item.Key) };
-                        }
+                        if (!guiCustomDict.TryGetValue(item.Key, out var array))
+                            guiCustomDict[item.Key] = array = new[] { 0, controller.MaxState(item.Key) };
                         GUILayout.BeginHorizontal();
                         {
-                            GUILayout.Label(item.Value.Name, labelstyle);
-                            GUILayout.Label(controller.StateDescription(item.Key, array[0]), labelstyle);
+                            GUILayout.Label(item.Value.Name, Labelstyle);
+                            GUILayout.Label(controller.StateDescription(item.Key, array[0]), Labelstyle);
                         }
                         GUILayout.EndHorizontal();
-                        var round = Mathf.RoundToInt(GUILayout.HorizontalSlider(array[0], 0, array[1], sliderstyle, sliderthumbstyle));
+                        var round = Mathf.RoundToInt(GUILayout.HorizontalSlider(array[0], 0, array[1], Sliderstyle,
+                            Sliderthumbstyle));
                         if (round != array[0])
                         {
                             controller.Custom_Groups(item.Key, round);
                             array[0] = round;
                         }
                     }
-                    foreach (var item in Now_Parented_Name_Dictionary)
-                    {
-                        if (!GUI_Parent_Dict.TryGetValue(item.Key, out var show))
-                        {
-                            GUI_Parent_Dict[item.Key] = show = true;
-                        }
 
-                        if (GUILayout.Button($"{item.Key}: {OnOff(show)}", buttonstyle))
+                    foreach (var item in nowParentedNameDictionary)
+                    {
+                        if (!guiParentDict.TryGetValue(item.Key, out var show)) guiParentDict[item.Key] = show = true;
+
+                        if (GUILayout.Button($"{item.Key}: {OnOff(show)}", Buttonstyle))
                         {
                             controller.Parent_toggle(item.Key, !show);
-                            GUI_Parent_Dict[item.Key] = !show;
+                            guiParentDict[item.Key] = !show;
                         }
                     }
                 }
             }
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
-            screenRect = IMGUIUtils.DragResizeEatWindow(800, screenRect);
-
+            _screenRect = IMGUIUtils.DragResizeEatWindow(800, _screenRect);
         }
 
         private void Topoptions()
@@ -157,14 +148,9 @@ namespace Accessory_States
             {
                 GUILayout.FlexibleSpace();
                 DrawFontSize();
-                if (Input.GetMouseButtonDown(0) && !mouseassigned && screenRect.Contains(Input.mousePosition))
-                {
+                if (Input.GetMouseButtonDown(0) && !_mouseassigned && _screenRect.Contains(Input.mousePosition))
                     StartCoroutine(DragEvent());
-                }
-                if (GUILayout.Button("X", buttonstyle, GUILayout.ExpandWidth(false)))
-                {
-                    ShowStudioGui = false;
-                }
+                if (GUILayout.Button("X", Buttonstyle, GUILayout.ExpandWidth(false))) ShowStudioGui = false;
             }
             GUILayout.EndHorizontal();
         }
@@ -173,30 +159,29 @@ namespace Accessory_States
         {
             var pos = Input.mousePosition;
             Vector2 mousepos = pos;
-            mouseassigned = true;
+            _mouseassigned = true;
             var mousebuttonup = false;
             for (var i = 0; i < 20; i++)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
                 yield return 0;
             }
+
             while (!mousebuttonup)
             {
                 mousebuttonup = Input.GetMouseButtonUp(0);
-                screenRect.position += (Vector2)pos - mousepos;
+                _screenRect.position += (Vector2)pos - mousepos;
                 mousepos = pos;
                 yield return 0;
             }
+
             yield return 0;
-            mouseassigned = false;
+            _mouseassigned = false;
         }
 
         private string OnOff(bool show)
         {
-            if (show)
-            {
-                return "On";
-            }
+            if (show) return "On";
             return "Off";
         }
     }

@@ -7,5 +7,6 @@ namespace Accessory_Shortcuts
     [BepInProcess("KoikatuVR")]
     [BepInProcess("Koikatsu Party VR")]
     public partial class Settings : BaseUnityPlugin
-    { }
+    {
+    }
 }

@@ -1,11 +1,11 @@
-﻿using ExtensibleSaveFormat;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ExtensibleSaveFormat;
 using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -15,26 +15,18 @@ namespace Accessory_Themes
     {
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (!MakerAPI.InsideMaker)
-            {
-                return;
-            }
+            if (!MakerAPI.InsideMaker) return;
 
             for (var i = 0; i < ChaFileControl.coordinate.Length; i++)
-            {
                 if (Coordinate.ContainsKey(i))
                     Clearoutfit(i);
                 else
                     Createoutfit(i);
-            }
-            for (int i = ChaFileControl.coordinate.Length, n = Coordinate.Keys.Max() + 1; i < n; i++)
-            {
-                Removeoutfit(i);
-            }
+            for (int i = ChaFileControl.coordinate.Length, n = Coordinate.Keys.Max() + 1; i < n; i++) Removeoutfit(i);
 
             CurrentCoordinate.Subscribe(x =>
             {
-                ShowCustomGui = false;
+                _showCustomGui = false;
                 if (!Coordinate.ContainsKey((int)x))
                     Createoutfit((int)x);
 
@@ -42,27 +34,28 @@ namespace Accessory_Themes
                 StartCoroutine(WaitForSlots());
             });
 
-            var MyData = GetExtendedData();
-            if (MyData != null)
+            var myData = GetExtendedData();
+            if (myData != null)
             {
-                switch (MyData.version)
+                switch (myData.version)
                 {
                     case 0:
-                        Migrator.MigrateV0(MyData, ref data);
+                        Migrator.MigrateV0(myData, ref _data);
                         break;
                     case 1:
-                        if (MyData.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                        {
-                            data.Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
-                        }
+                        if (myData.data.TryGetValue("CoordinateData", out var byteData) && byteData != null)
+                            _data.Coordinate =
+                                MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])byteData);
                         break;
                     default:
                         Settings.Logger.LogWarning("New version of plugin detected please update");
                         break;
                 }
+
                 StartCoroutine(WaitForSlots());
             }
-            ACI_Ref = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
+
+            _aciRef = ChaControl.GetComponent<Additional_Card_Info.CharaEvent>();
             UpdateNowCoordinate();
         }
 
@@ -70,64 +63,53 @@ namespace Accessory_Themes
         {
             if (!MakerAPI.InsideMaker)
             {
-                var Data = GetExtendedData();
-                if (Data != null)
-                {
-                    SetExtendedData(Data);
-                }
+                var data = GetExtendedData();
+                if (data != null) SetExtendedData(data);
                 return;
             }
 
-            var MyData = new PluginData() { version = 1 };
+            var myData = new PluginData { version = 1 };
 
-            data.CleanUp();
+            _data.CleanUp();
 
-            var nulldata = Coordinate.All(x => x.Value.Themes.Count == 0);
+            var nulldata = Coordinate.All(x => x.Value.themes.Count == 0);
 
-            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
-            SetExtendedData((nulldata) ? null : MyData);
+            myData.data.Add("CoordinateData", MessagePackSerializer.Serialize(Coordinate));
+            SetExtendedData(nulldata ? null : myData);
         }
 
         protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate)
         {
-            var MyData = new PluginData() { version = 1 };
+            var myData = new PluginData { version = 1 };
             NowCoordinate.CleanUp();
             var nulldata = Themes.Count == 0;
-            MyData.data.Add("CoordinateData", MessagePackSerializer.Serialize(NowCoordinate));
-            SetCoordinateExtendedData(coordinate, (nulldata) ? null : MyData);
+            myData.data.Add("CoordinateData", MessagePackSerializer.Serialize(NowCoordinate));
+            SetCoordinateExtendedData(coordinate, nulldata ? null : myData);
         }
 
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate, bool maintainState)
         {
-            if (!MakerAPI.InsideMaker)
-            {
-                return;
-            }
+            if (!MakerAPI.InsideMaker) return;
 
             NowCoordinate.Clear();
-            var MyData = GetCoordinateExtendedData(coordinate);
-            if (MyData != null)
-            {
-                switch (MyData.version)
+            var myData = GetCoordinateExtendedData(coordinate);
+            if (myData != null)
+                switch (myData.version)
                 {
                     case 0:
-                        NowCoordinate = Migrator.CoordinateMigrateV0(MyData);
+                        NowCoordinate = Migrator.CoordinateMigrateV0(myData);
                         break;
                     case 1:
-                        if (MyData.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                        {
-                            NowCoordinate = MessagePackSerializer.Deserialize<CoordinateData>((byte[])ByteData);
-                        }
+                        if (myData.data.TryGetValue("CoordinateData", out var byteData) && byteData != null)
+                            NowCoordinate = MessagePackSerializer.Deserialize<CoordinateData>((byte[])byteData);
                         break;
                     default:
                         Settings.Logger.LogWarning("New version detected please update");
                         break;
                 }
-            }
+
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
-            {
                 Coordinate[(int)CurrentCoordinate.Value] = NowCoordinate;
-            }
             StartCoroutine(WaitForSlots());
         }
 
@@ -135,70 +117,61 @@ namespace Accessory_Themes
         {
             if (KoikatuAPI.GetCurrentGameMode() == GameMode.Maker)
             {
-                data.NowCoordinate = data.Coordinate[(int)CurrentCoordinate.Value];
+                _data.NowCoordinate = _data.Coordinate[(int)CurrentCoordinate.Value];
                 return;
             }
-            data.NowCoordinate = new CoordinateData(data.Coordinate[(int)CurrentCoordinate.Value]);
+
+            _data.NowCoordinate = new CoordinateData(_data.Coordinate[(int)CurrentCoordinate.Value]);
         }
 
         private void Theme_Changed()
         {
-            if (!MakerAPI.InsideAndLoaded)
-            {
-                return;
-            }
-            var themenum = ThemesDropDown_Setting.Value - 1;
+            if (!MakerAPI.InsideAndLoaded) return;
+            var themeNum = _themesDropDownSetting.Value - 1;
 
             Color[] colordata;
-            if (themenum < 0)
+            if (themeNum < 0)
             {
-                IsThemeRelativeBool.SetValue(false, false);
-                colordata = new Color[] { new Color(), new Color(), new Color(), new Color() };
+                _isThemeRelativeBool.SetValue(false, false);
+                colordata = new[] { new Color(), new Color(), new Color(), new Color() };
             }
             else
             {
-                var theme = Themes[themenum];
+                var theme = Themes[themeNum];
                 colordata = theme.Colors;
-                IsThemeRelativeBool.SetValue(theme.Isrelative, false);
+                _isThemeRelativeBool.SetValue(theme.IsRelative, false);
             }
-            for (var i = 0; i < 4; i++)
-            {
-                ACC_GUIsliders[i].SetValue(colordata[i], false);
-            }
+
+            for (var i = 0; i < 4; i++) AccGuIsliders[i].SetValue(colordata[i], false);
         }
 
-        private bool ChangeACCColor(int slot, int theme)
+        private bool ChangeAccColor(int slot, int theme)
         {
-            if (!HairAcc.Contains(slot) && theme != 0/* && !RelativeThemeBool[theme]*/)
+            if (!_hairAcc.Contains(slot) && theme != 0 /* && !RelativeThemeBool[theme]*/)
             {
-                var Partinfo = AccessoriesApi.GetPartsInfo(slot);
-                var Colors = Themes[theme].Colors;
-                var New_Color = new Color[] { Colors[0], Colors[1], Colors[2], Colors[3] };
-                Partinfo.color = New_Color;
+                var partinfo = AccessoriesApi.GetPartsInfo(slot);
+                var colors = Themes[theme].Colors;
+                var newColor = new[] { colors[0], colors[1], colors[2], colors[3] };
+                partinfo.color = newColor;
                 if (slot < 20)
-                {
-                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].color = New_Color;
-                }
+                    ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].color = newColor;
                 ChaControl.ChangeAccessoryColor(slot);
                 return true;
             }
+
             return false;
         }
 
-        private void Copy_ACC_Color(bool IsPersonal = false)
+        private void Copy_ACC_Color(bool isPersonal = false)
         {
-            if (Int32.TryParse(CopyTextbox.Value, out var slot))
+            if (int.TryParse(_copyTextbox.Value, out var slot))
             {
                 slot--;
-                if (slot >= Parts.Length || slot < 0)
-                {
-                    return;
-                }
+                if (slot >= Parts.Length || slot < 0) return;
                 var info = AccessoriesApi.GetPartsInfo(slot);
 
-                if (IsPersonal)
+                if (isPersonal)
                 {
-
                     //for (int i = 0; i < 4; i++)
                     //{
                     //    Personal_GUIsliders[i].SetValue(info.color[i]);
@@ -206,135 +179,99 @@ namespace Accessory_Themes
                     //return;
                 }
 
-                for (var i = 0; i < 4; i++)
-                {
-                    ACC_GUIsliders[i].SetValue(info.color[i]);
-                }
+                for (var i = 0; i < 4; i++) AccGuIsliders[i].SetValue(info.color[i]);
             }
         }
 
-        private void ColorSetByParent(bool Simple = false)
+        private void ColorSetByParent(bool simple = false)
         {
-            var themenum = ThemesDropDown_Setting.Value - 1;
-            if (themenum < 0)
-            {
-                return;
-            }
+            var themeNum = _themesDropDownSetting.Value - 1;
+            if (themeNum < 0) return;
             string[] comparison;
-            if (Simple)
-            {
-                comparison = Constants.Inclusion[SimpleParentDropdown.Value].ToArray();
-            }
+            if (simple)
+                comparison = Constants.Inclusion[_simpleParentDropdown.Value].ToArray();
             else
+                comparison = new[] { _parentDropdown.Options[_parentDropdown.Value] };
+            _hairAcc = _aciRef.HairAcc;
+            var themedslots = Themes[themeNum].ThemedSlots;
+            for (int slot = 0, n = Parts.Length; slot < n; slot++)
             {
-                comparison = new string[] { ParentDropdown.Options[ParentDropdown.Value] };
-            }
-            HairAcc = ACI_Ref.HairAcc;
-            var themedslots = Themes[themenum].ThemedSlots;
-            for (int Slot = 0, n = Parts.Length; Slot < n; Slot++)
-            {
-                var slotinfo = AccessoriesApi.GetPartsInfo(Slot);
-                if (slotinfo.type == 120 || Theme_Dict.ContainsKey(Slot))
-                {
-                    continue;
-                }
-                var ParentKey = slotinfo.parentKey;
-                if (comparison.Contains(ParentKey))
-                {
-                    if (ChangeACCColor(Slot, themenum))
+                var slotInfo = AccessoriesApi.GetPartsInfo(slot);
+                if (slotInfo.type == 120 || ThemeDict.ContainsKey(slot)) continue;
+                var parentKey = slotInfo.parentKey;
+                if (comparison.Contains(parentKey))
+                    if (ChangeAccColor(slot, themeNum))
                     {
-                        themedslots.Add(Slot);
-                        Theme_Dict[Slot] = themenum;
+                        themedslots.Add(slot);
+                        ThemeDict[slot] = themeNum;
                     }
-                }
             }
         }
 
-        private void UpdateSliderColor(int ColorNum, Color value/*, bool IsPersonal = false*/)
+        private void UpdateSliderColor(int colorNum, Color value /*, bool IsPersonal = false*/)
         {
-            var themenum = ThemesDropDown_Setting.Value - 1;
-            if (themenum < 0)
-            {
-                return;
-            }
+            var themeNum = _themesDropDownSetting.Value - 1;
+            if (themeNum < 0) return;
 
-            var theme = Themes[themenum];
-            theme.Colors[ColorNum] = value;
-            HairAcc = ACI_Ref.HairAcc;
+            var theme = Themes[themeNum];
+            theme.Colors[colorNum] = value;
+            _hairAcc = _aciRef.HairAcc;
 
-            foreach (var item in theme.ThemedSlots)
-            {
-                ChangeACCColor(item, themenum);
-            }
+            foreach (var item in theme.ThemedSlots) ChangeAccColor(item, themeNum);
         }
 
-        private bool ColorComparison(Color C1, Color C2)
+        private bool ColorComparison(Color c1, Color c2)
         {
-            if (float.TryParse(Tolerance, out var value))
-            {
-                return Math.Abs(C1.r - C2.r) <= value && Math.Abs(C1.g - C2.g) <= value && Math.Abs(C1.b - C2.b) <= value && Math.Abs(C1.a - C2.a) <= value;
-            }
+            if (float.TryParse(_tolerance, out var value))
+                return Math.Abs(c1.r - c2.r) <= value && Math.Abs(c1.g - c2.g) <= value &&
+                       Math.Abs(c1.b - c2.b) <= value && Math.Abs(c1.a - c2.a) <= value;
             return false;
         }
 
-        private bool ColorComparison(Color[] C1, Color[] C2)
+        private bool ColorComparison(Color[] c1, Color[] c2)
         {
             for (var i = 0; i < 4; i++)
-            {
-                if (!ColorComparison(C1[i], C2[i]))
+                if (!ColorComparison(c1[i], c2[i]))
                     return false;
-            }
             return true;
         }
 
         private void FindRelativeColors()
         {
-            var Check = new List<Color[]>();
-            var Relative = new List<bool>();
+            var check = new List<Color[]>();
+            var relative = new List<bool>();
             foreach (var themeData in Themes)
             {
-                Check.Add(themeData.Colors);
-                Relative.Add(themeData.Isrelative);
+                check.Add(themeData.Colors);
+                relative.Add(themeData.IsRelative);
             }
+
             var exclude = new List<Color>();
             var excludetemp = new List<Color>();
             var input = new List<int[]>();
-            Relative_ACC_Dictionary.Clear();
+            RelativeAccDictionary.Clear();
 
-            for (int C1_Theme = 1, n = Check.Count; C1_Theme < n; C1_Theme++)
+            for (int c1Theme = 1, n = check.Count; c1Theme < n; c1Theme++)
             {
-                if (Relative[C1_Theme])
-                {
-                    continue;
-                }
-                for (var C1_color = 0; C1_color < 4; C1_color++)
+                if (relative[c1Theme]) continue;
+                for (var c1Color = 0; c1Color < 4; c1Color++)
                 {
                     excludetemp.Clear();
-                    excludetemp.Add(Check[C1_Theme][C1_color]);
-                    if (exclude.Contains(Check[C1_Theme][C1_color]))
+                    excludetemp.Add(check[c1Theme][c1Color]);
+                    if (exclude.Contains(check[c1Theme][c1Color])) continue;
+                    input.Add(new[] { c1Theme, c1Color });
+                    for (var c2Theme = c1Theme + 1; c2Theme < check.Count; c2Theme++)
                     {
-                        continue;
-                    }
-                    input.Add(new int[] { C1_Theme, C1_color });
-                    for (var C2_Theme = C1_Theme + 1; C2_Theme < Check.Count; C2_Theme++)
-                    {
-                        if (Relative[C2_Theme])
-                        {
-                            continue;
-                        }
-                        for (var C2_color = 0; C2_color < 4; C2_color++)
-                        {
-                            if (ColorComparison(Check[C1_Theme][C1_color], Check[C2_Theme][C2_color]))
+                        if (relative[c2Theme]) continue;
+                        for (var c2Color = 0; c2Color < 4; c2Color++)
+                            if (ColorComparison(check[c1Theme][c1Color], check[c2Theme][c2Color]))
                             {
-                                excludetemp.Add(Check[C2_Theme][C2_color]);
-                                input.Add(new int[] { C2_Theme, C2_color });
+                                excludetemp.Add(check[c2Theme][c2Color]);
+                                input.Add(new[] { c2Theme, c2Color });
                             }
-                        }
                     }
-                    if (input.Count > 0)
-                    {
-                        Relative_ACC_Dictionary.Add(Relative_ACC_Dictionary.Count, input);
-                    }
+
+                    if (input.Count > 0) RelativeAccDictionary.Add(RelativeAccDictionary.Count, input);
                     input = new List<int[]>();
                     exclude.AddRange(excludetemp);
                 }
@@ -399,26 +336,20 @@ namespace Accessory_Themes
 
         private void RelativeAssignColors(Color input)
         {
-            if (!MakerAPI.InsideAndLoaded)
-            {
-                return;
-            }
-            var list = Relative_ACC_Dictionary[RelativeDropdown.Value];
+            if (!MakerAPI.InsideAndLoaded) return;
+            var list = RelativeAccDictionary[_relativeDropdown.Value];
             //var clothes = ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].clothes.parts;
             //var clothes2 = ChaControl.nowCoordinate.clothes.parts;
-            HairAcc = ACI_Ref.HairAcc;
+            _hairAcc = _aciRef.HairAcc;
             for (int i = 0, listlength = list.Count; i < listlength; i++)
             {
-                var themenum = list[i][0];
-                var theme = Themes[themenum];
+                var themeNum = list[i][0];
+                var theme = Themes[themeNum];
                 theme.Colors[list[i][1]] = input;
                 //if (list[i].Length < 3)
                 //{
                 var update = theme.ThemedSlots;
-                for (int j = 0, n = update.Count; j < n; j++)
-                {
-                    ChangeACCColor(update[j], themenum);
-                }
+                for (int j = 0, n = update.Count; j < n; j++) ChangeAccColor(update[j], themeNum);
                 //}
                 //else
                 //{
@@ -439,34 +370,36 @@ namespace Accessory_Themes
 
         private void AssignRelativeColorBox(int input)
         {
-            if (Relative_ACC_Dictionary.Count != 0)
+            if (RelativeAccDictionary.Count != 0)
             {
-                var intarray = Relative_ACC_Dictionary[input][0];
-                makerColorSimilar.SetValue(Themes[intarray[0]].Colors[intarray[1]], false);
+                var intarray = RelativeAccDictionary[input][0];
+                _makerColorSimilar.SetValue(Themes[intarray[0]].Colors[intarray[1]], false);
             }
-            else { makerColorSimilar.SetValue(new Color(), false); RelativeDropdown.SetValue(0, false); }
+            else
+            {
+                _makerColorSimilar.SetValue(new Color(), false);
+                _relativeDropdown.SetValue(0, false);
+            }
         }
 
         private void RelativeSkew(bool undo = false)
         {
-            if (Relative_ACC_Dictionary.Count == 0)
-            {
-                return;
-            }
-            var input = RelativeSkewColor.Value;
+            if (RelativeAccDictionary.Count == 0) return;
+            var input = _relativeSkewColor.Value;
 
-            Color.RGBToHSV(input, out var In_Hue, out var _, out var _);
-            var In_S = SaturationSlider.Value;
-            var In_V = ValuesSlider.Value;
-            var list = Relative_ACC_Dictionary;
-            var UndoACCQueue = new Queue<Color>();
-            var ClothesUndoQueue = new Queue<Color>();
+            Color.RGBToHSV(input, out var inHue, out var _, out var _);
+            var inS = _saturationSlider.Value;
+            var inV = _valuesSlider.Value;
+            var list = RelativeAccDictionary;
+            var undoAccQueue = new Queue<Color>();
+            var clothesUndoQueue = new Queue<Color>();
             if (undo)
             {
-                UndoACCQueue = UndoACCSkew.Pop();
-                ClothesUndoQueue = ClothsUndoSkew.Pop();
+                undoAccQueue = UndoAccSkew.Pop();
+                clothesUndoQueue = ClothsUndoSkew.Pop();
             }
-            HairAcc = ACI_Ref.HairAcc;
+
+            _hairAcc = _aciRef.HairAcc;
 
             for (int i = 0, iN = list.Count; i < iN; i++)
             {
@@ -474,101 +407,104 @@ namespace Accessory_Themes
 
                 for (int j = 0, jn = list2.Count; j < jn; j++)
                 {
-                    var themenum = list2[j][0];
+                    var themeNum = list2[j][0];
                     var colornum = list2[j][1];
-                    var theme = Themes[themenum];
+                    var theme = Themes[themeNum];
                     var update = theme.ThemedSlots;
                     var color = theme.Colors[colornum];
 
-                    Color.RGBToHSV(color, out var T_Hue, out var T_S, out var T_V);
+                    Color.RGBToHSV(color, out var hue, out var s, out var v);
 
                     if (undo)
                     {
-                        color = UndoACCQueue.Dequeue();
+                        color = undoAccQueue.Dequeue();
                     }
                     else
                     {
-                        UndoACCQueue.Enqueue(new Color(color.r, color.g, color.b, color.a));
-                        T_Hue += In_Hue;
-                        T_S += In_S;
-                        T_V += In_V;
-                        color = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), color.a);
+                        undoAccQueue.Enqueue(new Color(color.r, color.g, color.b, color.a));
+                        hue += inHue;
+                        s += inS;
+                        v += inV;
+                        color = HsvColor.ToRgba(
+                            new HsvColor(Math.Abs(hue % 1f) * 360, Mathf.Clamp(s, 0f, 1f), Mathf.Clamp(v, 0f, 1f)),
+                            color.a);
                     }
 
                     theme.Colors[colornum] = color;
-                    for (int k = 0, kn = update.Count; k < kn; k++)
-                    {
-                        ChangeACCColor(update[k], themenum);
-                    }
+                    for (int k = 0, kn = update.Count; k < kn; k++) ChangeAccColor(update[k], themeNum);
                 }
             }
+
             var clothes = ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].clothes.parts;
             var clothes2 = ChaControl.nowCoordinate.clothes.parts;
             for (var i = 0; i < clothes.Length; i++)
+            for (var j = 0; j < clothes[i].colorInfo.Length; j++)
             {
-                for (var j = 0; j < clothes[i].colorInfo.Length; j++)
+                var temp = clothes[i].colorInfo[j].baseColor;
+                Color.RGBToHSV(temp, out var hue, out var s, out var v);
+                if (undo)
                 {
-                    var temp = clothes[i].colorInfo[j].baseColor;
-                    Color.RGBToHSV(temp, out var T_Hue, out var T_S, out var T_V);
-                    if (undo)
-                    {
-                        temp = ClothesUndoQueue.Dequeue();
-                    }
-                    else
-                    {
-                        ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        T_Hue += In_Hue;
-                        T_S += In_S;
-                        T_V += In_V;
-                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
-                    }
-                    clothes[i].colorInfo[j].baseColor = temp;
-                    clothes2[i].colorInfo[j].baseColor = temp;
-
-                    temp = clothes[i].colorInfo[j].patternColor;
-                    Color.RGBToHSV(temp, out T_Hue, out T_S, out T_V);
-                    if (undo)
-                    {
-                        temp = ClothesUndoQueue.Dequeue();
-                    }
-                    else
-                    {
-                        ClothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
-                        T_Hue += In_Hue;
-                        T_S += In_S;
-                        T_V += In_V;
-                        temp = HsvColor.ToRgba(new HsvColor(Math.Abs(T_Hue % 1f) * 360, Mathf.Clamp(T_S, 0f, 1f), Mathf.Clamp(T_V, 0f, 1f)), temp.a);
-                    }
-                    clothes[i].colorInfo[j].patternColor = temp;
-                    clothes2[i].colorInfo[j].patternColor = temp;
+                    temp = clothesUndoQueue.Dequeue();
                 }
+                else
+                {
+                    clothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
+                    hue += inHue;
+                    s += inS;
+                    v += inV;
+                    temp = HsvColor.ToRgba(
+                        new HsvColor(Math.Abs(hue % 1f) * 360, Mathf.Clamp(s, 0f, 1f), Mathf.Clamp(v, 0f, 1f)), temp.a);
+                }
+
+                clothes[i].colorInfo[j].baseColor = temp;
+                clothes2[i].colorInfo[j].baseColor = temp;
+
+                temp = clothes[i].colorInfo[j].patternColor;
+                Color.RGBToHSV(temp, out hue, out s, out v);
+                if (undo)
+                {
+                    temp = clothesUndoQueue.Dequeue();
+                }
+                else
+                {
+                    clothesUndoQueue.Enqueue(new Color(temp.r, temp.g, temp.b, temp.a));
+                    hue += inHue;
+                    s += inS;
+                    v += inV;
+                    temp = HsvColor.ToRgba(
+                        new HsvColor(Math.Abs(hue % 1f) * 360, Mathf.Clamp(s, 0f, 1f), Mathf.Clamp(v, 0f, 1f)), temp.a);
+                }
+
+                clothes[i].colorInfo[j].patternColor = temp;
+                clothes2[i].colorInfo[j].patternColor = temp;
             }
+
             ChaControl.ChangeClothes();
             if (!undo)
             {
-                UndoACCSkew.Push(UndoACCQueue);
-                ClothsUndoSkew.Push(ClothesUndoQueue);
+                UndoAccSkew.Push(undoAccQueue);
+                ClothsUndoSkew.Push(clothesUndoQueue);
             }
         }
 
         private void Clearoutfit(int key)
         {
-            data.Clearoutfit(key);
+            _data.Clearoutfit(key);
         }
 
         private void Createoutfit(int key)
         {
-            data.Createoutfit(key);
+            _data.Createoutfit(key);
         }
 
         private void Moveoutfit(int dest, int src)
         {
-            data.Moveoutfit(dest, src);
+            _data.Moveoutfit(dest, src);
         }
 
         private void Removeoutfit(int key)
         {
-            data.Removeoutfit(key);
+            _data.Removeoutfit(key);
         }
     }
 }

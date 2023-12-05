@@ -2,24 +2,26 @@
 
 namespace Accessory_States
 {
-    public sealed class CoordinateLoadedEventARG : EventArgs
+    public sealed class CoordinateLoadedEventArg : EventArgs
     {
-        public CoordinateLoadedEventARG(ChaControl _Character/*, ChaFileCoordinate _Coordinate*/)
+        public CoordinateLoadedEventArg(ChaControl character /*, ChaFileCoordinate _Coordinate*/)
         {
             //Coordinate = _Coordinate;
-            Character = _Character;
+            Character = character;
         }
+
         public ChaControl Character { get; }
         //public ChaFileCoordinate Coordinate { get; }
     }
 
     public sealed class OnClickCoordinateChange : EventArgs
     {
-        public OnClickCoordinateChange(int _female, int _coordinate)
+        public OnClickCoordinateChange(int female, int coordinate)
         {
-            Female = _female;
-            Coordinate = _coordinate;
+            Female = female;
+            Coordinate = coordinate;
         }
+
         public int Coordinate { get; }
         public int Female { get; }
     }

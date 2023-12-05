@@ -1,12 +1,12 @@
-﻿using KKAPI.Chara;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using KKAPI.Chara;
 
 namespace Additional_Card_Info
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        public DataStruct data = new DataStruct();
+        public DataStruct Data = new DataStruct();
 
         #region Properties
 
@@ -14,172 +14,176 @@ namespace Additional_Card_Info
 
         public Dictionary<int, CoordinateInfo> CoordinateInfo
         {
-            get { return data.CoordinateInfo; }
-            set { data.CoordinateInfo = value; }
+            get => Data.CoordinateInfo;
+            set => Data.CoordinateInfo = value;
         }
 
-        public Cardinfo CardInfo
+        public CardInfo CardInfo
         {
-            get { return data.CardInfo; }
-            set { data.CardInfo = value; }
+            get => Data.CardInfo;
+            set => Data.CardInfo = value;
         }
 
         public CoordinateInfo NowCoordinateInfo
         {
-            get { return data.NowCoordinateInfo; }
-            set { data.NowCoordinateInfo = value; }
+            get => Data.NowCoordinateInfo;
+            set => Data.NowCoordinateInfo = value;
         }
 
         public RestrictionInfo NowRestrictionInfo
         {
-            get { return NowCoordinateInfo.RestrictionInfo; }
-            set { NowCoordinateInfo.RestrictionInfo = value; }
+            get => NowCoordinateInfo.restrictionInfo;
+            set => NowCoordinateInfo.restrictionInfo = value;
         }
 
         #region Cardinfo
+
         public bool CosplayReady
         {
-            get { return CardInfo.CosplayReady; }
-            set { CardInfo.CosplayReady = value; }
+            get => CardInfo.cosplayReady;
+            set => CardInfo.cosplayReady = value;
         }
 
         public bool[] PersonalClothingBools
         {
-            get { return CardInfo.PersonalClothingBools; }
-            set { CardInfo.PersonalClothingBools = value; }
+            get => CardInfo.personalClothingBools;
+            set => CardInfo.personalClothingBools = value;
         }
 
         public Dictionary<string, string> AdvancedFolderDirectory
         {
-            get { return CardInfo.AdvancedFolderDirectory; }
-            set { CardInfo.AdvancedFolderDirectory = value; }
+            get => CardInfo.AdvancedFolderDirectory;
+            set => CardInfo.AdvancedFolderDirectory = value;
         }
 
         public bool AdvancedDirectory
         {
-            get { return CardInfo.AdvancedDirectory; }
-            set { CardInfo.AdvancedDirectory = value; }
-        }
-        public string SimpleFolderDirectory
-        {
-            get { return CardInfo.SimpleFolderDirectory; }
-            set { CardInfo.SimpleFolderDirectory = value; }
+            get => CardInfo.advancedDirectory;
+            set => CardInfo.advancedDirectory = value;
         }
 
-        #endregion 
+        public string SimpleFolderDirectory
+        {
+            get => CardInfo.simpleFolderDirectory;
+            set => CardInfo.simpleFolderDirectory = value;
+        }
+
+        #endregion
 
         #region Coordinate
 
         public bool MakeUpKeep
         {
-            get { return NowCoordinateInfo.MakeUpKeep; }
-            set { NowCoordinateInfo.MakeUpKeep = value; }
+            get => NowCoordinateInfo.makeUpKeep;
+            set => NowCoordinateInfo.makeUpKeep = value;
         }
 
         public List<int> AccKeep
         {
-            get { return NowCoordinateInfo.AccKeep; }
-            set { NowCoordinateInfo.AccKeep = value; }
+            get => NowCoordinateInfo.accKeep;
+            set => NowCoordinateInfo.accKeep = value;
         }
 
         public List<int> HairAcc
         {
-            get { return NowCoordinateInfo.HairAcc; }
-            set { NowCoordinateInfo.HairAcc = value; }
+            get => NowCoordinateInfo.hairAcc;
+            set => NowCoordinateInfo.hairAcc = value;
         }
 
         public bool[] CoordinateSaveBools
         {
-            get { return NowCoordinateInfo.CoordinateSaveBools; }
-            set { NowCoordinateInfo.CoordinateSaveBools = value; }
+            get => NowCoordinateInfo.coordinateSaveBools;
+            set => NowCoordinateInfo.coordinateSaveBools = value;
         }
 
         public bool[] ClothNotData
         {
-            get { return NowCoordinateInfo.ClothNotData; }
-            set { NowCoordinateInfo.ClothNotData = value; }
+            get => NowCoordinateInfo.clothNotData;
+            set => NowCoordinateInfo.clothNotData = value;
         }
 
         public List<string> CreatorNames
         {
-            get { return NowCoordinateInfo.CreatorNames; }
-            set { NowCoordinateInfo.CreatorNames = value; }
+            get => NowCoordinateInfo.creatorNames;
+            set => NowCoordinateInfo.creatorNames = value;
         }
 
         public string SetNames
         {
-            get { return NowCoordinateInfo.SetNames; }
-            set { NowCoordinateInfo.SetNames = value; }
+            get => NowCoordinateInfo.setNames;
+            set => NowCoordinateInfo.setNames = value;
         }
 
         public string SubSetNames
         {
-            get { return NowCoordinateInfo.SubSetNames; }
-            set { NowCoordinateInfo.SubSetNames = value; }
+            get => NowCoordinateInfo.subSetNames;
+            set => NowCoordinateInfo.subSetNames = value;
         }
+
         #endregion
 
         #region Restriction
 
         public int CoordinateType
         {
-            get { return NowRestrictionInfo.CoordinateType; }
-            set { NowRestrictionInfo.CoordinateType = value; }
+            get => NowRestrictionInfo.coordinateType;
+            set => NowRestrictionInfo.coordinateType = value;
         }
 
         public int CoordinateSubType
         {
-            get { return NowRestrictionInfo.CoordinateSubType; }
-            set { NowRestrictionInfo.CoordinateSubType = value; }
+            get => NowRestrictionInfo.coordinateSubType;
+            set => NowRestrictionInfo.coordinateSubType = value;
         }
 
-        public Dictionary<int, int> PersonalityType_Restriction
+        public Dictionary<int, int> PersonalityTypeRestriction
         {
-            get { return NowRestrictionInfo.PersonalityType_Restriction; }
-            set { NowRestrictionInfo.PersonalityType_Restriction = value; }
+            get => NowRestrictionInfo.PersonalityTypeRestriction;
+            set => NowRestrictionInfo.PersonalityTypeRestriction = value;
         }
 
-        public Dictionary<int, int> TraitType_Restriction
+        public Dictionary<int, int> TraitTypeRestriction
         {
-            get { return NowRestrictionInfo.TraitType_Restriction; }
-            set { NowRestrictionInfo.TraitType_Restriction = value; }
+            get => NowRestrictionInfo.TraitTypeRestriction;
+            set => NowRestrictionInfo.TraitTypeRestriction = value;
         }
 
-        public Dictionary<int, int> Interest_Restriction
+        public Dictionary<int, int> InterestRestriction
         {
-            get { return NowRestrictionInfo.Interest_Restriction; }
-            set { NowRestrictionInfo.Interest_Restriction = value; }
+            get => NowRestrictionInfo.InterestRestriction;
+            set => NowRestrictionInfo.InterestRestriction = value;
         }
 
-        public bool[] Height_Restriction
+        public bool[] HeightRestriction
         {
-            get { return NowRestrictionInfo.Height_Restriction; }
-            set { NowRestrictionInfo.Height_Restriction = value; }
+            get => NowRestrictionInfo.heightRestriction;
+            set => NowRestrictionInfo.heightRestriction = value;
         }
 
-        public bool[] Breastsize_Restriction
+        public bool[] BreastsizeRestriction
         {
-            get { return NowRestrictionInfo.Breastsize_Restriction; }
-            set { NowRestrictionInfo.Breastsize_Restriction = value; }
+            get => NowRestrictionInfo.breastsizeRestriction;
+            set => NowRestrictionInfo.breastsizeRestriction = value;
         }
 
-        public int HstateType_Restriction
+        public int HStateTypeRestriction
         {
-            get { return NowRestrictionInfo.HstateType_Restriction; }
-            set { NowRestrictionInfo.HstateType_Restriction = value; }
+            get => NowRestrictionInfo.hStateTypeRestriction;
+            set => NowRestrictionInfo.hStateTypeRestriction = value;
         }
 
-        public int ClubType_Restriction
+        public int ClubTypeRestriction
         {
-            get { return NowRestrictionInfo.ClubType_Restriction; }
-            set { NowRestrictionInfo.ClubType_Restriction = value; }
+            get => NowRestrictionInfo.clubTypeRestriction;
+            set => NowRestrictionInfo.clubTypeRestriction = value;
         }
 
         public int GenderType
         {
-            get { return NowRestrictionInfo.GenderType; }
-            set { NowRestrictionInfo.GenderType = value; }
+            get => NowRestrictionInfo.genderType;
+            set => NowRestrictionInfo.genderType = value;
         }
+
         #endregion
 
         #endregion

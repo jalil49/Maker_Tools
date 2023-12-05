@@ -1,44 +1,44 @@
-﻿using KKAPI.Chara;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using KKAPI.Chara;
+using UnityEngine;
 
 namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        private Dictionary<int, CoordinateData> Parent_Data = new Dictionary<int, CoordinateData>();
-
-        private CoordinateData Current_Parent_Data = new CoordinateData();
+        private CoordinateData _currentParentData = new CoordinateData();
+        private Dictionary<int, CoordinateData> _parentData = new Dictionary<int, CoordinateData>();
 
         #region Properties
 
-        private List<Custom_Name> Parent_Groups
+        private List<CustomName> ParentGroups
         {
-            get { return Current_Parent_Data.Parent_Groups; }
-            set { Current_Parent_Data.Parent_Groups = value; }
+            get => _currentParentData.parentGroups;
+            set => _currentParentData.parentGroups = value;
         }
 
-        private Dictionary<int, UnityEngine.Vector3[]> Relative_Data
+        private Dictionary<int, Vector3[]> RelativeData
         {
-            get { return Current_Parent_Data.Relative_Data; }
-            set { Current_Parent_Data.Relative_Data = value; }
+            get => _currentParentData.RelativeData;
+            set => _currentParentData.RelativeData = value;
         }
 
         private Dictionary<int, int> Child
         {
-            get { return Current_Parent_Data.Child; }
-            set { Current_Parent_Data.Child = value; }
+            get => _currentParentData.Child;
+            set => _currentParentData.Child = value;
         }
 
         private Dictionary<int, List<int>> RelatedNames
         {
-            get { return Current_Parent_Data.RelatedNames; }
-            set { Current_Parent_Data.RelatedNames = value; }
+            get => _currentParentData.RelatedNames;
+            set => _currentParentData.RelatedNames = value;
         }
 
-        private Dictionary<int, string> Old_Parent
+        private Dictionary<int, string> OldParent
         {
-            get { return Current_Parent_Data.Old_Parent; }
-            set { Current_Parent_Data.Old_Parent = value; }
+            get => _currentParentData.OldParent;
+            set => _currentParentData.OldParent = value;
         }
 
         #endregion

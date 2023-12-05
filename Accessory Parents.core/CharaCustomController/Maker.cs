@@ -1,35 +1,34 @@
-﻿using KKAPI;
-using KKAPI.Chara;
-using KKAPI.Maker;
-using KKAPI.Maker.UI;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using KKAPI;
+using KKAPI.Chara;
+using KKAPI.Maker;
+using KKAPI.Maker.UI;
 using TMPro;
-using UniRx;
 using UnityEngine;
 
 namespace Accessory_Parents
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        static MakerDropdown Parent_DropDown;
+        private static MakerDropdown _parentDropDown;
 
-        static MakerText ParentText;
-        static MakerText ChildText;
+        private static MakerText _parentText;
+        private static MakerText _childText;
 
-        static MakerButton Save_Relative_Button;
+        private static MakerButton _saveRelativeButton;
 
-        static MakerButton Child_Button;
-        static MakerButton Gui_Button;
+        private static MakerButton _childButton;
+        private static MakerButton _guiButton;
 
-        static bool MakerEnabled = false;
+        private static bool _makerEnabled;
 
-        static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+        private static CharaEvent GetController => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
-        static bool Retrospect = false;
-        static bool RecursiveStop = false;
+        private static bool _retrospect;
+        private static bool _recursiveStop;
 
         public static void MakerAPI_MakerExiting(object sender, EventArgs e)
         {
@@ -38,21 +37,18 @@ namespace Accessory_Parents
             MakerAPI.ReloadCustomInterface -= MakerAPI_ReloadCustomInterface;
             MakerAPI.MakerExiting -= MakerAPI_MakerExiting;
 
-            Retrospect = false;
-            RecursiveStop = false;
-            MakerEnabled = false;
-            ShowCustomGui = false;
-            showreplace = false;
-            showdelete = false;
+            _retrospect = false;
+            _recursiveStop = false;
+            _makerEnabled = false;
+            _showCustomGui = false;
+            _showreplace = false;
+            _showDelete = false;
         }
 
         public static void MakerAPI_MakerStartedLoading(object sender, RegisterCustomControlsEvent e)
         {
-            MakerEnabled = Settings.Enable.Value;
-            if (!MakerEnabled)
-            {
-                return;
-            }
+            _makerEnabled = Settings.Enable.Value;
+            if (!_makerEnabled) return;
             MakerAPI.MakerExiting += MakerAPI_MakerExiting;
 
             AccessoriesApi.AccessoryKindChanged += AccessoriesApi_AccessoryKindChanged;
@@ -61,54 +57,46 @@ namespace Accessory_Parents
 
         internal void RemoveOutfitEvent()
         {
-            Removeoutfit(Parent_Data.Keys.Max());
+            Removeoutfit(_parentData.Keys.Max());
         }
 
         internal void AddOutfitEvent()
         {
-            for (var i = Parent_Data.Keys.Max(); i < ChaFileControl.coordinate.Length; i++)
+            for (var i = _parentData.Keys.Max(); i < ChaFileControl.coordinate.Length; i++)
                 Createoutfit(i);
         }
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
-            MakerEnabled = Settings.Enable.Value;
-            if (!MakerEnabled)
-            {
-                return;
-            }
+            _makerEnabled = Settings.Enable.Value;
+            if (!_makerEnabled) return;
             var owner = Settings.Instance;
             var category = new MakerCategory("", "");
 
-            ParentText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Parent", category, owner), true);
-            ChildText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Child", category, owner), true);
-            var Dropdown = new MakerDropdown("Parent", new string[] { "None" }, category, 0, owner);
-            Parent_DropDown = MakerAPI.AddAccessoryWindowControl(Dropdown, true);
+            _parentText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Parent", category, owner), true);
+            _childText = MakerAPI.AddAccessoryWindowControl(new MakerText("Not Child", category, owner), true);
+            var dropdown = new MakerDropdown("Parent", new[] { "None" }, category, 0, owner);
+            _parentDropDown = MakerAPI.AddAccessoryWindowControl(dropdown, true);
 
-            Child_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Make Child", category, owner), true);
-            Child_Button.OnClick.AddListener(delegate ()
-            {
-                GetController.MakeChild();
-            });
-            Save_Relative_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Save Position", category, owner), true);
-            Save_Relative_Button.OnClick.AddListener(delegate ()
+            _childButton = MakerAPI.AddAccessoryWindowControl(new MakerButton("Make Child", category, owner), true);
+            _childButton.OnClick.AddListener(delegate { GetController.MakeChild(); });
+            _saveRelativeButton =
+                MakerAPI.AddAccessoryWindowControl(new MakerButton("Save Position", category, owner), true);
+            _saveRelativeButton.OnClick.AddListener(delegate
             {
                 GetController.Save_Relative_Data(AccessoriesApi.SelectedMakerAccSlot);
             });
 
-            Gui_Button = MakerAPI.AddAccessoryWindowControl(new MakerButton("Parent GUI", category, owner), true);
-            Gui_Button.OnClick.AddListener(delegate ()
-            {
-                GUI_Toggle();
-            });
+            _guiButton = MakerAPI.AddAccessoryWindowControl(new MakerButton("Parent GUI", category, owner), true);
+            _guiButton.OnClick.AddListener(delegate { GUI_Toggle(); });
 
-            var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
-            Parent_DropDown.GroupingID = GroupingID;
-            ParentText.GroupingID = GroupingID;
-            Child_Button.GroupingID = GroupingID;
-            Save_Relative_Button.GroupingID = GroupingID;
-            ChildText.GroupingID = GroupingID;
-            Gui_Button.GroupingID = GroupingID;
+            var groupingID = "Maker_Tools_" + Settings.NamingID.Value;
+            _parentDropDown.GroupingID = groupingID;
+            _parentText.GroupingID = groupingID;
+            _childButton.GroupingID = groupingID;
+            _saveRelativeButton.GroupingID = groupingID;
+            _childText.GroupingID = groupingID;
+            _guiButton.GroupingID = groupingID;
         }
 
         public static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
@@ -123,65 +111,43 @@ namespace Accessory_Parents
 
         private void AccessoryKindChanged(AccessorySlotEventArgs e)
         {
-            if (Child.TryGetValue(e.SlotIndex, out var ParentKey))
-            {
-                Keep_Last_Data(e.SlotIndex, ParentKey);
-            }
-            else if (Old_Parent.ContainsKey(e.SlotIndex) && Relative_Data.ContainsKey(e.SlotIndex))
-            {
+            if (Child.TryGetValue(e.SlotIndex, out var parentKey))
+                Keep_Last_Data(e.SlotIndex, parentKey);
+            else if (OldParent.ContainsKey(e.SlotIndex) && RelativeData.ContainsKey(e.SlotIndex))
                 Keep_Last_Data(e.SlotIndex);
-            }
         }
 
         private void Update_Text()
         {
             var slot = AccessoriesApi.SelectedMakerAccSlot;
-            if (ParentText.ControlObjects.Count() <= slot)
-            {
-                return;
-            }
-            var output = "Slot " + (slot + 1).ToString();
-            var find = Parent_Groups.Where(x => x.ParentSlot == slot).ToArray();
+            if (_parentText.ControlObjects.Count() <= slot) return;
+            var output = "Slot " + (slot + 1);
+            var find = ParentGroups.Where(x => x.ParentSlot == slot).ToArray();
             if (find.Length > 0)
             {
                 output += " is parent of ";
                 for (int i = 0, n = find.Length; i < n; i++)
-                {
                     if (i < n - 2)
-                    {
                         output += find[i].Name + ", ";
-                    }
                     else if (i == n - 2)
-                    {
                         output += find[i].Name + " and ";
-                    }
                     else
-                    {
                         output += find[i].Name;
-                    }
-                }
             }
             else
             {
                 output += " is not Parent";
             }
-            foreach (var item in ParentText.ControlObjects)
-            {
+
+            foreach (var item in _parentText.ControlObjects)
                 item.GetComponentInChildren<TextMeshProUGUI>().text = output;
-            }
             string output2;
             if (Child.TryGetValue(slot, out var value))
-            {
-                output2 = "Child of " + Parent_Groups.First(x => x.ParentSlot == value).Name;
-            }
+                output2 = "Child of " + ParentGroups.First(x => x.ParentSlot == value).Name;
             else
-            {
                 output2 = "Is not a Child";
-            }
-            foreach (var item in ChildText.ControlObjects)
-            {
+            foreach (var item in _childText.ControlObjects)
                 item.GetComponentInChildren<TextMeshProUGUI>().text = output2;
-            }
         }
 #if false
         internal void Scale_Change(int slotNo, int correctNo, float value, bool add, int flags)
@@ -358,7 +324,8 @@ namespace Accessory_Parents
                         }
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -425,7 +392,8 @@ namespace Accessory_Parents
 
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -482,7 +450,8 @@ namespace Accessory_Parents
                         ChaControl.SetAccessoryPos(item, correctNo, value, add, flags);
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
                 }
@@ -517,7 +486,8 @@ namespace Accessory_Parents
                         ChaControl.SetAccessoryPos(item, correctNo, Value, false, flags);
                         if (item < 20)
                         {
-                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove = ChaControl.nowCoordinate.accessory.parts[item].addMove;
+                            ChaControl.chaFile.coordinate[CoordinateNum].accessory.parts[item].addMove =
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ChaControl.nowCoordinate.accessory.parts[item].addMove;
                         }
                     }
 
@@ -527,43 +497,29 @@ namespace Accessory_Parents
 #endif
         internal void Slot_ACC_Change(int slotNo, int type)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !MakerEnabled)
-            {
-                return;
-            }
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker || !_makerEnabled) return;
 
             if (type == 120)
             {
-                var unbindlist = Parent_Groups.Where(x => x.ParentSlot == slotNo);
-                for (int i = 0, n = unbindlist.Count(); i < n; i++)
-                {
-                    unbindlist.ElementAt(i).ParentSlot = -1;
-                }
-                Relative_Data.Remove(slotNo);
+                var unbindlist = ParentGroups.Where(x => x.ParentSlot == slotNo);
+                for (int i = 0, n = unbindlist.Count(); i < n; i++) unbindlist.ElementAt(i).ParentSlot = -1;
+                RelativeData.Remove(slotNo);
                 UpdateRelations();
                 Update_Drop_boxes();
             }
             else
             {
-                if (Child.TryGetValue(slotNo, out var ParentKey))
-                {
-                    Keep_Last_Data(slotNo, ParentKey);
-                }
-                else if (Old_Parent.ContainsKey(slotNo) && Relative_Data.ContainsKey(slotNo))
-                {
-                    Keep_Last_Data(slotNo);
-                }
+                if (Child.TryGetValue(slotNo, out var parentKey))
+                    Keep_Last_Data(slotNo, parentKey);
+                else if (OldParent.ContainsKey(slotNo) && RelativeData.ContainsKey(slotNo)) Keep_Last_Data(slotNo);
             }
         }
 
         private void Save_Relative_Data(int slot)
         {
             var partsinfo = AccessoriesApi.GetPartsInfo(slot);
-            if (partsinfo.type == 120)
-            {
-                return;
-            }
-            if (!Relative_Data.TryGetValue(slot, out var relative))
+            if (partsinfo.type == 120) return;
+            if (!RelativeData.TryGetValue(slot, out var relative))
             {
                 relative = new Vector3[3];
                 for (var i = 0; i < 2; i++)
@@ -572,142 +528,119 @@ namespace Accessory_Parents
                     relative[1] = Vector3.zero;
                     relative[2] = Vector3.one;
                 }
-                Relative_Data[slot] = relative;
+
+                RelativeData[slot] = relative;
             }
 
             var temp = partsinfo.addMove;
             {
-                var i = 0;
-                for (var j = 0; j < 3; j++)
-                {
-                    relative[j] = new Vector3(temp[i, j].x, temp[i, j].y, temp[i, j].z);
-                }
+                const int i = 0;
+                for (var j = 0; j < 3; j++) relative[j] = new Vector3(temp[i, j].x, temp[i, j].y, temp[i, j].z);
             }
 
-            if (TryChildListBySlot(slot, out var ParentList))
+            if (TryChildListBySlot(slot, out var parentList))
             {
-                ParentList = ParentList.Distinct().ToList();
+                parentList = parentList.Distinct().ToList();
 
-                foreach (var item in ParentList)
-                {
-                    Save_Relative_Data(item);
-                }
+                foreach (var item in parentList) Save_Relative_Data(item);
             }
         }
 
         private void Update_Drop_boxes()
         {
             StartCoroutine(Wait());
+
             IEnumerator Wait()
             {
-                if (!MakerAPI.InsideMaker || !MakerEnabled)
-                {
-                    yield break;
-                }
+                if (!MakerAPI.InsideMaker || !_makerEnabled) yield break;
 
-                while (!MakerAPI.InsideAndLoaded)
-                {
-                    yield return null;
-                }
+                while (!MakerAPI.InsideAndLoaded) yield return null;
 
 
-                var ControlObjects = Parent_DropDown.ControlObjects;
-                var Options = new List<TMP_Dropdown.OptionData>(Parent_DropDown.ControlObject.GetComponentInChildren<TMP_Dropdown>().options);
-                if (Options.Count > 1)
-                {
-                    Options.RemoveRange(1, Options.Count - 1);
-                }
-                foreach (var item in Parent_Groups)
-                {
-                    Options.Add(new TMP_Dropdown.OptionData(item.Name));
-                }
-                foreach (var item in ControlObjects)
-                {
-                    item.GetComponentInChildren<TMP_Dropdown>().options = Options;
-                }
+                var controlObjects = _parentDropDown.ControlObjects;
+                var options = new List<TMP_Dropdown.OptionData>(_parentDropDown.ControlObject
+                    .GetComponentInChildren<TMP_Dropdown>().options);
+                if (options.Count > 1) options.RemoveRange(1, options.Count - 1);
+                foreach (var item in ParentGroups) options.Add(new TMP_Dropdown.OptionData(item.Name));
+                foreach (var item in controlObjects) item.GetComponentInChildren<TMP_Dropdown>().options = options;
                 Update_Old_Parents();
             }
         }
 
-        private void Move_To_Parent_Postion(int slot, int ParentKey)
+        private void Move_To_Parent_Postion(int slot, int parentKey)
         {
-            var partsinfo = AccessoriesApi.GetPartsInfo(ParentKey);
-            var Original = partsinfo.addMove;
-            var Parent_Name = partsinfo.parentKey;
-            ChaControl.ChangeAccessoryParent(slot, Parent_Name);
+            var partsinfo = AccessoriesApi.GetPartsInfo(parentKey);
+            var original = partsinfo.addMove;
+            var parentName = partsinfo.parentKey;
+            ChaControl.ChangeAccessoryParent(slot, parentName);
             //set position
-            ChaControl.SetAccessoryPos(slot, 0, Original[0, 0].x, false, 1);
-            ChaControl.SetAccessoryPos(slot, 0, Original[0, 0].y, false, 2);
-            ChaControl.SetAccessoryPos(slot, 0, Original[0, 0].z, false, 4);
+            ChaControl.SetAccessoryPos(slot, 0, original[0, 0].x, false, 1);
+            ChaControl.SetAccessoryPos(slot, 0, original[0, 0].y, false, 2);
+            ChaControl.SetAccessoryPos(slot, 0, original[0, 0].z, false, 4);
             //set rotation
-            ChaControl.SetAccessoryRot(slot, 0, Original[0, 1].x, false, 1);
-            ChaControl.SetAccessoryRot(slot, 0, Original[0, 1].y, false, 2);
-            ChaControl.SetAccessoryRot(slot, 0, Original[0, 1].z, false, 4);
+            ChaControl.SetAccessoryRot(slot, 0, original[0, 1].x, false, 1);
+            ChaControl.SetAccessoryRot(slot, 0, original[0, 1].y, false, 2);
+            ChaControl.SetAccessoryRot(slot, 0, original[0, 1].z, false, 4);
             //set scale
-            ChaControl.SetAccessoryScl(slot, 0, Original[0, 2].x, false, 1);
-            ChaControl.SetAccessoryScl(slot, 0, Original[0, 2].y, false, 2);
-            ChaControl.SetAccessoryScl(slot, 0, Original[0, 2].z, false, 4);
+            ChaControl.SetAccessoryScl(slot, 0, original[0, 2].x, false, 1);
+            ChaControl.SetAccessoryScl(slot, 0, original[0, 2].y, false, 2);
+            ChaControl.SetAccessoryScl(slot, 0, original[0, 2].z, false, 4);
 
             UpdateAccessoryInfo(slot);
         }
 
-        private void Keep_Last_Data(int Slot, int ParentKey)
+        private void Keep_Last_Data(int slot, int parentKey)
         {
-            var Parent_Name = AccessoriesApi.GetPartsInfo(ParentKey).parentKey;
-            if (!Relative_Data.TryGetValue(Slot, out var Original))
-            {
+            var parentName = AccessoriesApi.GetPartsInfo(parentKey).parentKey;
+            if (!RelativeData.TryGetValue(slot, out var original))
                 for (var i = 0; i < 2; i++)
                 {
-                    Original[0] = Vector3.zero;
-                    Original[1] = Vector3.zero;
-                    Original[2] = Vector3.one;
+                    original[0] = Vector3.zero;
+                    original[1] = Vector3.zero;
+                    original[2] = Vector3.one;
                 }
-            }
 
-            ChaControl.ChangeAccessoryParent(Slot, Parent_Name);
+            ChaControl.ChangeAccessoryParent(slot, parentName);
 
             for (var i = 0; i < 3; i++)
             {
                 var flag = (int)Math.Pow(2, i);
                 //set position
-                ChaControl.SetAccessoryPos(Slot, 0, Original[0][i], false, flag);
+                ChaControl.SetAccessoryPos(slot, 0, original[0][i], false, flag);
                 //set rotation
-                ChaControl.SetAccessoryRot(Slot, 0, Original[1][i], false, flag);
+                ChaControl.SetAccessoryRot(slot, 0, original[1][i], false, flag);
                 //set scale
-                ChaControl.SetAccessoryScl(Slot, 0, Original[2][i], false, flag);
+                ChaControl.SetAccessoryScl(slot, 0, original[2][i], false, flag);
             }
         }
 
-        private void Keep_Last_Data(int Slot)
+        private void Keep_Last_Data(int slot)
         {
-            var Original = Relative_Data[Slot];
-            var Parent_Name = Old_Parent[Slot];
+            var original = RelativeData[slot];
+            var parentName = OldParent[slot];
 
-            ChaControl.ChangeAccessoryParent(Slot, Parent_Name);
+            ChaControl.ChangeAccessoryParent(slot, parentName);
             for (var i = 0; i < 3; i++)
             {
                 var flag = (int)Math.Pow(2, i);
                 //set position
-                ChaControl.SetAccessoryPos(Slot, 0, Original[0][i], false, flag);
+                ChaControl.SetAccessoryPos(slot, 0, original[0][i], false, flag);
                 //set rotation
-                ChaControl.SetAccessoryRot(Slot, 0, Original[1][i], false, flag);
+                ChaControl.SetAccessoryRot(slot, 0, original[1][i], false, flag);
                 //set scale
-                ChaControl.SetAccessoryScl(Slot, 0, Original[2][i], false, flag);
+                ChaControl.SetAccessoryScl(slot, 0, original[2][i], false, flag);
             }
         }
 
         private void Update_Old_Parents()
         {
-            Old_Parent.Clear();
-            foreach (var item in Parent_Groups)
+            OldParent.Clear();
+            foreach (var item in ParentGroups)
             {
                 var slot = item.ParentSlot;
-                if (slot < 0 || Child.ContainsKey(slot))
-                {
-                    continue;
-                }
-                var ParentKey = AccessoriesApi.GetPartsInfo(slot).parentKey;
-                Old_Parent[slot] = string.Copy(ParentKey);
+                if (slot < 0 || Child.ContainsKey(slot)) continue;
+                var parentKey = AccessoriesApi.GetPartsInfo(slot).parentKey;
+                OldParent[slot] = string.Copy(parentKey);
             }
         }
 
@@ -718,34 +651,22 @@ namespace Accessory_Parents
             if (AccessoriesApi.GetPartsInfo(slot).type == 120)
                 return;
 
-            if (Parent_DropDown.Value == 0)
-            {
-                return;
-            }
+            if (_parentDropDown.Value == 0) return;
 
-            var NameData = Parent_Groups[Parent_DropDown.Value - 1];
-            if (RelatedNames[NameData.ParentSlot].Contains(slot))
-            {
-                return;
-            }
+            var nameData = ParentGroups[_parentDropDown.Value - 1];
+            if (RelatedNames[nameData.ParentSlot].Contains(slot)) return;
 
-            if (!NameData.ChildSlots.Contains(slot))
-                NameData.ChildSlots.Add(slot);
+            if (!nameData.childSlots.Contains(slot))
+                nameData.childSlots.Add(slot);
 
-            MakeChild(slot, NameData.ParentSlot);
+            MakeChild(slot, nameData.ParentSlot);
         }
 
-        private void MakeChild(int slot, int ParentSlot)
+        private void MakeChild(int slot, int parentSlot)
         {
-            if (ParentSlot < 0)
-            {
-                return;
-            }
+            if (parentSlot < 0) return;
 
-            if (!Retrospect)
-            {
-                Move_To_Parent_Postion(slot, ParentSlot);
-            }
+            if (!_retrospect) Move_To_Parent_Postion(slot, parentSlot);
 
             UpdateRelations();
             Save_Relative_Data(slot);
@@ -762,12 +683,13 @@ namespace Accessory_Parents
                     MakeChild();
                     return;
                 }
-                if (Input.GetKeyDown(KeyCode.F) && AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type != 120)
+
+                if (Input.GetKeyDown(KeyCode.F) &&
+                    AccessoriesApi.GetPartsInfo(AccessoriesApi.SelectedMakerAccSlot).type != 120)
                 {
                     AddTheme(true);
                     MakeChild();
-                    Parent_DropDown.SetValue(Parent_Groups.Count + 1, false);
-                    return;
+                    _parentDropDown.SetValue(ParentGroups.Count + 1, false);
                 }
             }
         }
@@ -776,61 +698,47 @@ namespace Accessory_Parents
         {
             childlist = new List<int>();
 
-            foreach (var item in Parent_Groups.Where(x => x.ParentSlot == slot))
+            foreach (var item in ParentGroups.Where(x => x.ParentSlot == slot))
             {
-                childlist.AddRange(item.ChildSlots);
+                childlist.AddRange(item.childSlots);
                 if (recursive)
-                {
-                    foreach (var item2 in item.ChildSlots)
-                    {
-                        if (TryChildListBySlot(item2, out var temp2list, true))
-                        {
-                            childlist.AddRange(temp2list);
-                        }
-                    }
-                }
+                    foreach (var item2 in item.childSlots)
+                        if (TryChildListBySlot(item2, out var temp2List, true))
+                            childlist.AddRange(temp2List);
             }
+
             return childlist.Count > 0;
         }
 
-        private bool TryChildListBySlot(int outfitnum, int slot, out List<int> childlist, bool recursive = false)
+        private bool TryChildListBySlot(int outfitNum, int slot, out List<int> childlist, bool recursive = false)
         {
             childlist = new List<int>();
 
-            foreach (var item in Parent_Data[outfitnum].Parent_Groups.Where(x => x.ParentSlot == slot))
+            foreach (var item in _parentData[outfitNum].parentGroups.Where(x => x.ParentSlot == slot))
             {
-                childlist.AddRange(item.ChildSlots);
+                childlist.AddRange(item.childSlots);
                 if (recursive)
-                {
-                    foreach (var item2 in item.ChildSlots)
-                    {
-                        if (TryChildListBySlot(outfitnum, item2, out var temp2list, true))
-                        {
-                            temp2list.AddRange(temp2list);
-                        }
-                    }
-                }
+                    foreach (var item2 in item.childSlots)
+                        if (TryChildListBySlot(outfitNum, item2, out var temp2List, true))
+                            temp2List.AddRange(temp2List);
             }
+
             return childlist.Count > 0;
         }
 
         internal void MovIt(List<QueueItem> queue)
         {
-            var Names = Parent_Groups;
-            var RelativeData = Relative_Data;
+            var names = ParentGroups;
+            var relativeData = RelativeData;
             foreach (var item in queue)
             {
-                var Handover = Names.Where(x => x.ParentSlot == item.SrcSlot);
-                for (int i = 0, n = Handover.Count(); i < n; i++)
-                {
-                    Handover.ElementAt(i).ParentSlot = item.DstSlot;
-                }
-                if (RelativeData.TryGetValue(item.SrcSlot, out var RelativeVector))
-                {
-                    RelativeData[item.DstSlot] = RelativeVector;
-                }
-                RelativeData.Remove(item.SrcSlot);
+                var handover = names.Where(x => x.ParentSlot == item.SrcSlot);
+                for (int i = 0, n = handover.Count(); i < n; i++) handover.ElementAt(i).ParentSlot = item.DstSlot;
+                if (relativeData.TryGetValue(item.SrcSlot, out var relativeVector))
+                    relativeData[item.DstSlot] = relativeVector;
+                relativeData.Remove(item.SrcSlot);
             }
+
             UpdateRelations();
             Update_Old_Parents();
             Update_Text();
@@ -839,7 +747,7 @@ namespace Accessory_Parents
         private void ChangePosition(int slot, float move, int kind, bool reset, bool fullreset)
         {
             var childlist = new List<int>();
-            if (!RecursiveStop)
+            if (!_recursiveStop)
                 TryChildListBySlot(slot, out childlist, true);
             childlist.Add(slot);
 
@@ -849,7 +757,7 @@ namespace Accessory_Parents
             {
                 VectorExtraction(slot, 0, out var listvector);
 
-                if (!Relative_Data.TryGetValue(slot, out var relativedata))
+                if (!RelativeData.TryGetValue(slot, out var relativedata))
                 {
                     relativedata = new Vector3[3];
                     for (var i = 0; i < 2; i++)
@@ -859,6 +767,7 @@ namespace Accessory_Parents
                         relativedata[2] = Vector3.one;
                     }
                 }
+
                 move = relativedata[0][kind] - listvector[kind];
             }
 
@@ -867,7 +776,7 @@ namespace Accessory_Parents
             {
                 if (fullreset)
                 {
-                    if (!Relative_Data.TryGetValue(item, out var relativedata))
+                    if (!RelativeData.TryGetValue(item, out var relativedata))
                     {
                         relativedata = new Vector3[3];
                         for (var i = 0; i < 2; i++)
@@ -895,7 +804,7 @@ namespace Accessory_Parents
             VectorExtraction(slot, out var originalvectors);
 
             var childlist = new List<int>();
-            if (!RecursiveStop)
+            if (!_recursiveStop)
                 TryChildListBySlot(slot, out childlist, true);
 
             childlist.Add(slot);
@@ -907,7 +816,7 @@ namespace Accessory_Parents
 
             if (reset)
             {
-                if (!Relative_Data.TryGetValue(slot, out var originalrelativedata))
+                if (!RelativeData.TryGetValue(slot, out var originalrelativedata))
                 {
                     originalrelativedata = new Vector3[3];
                     {
@@ -926,42 +835,38 @@ namespace Accessory_Parents
             {
                 VectorExtraction(item, out var listvectors);
 
-                Vector3 New_pos;
+                Vector3 newPos;
 
                 if (fullreset)
                 {
                     rot = Vector3.zero;
-                    if (!Relative_Data.TryGetValue(slot, out var relativedata))
+                    if (!RelativeData.TryGetValue(slot, out var relativedata))
                     {
                         relativedata = new Vector3[3];
                         relativedata[0] = Vector3.zero;
                         relativedata[1] = Vector3.zero;
                         relativedata[2] = Vector3.one;
                     }
+
                     rot[kind] = relativedata[1][kind] - listvectors[1][kind];
 
-                    New_pos = listvectors[0] - originalvectors[0]; //offset with parent as origin
-                    New_pos = Quaternion.Euler(rot) * New_pos; //rotate offset
-                    New_pos += originalvectors[0]; //Undo offset
+                    newPos = listvectors[0] - originalvectors[0]; //offset with parent as origin
+                    newPos = Quaternion.Euler(rot) * newPos; //rotate offset
+                    newPos += originalvectors[0]; //Undo offset
 
                     for (var i = 0; i < 3; i++)
-                    {
-                        ChaControl.SetAccessoryPos(item, 0, New_pos[i], false, (int)Math.Pow(2, i));
-                    }
+                        ChaControl.SetAccessoryPos(item, 0, newPos[i], false, (int)Math.Pow(2, i));
 
                     ChaControl.SetAccessoryRot(item, 0, relativedata[1][kind], false, flag);
                     UpdateAccessoryInfo(item);
                     continue;
                 }
 
-                New_pos = listvectors[0] - originalvectors[0]; //offset with parent as origin
-                New_pos = Quaternion.Euler(rot) * New_pos; //rotate offset
-                New_pos += originalvectors[0]; //Undo offset
+                newPos = listvectors[0] - originalvectors[0]; //offset with parent as origin
+                newPos = Quaternion.Euler(rot) * newPos; //rotate offset
+                newPos += originalvectors[0]; //Undo offset
 
-                for (var i = 0; i < 3; i++)
-                {
-                    ChaControl.SetAccessoryPos(item, 0, New_pos[i], false, (int)Math.Pow(2, i));
-                }
+                for (var i = 0; i < 3; i++) ChaControl.SetAccessoryPos(item, 0, newPos[i], false, (int)Math.Pow(2, i));
 
                 ChaControl.SetAccessoryRot(item, 0, rotate + listvectors[1][kind], false, flag);
                 UpdateAccessoryInfo(item);
@@ -971,7 +876,7 @@ namespace Accessory_Parents
         private void ChangeScale(int slot, float scale, int kind, bool reset, bool fullreset)
         {
             var childlist = new List<int>();
-            if (!RecursiveStop)
+            if (!_recursiveStop)
                 TryChildListBySlot(slot, out childlist, true);
             childlist.Add(slot);
             childlist = childlist.Distinct().ToList();
@@ -980,7 +885,7 @@ namespace Accessory_Parents
             {
                 VectorExtraction(slot, 2, out var listvector);
 
-                if (!Relative_Data.TryGetValue(slot, out var relativedata))
+                if (!RelativeData.TryGetValue(slot, out var relativedata))
                 {
                     relativedata = new Vector3[3];
                     for (var i = 0; i < 2; i++)
@@ -990,6 +895,7 @@ namespace Accessory_Parents
                         relativedata[2] = Vector3.one;
                     }
                 }
+
                 scale = relativedata[2][kind] - listvector[kind];
             }
 
@@ -999,7 +905,7 @@ namespace Accessory_Parents
             {
                 if (fullreset)
                 {
-                    if (!Relative_Data.TryGetValue(item, out var relativedata))
+                    if (!RelativeData.TryGetValue(item, out var relativedata))
                     {
                         relativedata = new Vector3[3];
                         for (var i = 0; i < 2; i++)
@@ -1045,9 +951,8 @@ namespace Accessory_Parents
         private void UpdateAccessoryInfo(int slot)
         {
             if (slot < 20)
-            {
-                ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].addMove = ChaControl.nowCoordinate.accessory.parts[slot].addMove;
-            }
+                ChaControl.chaFile.coordinate[(int)CurrentCoordinate.Value].accessory.parts[slot].addMove =
+                    ChaControl.nowCoordinate.accessory.parts[slot].addMove;
         }
     }
 }

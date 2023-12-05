@@ -1,9 +1,10 @@
-﻿using Extensions;
-using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Extensions;
+using MessagePack;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Accessory_Parents
 {
@@ -11,111 +12,116 @@ namespace Accessory_Parents
     [MessagePackObject]
     public class CoordinateData
     {
-        [Key("_theme_names")]
-        public List<Custom_Name> Parent_Groups;
+        [FormerlySerializedAs("Parent_Groups")] [Key("_theme_names")]
+        public List<CustomName> parentGroups;
 
-        [Key("_relative_data")]
-        public Dictionary<int, Vector3[]> Relative_Data;
+        [IgnoreMember] internal Dictionary<int, int> Child;
 
-        [IgnoreMember]
-        internal Dictionary<int, int> Child;
+        [IgnoreMember] internal Dictionary<int, string> OldParent;
 
-        [IgnoreMember]
-        internal Dictionary<int, List<int>> RelatedNames;
-        [IgnoreMember]
-        internal Dictionary<int, string> Old_Parent;
+        [IgnoreMember] internal Dictionary<int, List<int>> RelatedNames;
 
-        public CoordinateData() { NullCheck(); }
+        [Key("_relative_data")] public Dictionary<int, Vector3[]> RelativeData;
 
-        public CoordinateData(CoordinateData _copy) => CopyData(_copy);
-
-        public CoordinateData(List<Custom_Name> _theme_names, Dictionary<int, Vector3[]> _relative_data)
+        public CoordinateData()
         {
-            Parent_Groups = _theme_names.ToNewList();
-            Relative_Data = _relative_data.ToNewDictionary();
+            NullCheck();
+        }
+
+        public CoordinateData(CoordinateData copy)
+        {
+            CopyData(copy);
+        }
+
+        public CoordinateData(List<CustomName> themeNames, Dictionary<int, Vector3[]> relativeData)
+        {
+            parentGroups = themeNames.ToNewList();
+            RelativeData = relativeData.ToNewDictionary();
             NullCheck();
         }
 
         public void CleanUp()
         {
             NullCheck();
-            Parent_Groups.RemoveAll(x => x.ParentSlot == -1 || x.ChildSlots.Count == 0);
-            var relativeclean = Relative_Data.Keys.Where(x => !Parent_Groups.Any(y => y.ChildSlots.Contains(x) || y.ParentSlot == x)).ToList();
-            foreach (var item in relativeclean)
-            {
-                Relative_Data.Remove(item);
-            }
+            parentGroups.RemoveAll(x => x.ParentSlot == -1 || x.childSlots.Count == 0);
+            var relativeclean = RelativeData.Keys
+                .Where(x => !parentGroups.Any(y => y.childSlots.Contains(x) || y.ParentSlot == x)).ToList();
+            foreach (var item in relativeclean) RelativeData.Remove(item);
         }
 
         public void Clear()
         {
             NullCheck();
-            Parent_Groups.Clear();
-            Relative_Data.Clear();
+            parentGroups.Clear();
+            RelativeData.Clear();
             Child.Clear();
             RelatedNames.Clear();
-            Old_Parent.Clear();
+            OldParent.Clear();
         }
 
         private void NullCheck()
         {
-            if (Parent_Groups == null) Parent_Groups = new List<Custom_Name>();
-            if (Relative_Data == null) Relative_Data = new Dictionary<int, Vector3[]>();
+            if (parentGroups == null) parentGroups = new List<CustomName>();
+            if (RelativeData == null) RelativeData = new Dictionary<int, Vector3[]>();
             if (RelatedNames == null) RelatedNames = new Dictionary<int, List<int>>();
             if (Child == null) Child = new Dictionary<int, int>();
-            if (Old_Parent == null) Old_Parent = new Dictionary<int, string>();
+            if (OldParent == null) OldParent = new Dictionary<int, string>();
         }
 
-        public void CopyData(CoordinateData _copy) => CopyData(_copy.Parent_Groups, _copy.Relative_Data, _copy.Child, _copy.RelatedNames, _copy.Old_Parent);
-
-        public void CopyData(List<Custom_Name> _theme_names, Dictionary<int, Vector3[]> _relative_data, Dictionary<int, int> _child, Dictionary<int, List<int>> _related, Dictionary<int, string> _oldparent)
+        public void CopyData(CoordinateData copy)
         {
-            Parent_Groups = _theme_names.ToNewList();
-            Relative_Data = _relative_data.ToNewDictionary();
-            Child = _child.ToNewDictionary();
-            RelatedNames = _related.ToNewDictionary();
-            Old_Parent = _oldparent.ToNewDictionary(); ;
+            CopyData(copy.parentGroups, copy.RelativeData, copy.Child, copy.RelatedNames, copy.OldParent);
+        }
+
+        public void CopyData(List<CustomName> themeNames, Dictionary<int, Vector3[]> relativeData,
+            Dictionary<int, int> child, Dictionary<int, List<int>> related, Dictionary<int, string> oldParent)
+        {
+            parentGroups = themeNames.ToNewList();
+            RelativeData = relativeData.ToNewDictionary();
+            Child = child.ToNewDictionary();
+            RelatedNames = related.ToNewDictionary();
+            OldParent = oldParent.ToNewDictionary();
             NullCheck();
         }
     }
 
     [Serializable]
     [MessagePackObject]
-    public class Custom_Name
+    public class CustomName
     {
-        [Key("_name")]
-        public string Name { get; set; }
+        // ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("ChildSlots")] [Key("_childslots")]
+        public List<int> childSlots;
 
-        [Key("_slot")]
-        public int ParentSlot { get; set; } = -1;
-
-        [Key("_childslots")]
-        public List<int> ChildSlots;
-
-        public Custom_Name(string _name, int _slot, List<int> _childslots)
+        public CustomName(string name, int slot, List<int> childSlots)
         {
-            Name = _name;
-            ParentSlot = _slot;
-            ChildSlots = _childslots.ToNewList();
+            Name = name;
+            ParentSlot = slot;
+            this.childSlots = childSlots.ToNewList();
             NullCheck();
         }
 
-        public Custom_Name(string _name, int _slot)
+        public CustomName(string name, int slot)
         {
-            Name = _name;
-            ParentSlot = _slot;
+            Name = name;
+            ParentSlot = slot;
             NullCheck();
         }
 
-        public Custom_Name(string _name)
+        public CustomName(string name)
         {
-            Name = _name;
+            Name = name;
             NullCheck();
         }
+
+        [Key("_name")] public string Name { get; set; }
+
+        [Key("_slot")] public int ParentSlot { get; set; } = -1;
+
         private void NullCheck()
         {
             if (Name == null) Name = "";
-            if (ChildSlots == null) ChildSlots = new List<int>();
+            if (childSlots == null) childSlots = new List<int>();
         }
     }
 }

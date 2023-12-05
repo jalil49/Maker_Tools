@@ -5,16 +5,21 @@ namespace Additional_Card_Info
 {
     public static class Constants
     {
-        public static int ClothingTypesLength = Enum.GetValues(typeof(ClothingTypes)).Length;
-        public static int AdditonalClothingTypesLength = Enum.GetValues(typeof(AdditonalClothingTypes)).Length;
-        public static int HStatesLength = Enum.GetValues(typeof(HStates)).Length;
-        public static int ClubLength = Enum.GetValues(typeof(Club)).Length;
-        public static int PersonalityLength = Enum.GetValues(typeof(Personality)).Length;
-        public static int TraitsLength = Enum.GetValues(typeof(Traits)).Length;
-        public static int SimplifiedCoordinateTypesLength = Enum.GetValues(typeof(SimplifiedCoordinateTypes)).Length;
-        public static int HeightLength = Enum.GetValues(typeof(Height)).Length;
-        public static int BreastsizeLength = Enum.GetValues(typeof(Breastsize)).Length;
-        public static int InterestLength = Enum.GetValues(typeof(Interests)).Length;
+        public enum AdditonalClothingTypes
+        {
+            Lingerie,
+            Hair,
+            AfterSchoolAccessories,
+            SwimmingAccessories,
+            BathroomAccessories
+        }
+
+        public enum Breastsize
+        {
+            Small,
+            Average,
+            Large
+        }
 
         public enum ClothingTypes
         {
@@ -25,35 +30,42 @@ namespace Additional_Card_Info
             Gloves,
             Pantyhose,
             Socks,
-            Indoor_Shoes,
-            Outdoor_Shoes
+            IndoorShoes,
+            OutdoorShoes
         }
 
-        public enum AdditonalClothingTypes
+        public enum Club
         {
-            Lingerie,
-            Hair,
-            AfterSchool_Accessories,
-            Swimming_Accessories,
-            Bathroom_Accessories
+            GoingHomeClub, //0
+            SwimClub, //1
+            MangaClub, //2
+            CheerClub, //3
+            TeaClub, //4
+            TrackClub //5
+        }
+
+        public enum Height
+        {
+            Short,
+            Average,
+            Tall
         }
 
         public enum HStates
         {
-            First_Time, //0
+            FirstTime, //0
             Amateur, //1
             Pro, //2
             Lewd //3
         }
 
-        public enum Club
+        public enum Interests
         {
-            Going_Home_Club, //0
-            Swim_Club, //1
-            Manga_Club, //2
-            Cheer_Club, //3
-            Tea_Club, //4
-            Track_Club //5
+            Play,
+            Nature,
+            Fish,
+            Sightseeing,
+            H
         }
 
         public enum Personality
@@ -61,68 +73,79 @@ namespace Additional_Card_Info
             Airhead,
             Angel,
             Athlete,
-            Big_Sister,
+            BigSister,
             Bookworm,
-            Classic_Heroine,
-            Dark_Lord,
+            ClassicHeroine,
+            DarkLord,
             Emotionless,
             Enigma,
             Extrovert,
             Fangirl,
             Flirt,
             Geek,
-            Girl_Nextdoor,
+            GirlNextdoor,
             Heiress,
-            Honor_Student,
+            HonorStudent,
             Introvert,
-            Japanese_Ideal,
+            JapaneseIdeal,
             Loner,
-            Misfortune_Magnet,
+            MisfortuneMagnet,
             Motherfigure,
-            Old_School,
+            OldSchool,
             Perfectionist,
-            Psycho_Stalker,
-            Pure_Heart,
+            PsychoStalker,
+            PureHeart,
             Rebel,
             Returnee,
-            Scaredy_Cat,
+            ScaredyCat,
             Seductress,
             Ski,
             Slacker,
             Slangy,
             Snob,
             Sourpuss,
-            Space_Case,
+            SpaceCase,
             Tomboy,
-            Tough_Girl,
+            ToughGirl,
             Underclassman,
-            Wild_Child,
-            Island_Girl
+            WildChild,
+            IslandGirl
+        }
+
+        public enum SimplifiedCoordinateTypes
+        {
+            SchoolUniform,
+            Gym,
+            Swimsuit,
+            Club,
+            Casual,
+            Nightwear,
+            Bathroom
         }
 
         public enum Traits
         {
 #if KK
-            Pees_Often,
+            PeesOften,
             Hungry,
             Insensitive,
             Simple,
             Slutty,
             Gloomy,
-            Likes_Reading,
-            Likes_Music,
+            LikesReading,
+            LikesMusic,
             Lively,
             Passive,
             Friendly,
-            Likes_Cleanliness,
+            LikesCleanliness,
             Lazy,
-            Suddenly_Appears,
-            Likes_Being_Aone,
-            Likes_Excercising,
+            SuddenlyAppears,
+            LikesBeingAone,
+            LikesExcercising,
             Diligent,
-            Likes_Girls,
+            LikesGirls,
             Information,
-            Love_Love,
+            LoveLove,
             Lonely
 #elif KKS
             Hungry,
@@ -149,7 +172,18 @@ namespace Additional_Card_Info
 #endif
         }
 
-        public readonly static SortedDictionary<int, int> Koi_to_Sun_Traits = new SortedDictionary<int, int>()
+        public static readonly int ClothingTypesLength = Enum.GetValues(typeof(ClothingTypes)).Length;
+        public static int AdditonalClothingTypesLength = Enum.GetValues(typeof(AdditonalClothingTypes)).Length;
+        public static int HStatesLength = Enum.GetValues(typeof(HStates)).Length;
+        public static int ClubLength = Enum.GetValues(typeof(Club)).Length;
+        public static readonly int PersonalityLength = Enum.GetValues(typeof(Personality)).Length;
+        public static readonly int TraitsLength = Enum.GetValues(typeof(Traits)).Length;
+        public static readonly int SimplifiedCoordinateTypesLength = Enum.GetValues(typeof(SimplifiedCoordinateTypes)).Length;
+        public static readonly int HeightLength = Enum.GetValues(typeof(Height)).Length;
+        public static readonly int BreastsizeLength = Enum.GetValues(typeof(Breastsize)).Length;
+        public static readonly int InterestLength = Enum.GetValues(typeof(Interests)).Length;
+
+        public static readonly SortedDictionary<int, int> KoiToSunTraits = new SortedDictionary<int, int>
         {
             [0] = 16,
             [1] = 0,
@@ -173,39 +207,5 @@ namespace Additional_Card_Info
             [19] = 12,
             [20] = 20
         };
-
-        public enum SimplifiedCoordinateTypes
-        {
-            School_Uniform,
-            Gym,
-            Swimsuit,
-            Club,
-            Casual,
-            Nightwear,
-            Bathroom
-        }
-
-        public enum Height
-        {
-            Short,
-            Average,
-            Tall
-        }
-
-        public enum Breastsize
-        {
-            Small,
-            Average,
-            Large
-        }
-
-        public enum Interests
-        {
-            Play,
-            Nature,
-            Fish,
-            Sightseeing,
-            H
-        }
     }
 }

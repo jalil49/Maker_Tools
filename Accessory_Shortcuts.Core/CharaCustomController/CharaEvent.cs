@@ -9,14 +9,12 @@ namespace Accessory_Shortcuts
         private ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
-        { }
+        {
+        }
 
         protected override void OnReload(GameMode currentGameMode, bool maintainState)
         {
-            if (!MakerAPI.InsideMaker)
-            {
-                return;
-            }
+            if (!MakerAPI.InsideMaker) return;
             Constants.Default_Dict();
         }
     }

@@ -1,62 +1,60 @@
-﻿using KKAPI.Chara;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using KKAPI.Chara;
 using UnityEngine;
 
 namespace Accessory_Themes
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        private DataStruct data = new DataStruct();
+        private Additional_Card_Info.CharaEvent _aciRef;
+        private DataStruct _data = new DataStruct();
 
-        private Additional_Card_Info.CharaEvent ACI_Ref;
-
-        private List<int> HairAcc = new List<int>();
+        private List<int> _hairAcc = new List<int>();
 
         #region Properties
 
         private Dictionary<int, CoordinateData> Coordinate
         {
-            get { return data.Coordinate; }
-            set { data.Coordinate = value; }
+            get => _data.Coordinate;
+            set => _data.Coordinate = value;
         }
 
         private CoordinateData NowCoordinate
         {
-            get { return data.NowCoordinate; }
-            set { data.NowCoordinate = value; }
+            get => _data.NowCoordinate;
+            set => _data.NowCoordinate = value;
         }
 
         private List<ThemeData> Themes
         {
-            get { return NowCoordinate.Themes; }
-            set { NowCoordinate.Themes = value; }
+            get => NowCoordinate.themes;
+            set => NowCoordinate.themes = value;
         }
 
-        private Dictionary<int, int> Theme_Dict
+        private Dictionary<int, int> ThemeDict
         {
-            get { return NowCoordinate.Theme_Dict; }
-            set { NowCoordinate.Theme_Dict = value; }
+            get => NowCoordinate.ThemeDict;
+            set => NowCoordinate.ThemeDict = value;
         }
 
-        private Dictionary<int, List<int[]>> Relative_ACC_Dictionary
+        private Dictionary<int, List<int[]>> RelativeAccDictionary
         {
-            get { return NowCoordinate.Relative_ACC_Dictionary; }
-            set { NowCoordinate.Relative_ACC_Dictionary = value; }
+            get => NowCoordinate.RelativeAccDictionary;
+            set => NowCoordinate.RelativeAccDictionary = value;
         }
 
-        private Stack<Queue<Color>> UndoACCSkew
+        private Stack<Queue<Color>> UndoAccSkew
         {
-            get { return NowCoordinate.UndoACCSkew; }
-            set { NowCoordinate.UndoACCSkew = value; }
+            get => NowCoordinate.UndoAccSkew;
+            set => NowCoordinate.UndoAccSkew = value;
         }
 
         private Stack<Queue<Color>> ClothsUndoSkew
         {
-            get { return NowCoordinate.ClothsUndoSkew; }
-            set { NowCoordinate.ClothsUndoSkew = value; }
+            get => NowCoordinate.ClothsUndoSkew;
+            set => NowCoordinate.ClothsUndoSkew = value;
         }
 
         #endregion
-
     }
 }

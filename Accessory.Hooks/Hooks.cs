@@ -1,7 +1,12 @@
-﻿using BepInEx.Logging;
+﻿using System.Collections.Generic;
+using BepInEx.Bootstrap;
 using HarmonyLib;
+using JetBrains.Annotations;
 using KKAPI.Maker;
-using System.Collections.Generic;
+#if !Themes && !Parents
+using ChaCustom;
+#endif
+
 #if Parents
 namespace Accessory_Parents
 #elif States
@@ -14,51 +19,52 @@ namespace Additional_Card_Info
 {
     internal static partial class Hooks
     {
-        static ManualLogSource Logger;
-
-        public static void Init(ManualLogSource Setting_Logger)
+        public static void Init()
         {
-            Logger = Setting_Logger;
             Harmony.CreateAndPatchAll(typeof(Hooks));
-            if (TryfindPluginInstance("madevil.kk.MovUrAcc"))
-                Harmony.CreateAndPatchAll(typeof(MovUrACC));
-            //if (TryfindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
+            if (TryFindPluginInstance("madevil.kk.MovUrAcc"))
+                Harmony.CreateAndPatchAll(typeof(MovUrAcc));
+            //if (TryFindPluginInstance("com.deathweasel.bepinex.moreoutfits"))
             //    Harmony.CreateAndPatchAll(typeof(MoreOutfits));
 #if ACI || States
             ClothingNotPatch.Init();
 #endif
         }
 
-        private static bool TryfindPluginInstance(string pluginName)
+        private static bool TryFindPluginInstance(string pluginName)
         {
-            return BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue(pluginName, out _); ;
+            return Chainloader.PluginInfos.TryGetValue(pluginName, out _);
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int), typeof(string), typeof(bool))]
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessory), typeof(int), typeof(int), typeof(int),
+            typeof(string), typeof(bool))]
         private static void ChangeAccessory(ChaControl __instance, int slotNo, int type)
         {
             __instance.GetComponent<CharaEvent>().Slot_ACC_Change(slotNo, type);
         }
 
-        internal static class MovUrACC
+        internal static class MovUrAcc
         {
             [HarmonyPostfix]
             [HarmonyPatch("MovUrAcc.MovUrAcc, KK_MovUrAcc", "ProcessQueue")]
-            internal static void MovPatch(List<QueueItem> Queue)
+            internal static void MovPatch(List<QueueItem> queue)
             {
-                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(Queue);
+                MakerAPI.GetCharacterControl().GetComponent<CharaEvent>().MovIt(queue);
             }
         }
 
         internal static class MoreOutfits
         {
-            [HarmonyPostfix, HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+AddCoordinateSlot, KK_MoreOutfits")]
+            [HarmonyPostfix]
+            [HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+AddCoordinateSlot, KK_MoreOutfits")]
             internal static void AddOutfitHook(ChaControl chaControl)
             {
                 chaControl.GetComponent<CharaEvent>().AddOutfitEvent();
             }
 
-            [HarmonyPostfix, HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+RemoveCoordinateSlot, KK_MoreOutfits")]
+            [HarmonyPostfix]
+            [HarmonyPatch("KK_Plugins.MoreOutfits.CharaController+RemoveCoordinateSlot, KK_MoreOutfits")]
             internal static void RemoveOutfitHook(ChaControl chaControl)
             {
                 chaControl.GetComponent<CharaEvent>().RemoveOutfitEvent();
@@ -68,8 +74,11 @@ namespace Additional_Card_Info
 #if ACI || States
         internal static class ClothingNotPatch
         {
-            internal static bool IsshortsCheck = false;
-            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; set; } = new Dictionary<ChaListDefine.KeyType, int>() { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0 };
+            internal static bool IsShortsCheck = false;
+
+            internal static Dictionary<ChaListDefine.KeyType, int> ListInfoResult { get; } =
+                new Dictionary<ChaListDefine.KeyType, int>
+                    { [ChaListDefine.KeyType.NotBra] = 0, [ChaListDefine.KeyType.Coordinate] = 0 };
 
             internal static void Init()
             {
@@ -77,17 +86,14 @@ namespace Additional_Card_Info
             }
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(ChaCustom.CvsClothes), nameof(ChaCustom.CvsClothes.UpdateSelectClothes))]
-            public static void Hook_ChangeClothType(ChaCustom.CvsClothes __instance, int index)
+            [HarmonyPatch(typeof(CvsClothes), nameof(CvsClothes.UpdateSelectClothes))]
+            public static void Hook_ChangeClothType(CvsClothes __instance, int index)
             {
-                var clothingnum = __instance.clothesType;
-                var charaevent = __instance.chaCtrl.GetComponent<CharaEvent>();
-                if (clothingnum < 4)
-                {
-                    charaevent.UpdateClothingNots();
-                }
+                var clothesType = __instance.clothesType;
+                var charaEvent = __instance.chaCtrl.GetComponent<CharaEvent>();
+                if (clothesType < 4) charaEvent.UpdateClothingNots();
 #if States
-                charaevent.ClothingTypeChange(clothingnum, index);
+                charaEvent.ClothingTypeChange(clothesType, index);
 #endif
             }
 
@@ -101,26 +107,25 @@ namespace Additional_Card_Info
 
             private static void ClothingNotEvent(ChaListDefine.KeyType keyType, string result)
             {
-                if (keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate || !int.TryParse(result, out var value))
-                {
-                    return;
-                }
+                if ((keyType != ChaListDefine.KeyType.NotBra && keyType != ChaListDefine.KeyType.Coordinate) ||
+                    !int.TryParse(result, out var value)) return;
                 ListInfoResult[keyType] = value;
             }
         }
 #endif
     }
 
+    [UsedImplicitly]
     internal class QueueItem
     {
-        public int SrcSlot { get; set; }
-
-        public int DstSlot { get; set; }
-
         public QueueItem(int src, int dst)
         {
             SrcSlot = src;
             DstSlot = dst;
         }
+
+        public int SrcSlot { get; }
+
+        public int DstSlot { get; }
     }
 }

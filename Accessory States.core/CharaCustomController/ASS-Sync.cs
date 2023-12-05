@@ -6,86 +6,78 @@ namespace Accessory_States
 {
     partial class CharaEvent : CharaCustomFunctionController
     {
-        private Traverse ASS_Traverse;
+        private Traverse _assTraverse;
 
         private bool ASS_Setup()
         {
-            if (!ASS_Exists)
+            if (!AssExists)
                 return false;
 
-            if (ASS_Traverse != null)
-            {
-                return true;
-            }
-            ASS_Traverse = Traverse.Create(ChaControl.GetComponent("AccStateSync.AccStateSync+AccStateSyncController, KK_AccStateSync"));
+            if (_assTraverse != null) return true;
+            _assTraverse =
+                Traverse.Create(
+                    ChaControl.GetComponent("AccStateSync.AccStateSync+AccStateSyncController, KK_AccStateSync"));
             return true;
         }
 
-        private void DeleteGroup(int _kind)
+        private void DeleteGroup(int kind)
         {
-            if (!ASS_Setup())
-            {
-                return;
-            }
-            ASS_Traverse.Method("RemoveTriggerGroup", new object[] { (int)CurrentCoordinate.Value, _kind }).GetValue();
+            if (!ASS_Setup()) return;
+            _assTraverse.Method("RemoveTriggerGroup", (int)CurrentCoordinate.Value, kind).GetValue();
             RefreshCache();
         }
 
-        private void RenameGroup(int _kind, string _label)
+        private void RenameGroup(int kind, string label)
         {
-            if (!ASS_Setup())
-            {
-                return;
-            }
+            if (!ASS_Setup()) return;
 
-            ASS_Traverse.Method("RenameTriggerGroup", new object[] { _kind, _label }).GetValue();
+            _assTraverse.Method("RenameTriggerGroup", kind, label).GetValue();
             RefreshCache();
         }
 
-        private void AddGroup(int _kind, string _label)
+        private void AddGroup(int kind, string label)
         {
-            if (!ASS_Setup())
-            {
-                return;
-            }
-            Settings.Logger.LogWarning("adding group " + _label);
-            DeleteGroup(_kind);
-            ASS_Traverse.Method("RemoveTriggerGroupNewOrGetTriggerGroup", new object[] { (int)CurrentCoordinate.Value, _kind }).GetValue();
-            RenameGroup(_kind, _label);
+            if (!ASS_Setup()) return;
+            Settings.Logger.LogWarning("adding group " + label);
+            DeleteGroup(kind);
+            _assTraverse.Method("RemoveTriggerGroupNewOrGetTriggerGroup", (int)CurrentCoordinate.Value, kind)
+                .GetValue();
+            RenameGroup(kind, label);
             RefreshCache();
         }
 
         private void RemoveTriggerSlot()
         {
-            var _slot = AccessoriesApi.SelectedMakerAccSlot;
-            ASS_Traverse.Method("RemoveSlotTriggerProperty", new object[] { (int)CurrentCoordinate.Value, _slot }).GetValue();
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
+            _assTraverse.Method("RemoveSlotTriggerProperty", (int)CurrentCoordinate.Value, slot).GetValue();
             RefreshCache();
         }
 
-        private void RemoveTriggerByKind(int _refKind)
+        private void RemoveTriggerByKind(int refKind)
         {
-            ASS_Traverse.Method("RemoveSlotTriggerProperty", new object[] { (int)CurrentCoordinate.Value, _refKind }).GetValue();
+            _assTraverse.Method("RemoveSlotTriggerProperty", (int)CurrentCoordinate.Value, refKind).GetValue();
             RefreshCache();
         }
 
-        private void ChangeTriggerProperty(int _refKind)
+        private void ChangeTriggerProperty(int refKind)
         {
-            var _slot = AccessoriesApi.SelectedMakerAccSlot;
+            var slot = AccessoriesApi.SelectedMakerAccSlot;
 
-            var list = Slotinfo[_slot].States;
-            var _coord = (int)CurrentCoordinate.Value;
-            var single = 3 < _refKind && _refKind < 9;
-            for (int _refState = 0, n = MaxState(_refKind) + 1; _refState < n; _refState++)
+            var list = SlotInfo[slot].States;
+            var coord = (int)CurrentCoordinate.Value;
+            var single = 3 < refKind && refKind < 9;
+            for (int refState = 0, n = MaxState(refKind) + 1; refState < n; refState++)
             {
-                var test = ASS_Traverse.Method("NewOrGetTriggerProperty", new object[] { _coord, _slot, _refKind, _refState }).GetValue();
-                Traverse.Create(test).Property("Visible").SetValue(ShowState(_refState, list));
+                var test = _assTraverse.Method("NewOrGetTriggerProperty", coord, slot, refKind, refState).GetValue();
+                Traverse.Create(test).Property("Visible").SetValue(ShowState(refState, list));
             }
+
             RefreshCache();
         }
 
         private void RefreshCache()
         {
-            ASS_Traverse.Method("RefreshCache").GetValue();
+            _assTraverse.Method("RefreshCache").GetValue();
         }
     }
 }

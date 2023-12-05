@@ -1,25 +1,26 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+using KKAPI;
 using KKAPI.Maker;
 using KKAPI.Studio;
 
 namespace CardUpdateTool
 {
-    [BepInPlugin(GUID, "Card Update Tool", Version)]
-    [BepInDependency(KKAPI.KoikatuAPI.GUID, KKAPI.KoikatuAPI.VersionConst)]
+    [BepInPlugin(Guid, "Card Update Tool", Version)]
+    [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
     [BepInDependency(Sideloader.Sideloader.GUID, Sideloader.Sideloader.Version)]
     [BepInDependency("com.joan6694.illusionplugins.moreaccessories", "2.0.0")]
     public partial class CardUpdateTool : BaseUnityPlugin
     {
-        public const string GUID = "Card_Update_Tool";
+        private const string Guid = "Card_Update_Tool";
         public const string Version = "1.2";
-        internal static CardUpdateTool Instance;
-        internal static new ManualLogSource Logger;
+        private static CardUpdateTool _instance;
+        private static ManualLogSource _logger;
 
         public void Awake()
         {
-            Instance = this;
-            Logger = base.Logger;
+            _instance = this;
+            _logger = Logger;
 
             if (StudioAPI.InsideStudio) return;
 

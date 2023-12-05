@@ -1,10 +1,10 @@
-﻿using ExtensibleSaveFormat;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ExtensibleSaveFormat;
 
 namespace CardUpdateTool
 {
-
     public class DataType
     {
         public static Dictionary<string, VersionData> StaticMaxVersion = new Dictionary<string, VersionData>();
@@ -12,6 +12,10 @@ namespace CardUpdateTool
         public static List<string> GuidList = new List<string>();
 
         public List<CardInfo> Cardlist = new List<CardInfo>();
+        public int Migratedcount;
+        public int Missingcount;
+
+        public int OutDatedcount;
 
         public List<string> PrintOrder = new List<string>();
 
@@ -20,10 +24,6 @@ namespace CardUpdateTool
             Cardlist.Clear();
             PrintOrder.Clear();
         }
-
-        public int OutDatedcount = 0;
-        public int Missingcount = 0;
-        public int Migratedcount = 0;
 
         public void Reset()
         {
@@ -39,13 +39,10 @@ namespace CardUpdateTool
             Migratedcount = Cardlist.Count(x => x.MigratedMods);
         }
 
-        public void CardInfoListConvert(List<string> stringlist)
+        public void CardInfoListConvert(List<string> stringList)
         {
             Cardlist.Clear();
-            foreach (var item in stringlist)
-            {
-                Cardlist.Add(new CardInfo(item));
-            }
+            foreach (var item in stringList) Cardlist.Add(new CardInfo(item));
         }
 
         public void NullCheck()
@@ -56,11 +53,13 @@ namespace CardUpdateTool
                 {
                     if (StaticMaxVersion.TryGetValue(item, out var versionData))
                     {
-                        card.Plugin_data[item] = versionData.version;
+                        card.PluginData[item] = versionData.Version;
                         continue;
                     }
-                    card.Plugin_data[item] = 0;
+
+                    card.PluginData[item] = 0;
                 }
+
                 card.CheckNull = false;
             }
         }
@@ -68,32 +67,32 @@ namespace CardUpdateTool
 
     public class CardInfo
     {
-        public string Path { get; private set; }
+        public bool CheckNull;
 
-        public bool MissingMods = false;
-        public List<string> MissingList = new List<string>();
-
-        public bool OutdatedMods = false;
-        public List<string> OutdatedList = new List<string>();
+        public int Lasterror = 0;
 
         public bool MigratedMods = false;
+        public List<string> MissingList = new List<string>();
 
-        public bool CheckNull = false;
+        public bool MissingMods = false;
 
-        public List<string> NullList = new List<string>();
+        public readonly List<string> NullList = new List<string>();
+        public List<string> OutdatedList = new List<string>();
 
-        public Dictionary<string, int> Plugin_data = new Dictionary<string, int>();
+        public bool OutdatedMods = false;
 
-        public int lasterror = 0;
+        public readonly Dictionary<string, int> PluginData = new Dictionary<string, int>();
 
-        public CardInfo(string _path)
+        public CardInfo(string path)
         {
-            Path = _path;
+            Path = path;
         }
+
+        public string Path { get; private set; }
 
         public void PopulateDictinary(Dictionary<string, PluginData> pluginData)
         {
-            Plugin_data.Clear();
+            PluginData.Clear();
             foreach (var item in pluginData.Where(x => DataType.GuidList.Contains(x.Key)))
             {
                 var guid = item.Key;
@@ -104,19 +103,17 @@ namespace CardUpdateTool
                     DataType.StaticMaxVersion[guid] = versionData;
                 }
 
-                var ContainsNull = item.Value == null;
+                var containsNull = item.Value == null;
 
-                if (ContainsNull && !NullList.Contains(item.Key))
-                {
-                    NullList.Add(item.Key);
-                }
+                if (containsNull && !NullList.Contains(item.Key)) NullList.Add(item.Key);
 
-                var version = (ContainsNull) ? -1 : item.Value.version;
+                var version = containsNull ? -1 : item.Value.version;
 
-                Plugin_data[guid] = version;
+                PluginData[guid] = version;
 
-                versionData.version = System.Math.Max(version, versionData.version);
+                versionData.Version = Math.Max(version, versionData.Version);
             }
+
             if (NullList.Count > 0)
                 CheckNull = true;
         }
@@ -124,29 +121,39 @@ namespace CardUpdateTool
 
     public class VersionData
     {
-        public string Name;
-        public int version = 0;
+        public readonly string Name;
+        public int Version;
+
+        public VersionData(string name, int ver)
+        {
+            Name = name;
+            Version = ver;
+        }
 
         #region Chara stuff
 
         #region private
-        private bool _anycharaoutdated = false;
-        private int _charaoutdatedcount = 0;
+
+        private int _charaoutdatedcount;
+
         #endregion;
 
         #region public
+
         public int CharaUpToDate = 0;
         public bool CharaVisible = false;
-        public bool AnyCharaOutdated { get { return _anycharaoutdated; } }
+        public bool AnyCharaOutdated { get; private set; }
+
         public int CharaOutdatedCount
         {
-            get { return _charaoutdatedcount; }
+            get => _charaoutdatedcount;
             set
             {
                 _charaoutdatedcount = value;
-                _anycharaoutdated = value != 0;
+                AnyCharaOutdated = value != 0;
             }
         }
+
         #endregion;
 
         #endregion;
@@ -154,31 +161,29 @@ namespace CardUpdateTool
         #region Outfit stuff
 
         #region private
-        private bool _anyoutfitoutdated = false;
-        private int _outfitoutdatedcount = 0;
+
+        private int _outfitoutdatedcount;
+
         #endregion;
 
         #region public
+
         public int OutfitsUpToDate = 0;
         public bool OutfitVisible = false;
-        public bool AnyOutfitOutdated { get { return _anyoutfitoutdated; } }
+        public bool AnyOutfitOutdated { get; private set; }
+
         public int OutfitOutdatedCount
         {
-            get { return _outfitoutdatedcount; }
+            get => _outfitoutdatedcount;
             set
             {
                 _outfitoutdatedcount = value;
-                _anyoutfitoutdated = value != 0;
+                AnyOutfitOutdated = value != 0;
             }
         }
-        #endregion;
 
         #endregion;
 
-        public VersionData(string _name, int _ver)
-        {
-            Name = _name;
-            version = _ver;
-        }
+        #endregion;
     }
 }

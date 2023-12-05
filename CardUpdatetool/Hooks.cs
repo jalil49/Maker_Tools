@@ -1,13 +1,30 @@
-﻿using HarmonyLib;
-using Sideloader.AutoResolver;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using HarmonyLib;
+using Sideloader;
+using Sideloader.AutoResolver;
 
 namespace CardUpdateTool
 {
     internal static class Hooks
     {
+        internal static bool WaitForSave;
+
+        internal static bool Outdated;
+        internal static readonly List<string> OutdatedList = new List<string>();
+
+        internal static bool Missing;
+        internal static readonly List<string> MissingList = new List<string>();
+
+        internal static bool Migrateable;
+
+        internal static bool Resolverinprogress;
+        internal static bool Waitforresolver;
+
+        private static bool _compatibilitinprogressy;
+        private static bool _migratedatainprogress;
+
         internal static void Init()
         {
             Harmony.CreateAndPatchAll(typeof(Hooks));
@@ -17,21 +34,52 @@ namespace CardUpdateTool
             Harmony.CreateAndPatchAll(typeof(MigrateData));
         }
 
-        internal static bool WaitForSave = false;
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UniversalAutoResolver), "ShowGUIDError")]
+        internal static void ErrorHook(string guid)
+        {
+            if (UniversalAutoResolver.LoadedResolutionInfo.Any(x => x.GUID == guid))
+                //possibly Usable but missing something
+            {
+                Outdated = true;
+                if (!OutdatedList.Contains(guid))
+                    OutdatedList.Add(guid);
+                return;
+            }
 
-        internal static bool Outdated = false;
-        internal readonly static List<string> OutdatedList = new List<string>();
+            //Not Usable
+            Missing = true;
+            if (!MissingList.Contains(guid))
+                MissingList.Add(guid);
+        }
 
-        internal static bool Missing = false;
-        internal readonly static List<string> MissingList = new List<string>();
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Sideloader.Sideloader), nameof(Sideloader.Sideloader.GetManifest))]
+        internal static void GetManifestHook(Manifest __result)
+        {
+            if (!_migratedatainprogress) return;
+            if (__result != null)
+                //Usable
+                Migrateable = true;
+            //Not Usable
+        }
 
-        internal static bool Migrateable = false;
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UniversalAutoResolver), nameof(UniversalAutoResolver.TryGetResolutionInfo), typeof(int),
+            typeof(string), typeof(ChaListDefine.CategoryNo), typeof(string))]
+        internal static void MigrationHook(ResolveInfo __result)
+        {
+            if (__result == null || !Resolverinprogress || !_compatibilitinprogressy) return;
+            Migrateable = true;
+        }
 
-        internal static bool Resolverinprogress = false;
-        internal static bool Waitforresolver = false;
-
-        private static bool Compatibilitinprogressy = false;
-        private static bool Migratedatainprogress = false;
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
+        internal static void CharaSaveFinishHook()
+        {
+            WaitForSave = false;
+        }
 
 
         [HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile))]
@@ -69,12 +117,12 @@ namespace CardUpdateTool
         {
             internal static void Prefix()
             {
-                Compatibilitinprogressy = true;
+                _compatibilitinprogressy = true;
             }
 
             internal static void Postfix()
             {
-                Compatibilitinprogressy = false;
+                _compatibilitinprogressy = false;
             }
         }
 
@@ -83,67 +131,13 @@ namespace CardUpdateTool
         {
             internal static void Prefix()
             {
-                Migratedatainprogress = true;
+                _migratedatainprogress = true;
             }
 
             internal static void Postfix()
             {
-                Migratedatainprogress = false;
+                _migratedatainprogress = false;
             }
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(UniversalAutoResolver), "ShowGUIDError")]
-        internal static void ErrorHook(string guid)
-        {
-            if (UniversalAutoResolver.LoadedResolutionInfo.Any(x => x.GUID == guid))
-            //possibly Useable but missing something
-            {
-                Outdated = true;
-                if (!OutdatedList.Contains(guid))
-                    OutdatedList.Add(guid);
-                return;
-            }
-            //Not Useable
-            Missing = true;
-            if (!MissingList.Contains(guid))
-                MissingList.Add(guid);
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Sideloader.Sideloader), nameof(Sideloader.Sideloader.GetManifest))]
-        internal static void GetManifestHook(Sideloader.Manifest __result)
-        {
-            if (!Migratedatainprogress)
-            {
-                return;
-            }
-            if (__result != null)
-            //Useable
-            {
-                Migrateable = true;
-                return;
-            }
-            //Not Useable
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(UniversalAutoResolver), nameof(UniversalAutoResolver.TryGetResolutionInfo), typeof(int), typeof(string), typeof(ChaListDefine.CategoryNo), typeof(string))]
-        internal static void MigrationHook(ResolveInfo __result)
-        {
-            if (__result == null || !Resolverinprogress || !Compatibilitinprogressy)
-            {
-                return;
-            }
-            Migrateable = true;
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPriority(Priority.Last)]
-        [HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), new Type[] { typeof(System.IO.BinaryWriter), typeof(bool) })]
-        internal static void CharaSaveFinishHook()
-        {
-            WaitForSave = false;
         }
     }
 }

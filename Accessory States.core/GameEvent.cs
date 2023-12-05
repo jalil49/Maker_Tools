@@ -1,20 +1,25 @@
-﻿using HarmonyLib;
-using KKAPI.MainGame;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
+using Illusion.Game;
+using KKAPI.MainGame;
 using TMPro;
-using UniRx;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
+#if KK
+using Heroine = SaveData.Heroine;
+#elif KKS
+using SaveData;
+#endif
 
 namespace Accessory_States
 {
     public class GameEvent : GameCustomFunctionController
     {
-        List<SaveData.Heroine> heroines;
-        HSprite[] HSprites;
-
-        readonly Dictionary<int, List<int>> ButtonList = new Dictionary<int, List<int>>();
+        private readonly Dictionary<int, List<int>> _buttonList = new Dictionary<int, List<int>>();
+        private List<Heroine> _heroines;
+        private HSprite[] _hSprites;
 #if KK
         protected override void OnStartH(BaseLoader proc, HFlag hFlag, bool vr)
 #else
@@ -22,40 +27,32 @@ namespace Accessory_States
 #endif
         {
             if (vr)
-            {
-                HSprites = Traverse.Create(proc).Field("sprites").GetValue<HSprite[]>();
-            }
+                _hSprites = Traverse.Create(proc).Field("sprites").GetValue<HSprite[]>();
             else
+                _hSprites = new[] { ((HSceneProc)proc).sprite };
+            Hooks.HCoordinateChange += HooksHCoordinateChange;
+            CharaEvent.CoordinateLoaded += CharaEventCoordinateLoaded;
+            _heroines = hFlag.lstHeroine;
+            for (var i = 0; i < _heroines.Count; i++)
             {
-                HSprites = new HSprite[] { ((HSceneProc)proc).sprite };
-            }
-            Hooks.HcoordChange += Hooks_HcoordChange;
-            CharaEvent.Coordloaded += CharaEvent_coordloaded;
-            heroines = hFlag.lstHeroine;
-            for (var i = 0; i < heroines.Count; i++)
-            {
-                var controller = heroines[i].chaCtrl.GetComponent<CharaEvent>();
-                controller.Update_Now_Coordinate();
+                var controller = _heroines[i].chaCtrl.GetComponent<CharaEvent>();
+                controller.UpdateNowCoordinate();
                 controller.Refresh();
-                Buttonlogic(i, false);
+                ButtonLogic(i, false);
             }
+
             base.OnStartH(proc, hFlag, vr);
         }
 
-        private void CharaEvent_coordloaded(object sender, CoordinateLoadedEventARG e)
+        private void CharaEventCoordinateLoaded(object sender, CoordinateLoadedEventArg e)
         {
-            if (heroines == null)
-            {
-                return;
-            }
-            for (var i = 0; i < heroines.Count; i++)
-            {
-                if (heroines[i].chaCtrl.name == e.Character.name)
+            if (_heroines == null) return;
+            for (var i = 0; i < _heroines.Count; i++)
+                if (_heroines[i].chaCtrl.name == e.Character.name)
                 {
-                    Buttonlogic(i, true);
+                    ButtonLogic(i, true);
                     return;
                 }
-            }
         }
 #if KK
         protected override void OnEndH(BaseLoader proc, HFlag hFlag, bool vr)
@@ -63,156 +60,115 @@ namespace Accessory_States
         protected override void OnEndH(MonoBehaviour proc, HFlag hFlag, bool vr)
 #endif
         {
-            Hooks.HcoordChange -= Hooks_HcoordChange;
-            ButtonList.Clear();
-            heroines = null;
-            HSprites = null;
-            if (hFlag.isFreeH)
-            {
-                CharaEvent.FreeHHeroines = new List<SaveData.Heroine>();
-            }
+            Hooks.HCoordinateChange -= HooksHCoordinateChange;
+            _buttonList.Clear();
+            _heroines = null;
+            _hSprites = null;
+            if (hFlag.isFreeH) CharaEvent.FreeHHeroines = new List<Heroine>();
             base.OnEndH(proc, hFlag, vr);
         }
 
-        private void Hooks_HcoordChange(object sender, OnClickCoordinateChange e)
+        private void HooksHCoordinateChange(object sender, OnClickCoordinateChange e)
         {
-            Buttonlogic(e.Female, false, e.Coordinate);
+            ButtonLogic(e.Female, false, e.Coordinate);
         }
 
-        private void Buttonlogic(int Female, bool Coordloaded, int Coordchange = -1)
+        private void ButtonLogic(int female, bool coordLoaded, int coordChange = -1)
         {
-            if (HSprites == null)
-            {
-                return;
-            }
-            var Harem = heroines.Count > 1;
-            var Heroine_Ctrl = heroines[Female].chaCtrl;
-            var controller = Heroine_Ctrl.GetComponent<CharaEvent>();
-            if (!ButtonList.TryGetValue(Female, out var list))
-            {
-                list = new List<int>();
-            }
+            if (_hSprites == null) return;
+            var harem = _heroines.Count > 1;
+            var heroineCtrl = _heroines[female].chaCtrl;
+            var controller = heroineCtrl.GetComponent<CharaEvent>();
+            if (!_buttonList.TryGetValue(female, out var list)) list = new List<int>();
             list.Reverse();
             //Settings.Logger.LogWarning("Enter delete");
-            foreach (var item in list)
-            {
-                DeleteButton(Female, Harem, item);
-            }
+            foreach (var item in list) DeleteButton(female, harem, item);
             //Settings.Logger.LogWarning("clear");
 
-            ButtonList.Remove(Female);
+            _buttonList.Remove(female);
 
-            if (!Coordloaded && Coordchange == -1)
-            {
-                controller.Update_Now_Coordinate();
-            }
-            if (Coordchange > -1)
-            {
-                controller.Update_Now_Coordinate(Coordchange);
-            }
-            var names = controller.NowCoordinate.Names;
-            var slotinfo = controller.NowCoordinate.Slotinfo;
+            if (!coordLoaded && coordChange == -1) controller.UpdateNowCoordinate();
+            if (coordChange > -1) controller.UpdateNowCoordinate(coordChange);
+            var names = controller.nowCoordinate.Names;
+            var slotInfo = controller.nowCoordinate.SlotInfo;
             //Settings.Logger.LogWarning("create");
-            var shoetype = Heroine_Ctrl.fileStatus.shoesType;
+            var shoeType = heroineCtrl.fileStatus.shoesType;
             foreach (var item in names)
-            {
-                if (slotinfo.Count(x => x.Value.Binding == item.Key && (x.Value.Shoetype == shoetype || x.Value.Shoetype == 2)) > 0)
-                    Createbutton(Female, Harem, item.Value.Name, item.Key, controller, 0);
-            }
+                if (slotInfo.Count(x =>
+                        x.Value.Binding == item.Key && (x.Value.ShoeType == shoeType || x.Value.ShoeType == 2)) > 0)
+                    CreateButton(female, harem, item.Value.Name, item.Key, controller, 0);
 
-            foreach (var item in controller.Now_Parented_Name_Dictionary)
-            {
-                Createbutton(Female, Harem, item.Key, 0, controller, 1);
-            }
+            foreach (var item in controller.NowParentedNameDictionary)
+                CreateButton(female, harem, item.Key, 0, controller, 1);
         }
 
-        private void DeleteButton(int Female, bool Harem, int Remove)
+        private void DeleteButton(int female, bool harem, int remove)
         {
             //Settings.Logger.LogWarning("deleting button");
-            Button ToRemove;
-            HSceneSpriteCategory hSceneSpriteCategory;
-            foreach (var Sprite in HSprites)
+            foreach (var sprite in _hSprites)
             {
-                if (Harem)
-                {
-                    hSceneSpriteCategory = Sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
-                }
-                else
-                {
-                    hSceneSpriteCategory = Sprite.categoryAccessoryAll;
-                }
-                ToRemove = hSceneSpriteCategory.lstButton[Remove];
-                Destroy(ToRemove.gameObject);
-                hSceneSpriteCategory.lstButton.RemoveAt(Remove);
+                var hSceneSpriteCategory = harem ? sprite.lstMultipleFemaleDressButton[female].accessoryAll : sprite.categoryAccessoryAll;
+                var toRemove = hSceneSpriteCategory.lstButton[remove];
+                Destroy(toRemove.gameObject);
+                hSceneSpriteCategory.lstButton.RemoveAt(remove);
             }
         }
 
-        private void Createbutton(int Female, bool Harem, string name, int kind, CharaEvent Controller, int ButtonKind)
+        private void CreateButton(int female, bool harem, string buttonName, int kind, CharaEvent controller,
+            int buttonKind)
         {
-            Transform parent;
-            HSceneSpriteCategory hSceneSpriteCategory;
-            foreach (var Sprite in HSprites)
+            foreach (var sprite in _hSprites)
             {
-                if (Harem)
-                {
-                    hSceneSpriteCategory = Sprite.lstMultipleFemaleDressButton[Female].accessoryAll;
-                }
-                else
-                {
-                    hSceneSpriteCategory = Sprite.categoryAccessoryAll;
-                }
+                var hSceneSpriteCategory = harem ? sprite.lstMultipleFemaleDressButton[female].accessoryAll : sprite.categoryAccessoryAll;
+                var parent = hSceneSpriteCategory.transform;
 
-                parent = hSceneSpriteCategory.transform;
-
-                var origin = Sprite.categoryAccessory.lstButton[0].transform;
+                var origin = sprite.categoryAccessory.lstButton[0].transform;
                 var copy = Instantiate(origin.transform, parent, false);
-                copy.name = $"btn_{name}_{kind}";
-                copy.GetComponentInChildren<TextMeshProUGUI>().text = name;
+                copy.name = $"btn_{buttonName}_{kind}";
+                copy.GetComponentInChildren<TextMeshProUGUI>().text = buttonName;
                 var trans = copy.GetComponent<RectTransform>();
                 trans.sizeDelta = new Vector2(115, trans.sizeDelta.y);
 
                 var button = copy.GetComponentInChildren<Button>();
-                button.onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
+                button.onClick.SetPersistentListenerState(0, UnityEventCallState.Off);
                 button.onClick.RemoveAllListeners();
                 button.onClick = new Button.ButtonClickedEvent();
                 button.image.raycastTarget = true;
-                if (ButtonKind == 0)
+                if (buttonKind == 0)
                 {
                     var state = 0;
-                    var binded = Controller.NowCoordinate.Slotinfo.Where(x => x.Value.Binding == kind);
+                    var binded = controller.nowCoordinate.SlotInfo.Where(x => x.Value.Binding == kind);
                     var final = 0;
                     foreach (var item in binded)
-                    {
-                        foreach (var item2 in item.Value.States)
-                        {
-                            final = Mathf.Max(final, item2[1]);
-                        }
-                    }
+                    foreach (var item2 in item.Value.States)
+                        final = Mathf.Max(final, item2[1]);
                     final += 2;
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.AddListener(delegate
                     {
-                        state = (state + 1) % (final);
+                        state = (state + 1) % final;
                         //Settings.Logger.LogWarning($"name:{name}, kind: {kind}, State: {state}");
-                        Controller.Custom_Groups(kind, state);
-                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
+                        controller.Custom_Groups(kind, state);
+                        Utils.Sound.Play(SystemSE.sel);
                     });
                 }
                 else
                 {
                     var state = true;
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.AddListener(delegate
                     {
                         state = !state;
                         //Settings.Logger.LogWarning($"Setting {name} show to {state} state");
-                        Controller.Parent_toggle(name, state);
-                        Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.sel);
+                        controller.Parent_toggle(buttonName, state);
+                        Utils.Sound.Play(SystemSE.sel);
                     });
                 }
-                if (!ButtonList.TryGetValue(Female, out var list))
+
+                if (!_buttonList.TryGetValue(female, out var list))
                 {
                     list = new List<int>();
-                    ButtonList.Add(Female, list);
+                    _buttonList.Add(female, list);
                 }
+
                 list.Add(hSceneSpriteCategory.lstButton.Count);
                 hSceneSpriteCategory.lstButton.Add(button);
             }

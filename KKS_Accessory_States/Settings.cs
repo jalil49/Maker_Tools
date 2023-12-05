@@ -1,9 +1,8 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using System.Linq;
+using BepInEx;
 using ExtensibleSaveFormat;
 using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Accessory_States
 {
@@ -15,29 +14,26 @@ namespace Accessory_States
             ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported;
         }
 
-        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
+        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData,
+            Dictionary<int, int?> coordinateMapping)
         {
-            var attemptASS = false;
-            var Coordinate = new Dictionary<int, CoordinateData>();
-            foreach (var item in coordinateMapping)
-            {
-                Coordinate[item.Key] = new CoordinateData();
-            }
+            var attemptAss = false;
+            var coordinate = new Dictionary<int, CoordinateData>();
+            foreach (var item in coordinateMapping) coordinate[item.Key] = new CoordinateData();
 
-            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null) attemptASS = true;
+            if (!importedExtendedData.TryGetValue(Guid, out var data) || data == null) attemptAss = true;
 
-            if (!attemptASS)
+            if (!attemptAss)
             {
-                if (Data.version == 1)
+                if (data.version == 1)
                 {
-                    if (Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                    {
-                        Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
-                    }
+                    if (data.data.TryGetValue("CoordinateData", out var byteData) && byteData != null)
+                        coordinate =
+                            MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])byteData);
                 }
-                else if (Data.version == 0)
+                else if (data.version == 0)
                 {
-                    Migrator.MigrateV0(Data, ref Coordinate);
+                    Migrator.MigrateV0(data, ref coordinate);
                 }
                 else
                 {
@@ -47,60 +43,67 @@ namespace Accessory_States
             }
             else
             {
-                if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var ASSData) || ASSData == null) return;
+                if (!importedExtendedData.TryGetValue("madevil.kk.ass", out var assData) || assData == null) return;
 
-                var TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                var TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+                var triggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                var triggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                if (ASSData.version > 6)
-                    Logger.LogWarning($"New version of AccessoryStateSync found, accessory states needs update for compatibility");
-                else if (ASSData.version < 6)
+                if (assData.version > 6)
                 {
-                    AccStateSync.Migration.ConvertCharaPluginData(ASSData, ref TriggerPropertyList, ref TriggerGroupList);
+                    Logger.LogWarning(
+                        "New version of AccessoryStateSync found, accessory states needs update for compatibility");
+                }
+                else if (assData.version < 6)
+                {
+                    AccStateSync.Migration.ConvertCharaPluginData(assData, ref triggerPropertyList,
+                        ref triggerGroupList);
                 }
                 else
                 {
-                    if (ASSData.data.TryGetValue("TriggerPropertyList", out var _loadedTriggerProperty) && _loadedTriggerProperty != null)
+                    if (assData.data.TryGetValue("TriggerPropertyList", out var loadedTriggerProperty) &&
+                        loadedTriggerProperty != null)
                     {
-                        var _tempTriggerProperty = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>((byte[])_loadedTriggerProperty);
-                        if (_tempTriggerProperty?.Count > 0)
-                            TriggerPropertyList.AddRange(_tempTriggerProperty);
+                        var tempTriggerProperty =
+                            MessagePackSerializer.Deserialize<List<AccStateSync.TriggerProperty>>(
+                                (byte[])loadedTriggerProperty);
+                        if (tempTriggerProperty?.Count > 0)
+                            triggerPropertyList.AddRange(tempTriggerProperty);
 
-                        if (ASSData.data.TryGetValue("TriggerGroupList", out var _loadedTriggerGroup) && _loadedTriggerGroup != null)
+                        if (assData.data.TryGetValue("TriggerGroupList", out var loadedTriggerGroup) &&
+                            loadedTriggerGroup != null)
                         {
-                            var _tempTriggerGroup = MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>((byte[])_loadedTriggerGroup);
-                            if (_tempTriggerGroup?.Count > 0)
+                            var tempTriggerGroup =
+                                MessagePackSerializer.Deserialize<List<AccStateSync.TriggerGroup>>(
+                                    (byte[])loadedTriggerGroup);
+                            if (tempTriggerGroup?.Count > 0)
                             {
-                                foreach (var _group in _tempTriggerGroup)
-                                {
-                                    if (_group.GUID.IsNullOrEmpty())
-                                        _group.GUID = Guid.NewGuid().ToString("D").ToUpper();
-                                }
-                                TriggerGroupList.AddRange(_tempTriggerGroup);
+                                foreach (var group in tempTriggerGroup)
+                                    if (group.Guid.IsNullOrEmpty())
+                                        group.Guid = System.Guid.NewGuid().ToString("D").ToUpper();
+                                triggerGroupList.AddRange(tempTriggerGroup);
                             }
                         }
                     }
                 }
 
-                if (TriggerPropertyList == null) TriggerPropertyList = new List<AccStateSync.TriggerProperty>();
-                if (TriggerGroupList == null) TriggerGroupList = new List<AccStateSync.TriggerGroup>();
+                if (triggerPropertyList == null) triggerPropertyList = new List<AccStateSync.TriggerProperty>();
+                if (triggerGroupList == null) triggerGroupList = new List<AccStateSync.TriggerGroup>();
 
-                foreach (var item in Coordinate)
-                {
-                    item.Value.Accstatesyncconvert(TriggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(), TriggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
-                }
+                foreach (var item in coordinate)
+                    item.Value.AccStateSyncConvert(triggerPropertyList.Where(x => x.Coordinate == item.Key).ToList(),
+                        triggerGroupList.Where(x => x.Coordinate == item.Key).ToList());
             }
 
             var transfer = new Dictionary<int, CoordinateData>();
 
             foreach (var item in coordinateMapping)
             {
-                if (!Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
+                if (!coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
                 transfer[item.Value.Value] = coord;
             }
 
-            Data = importedExtendedData[GUID] = new PluginData() { version = 1 };
-            Data.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
+            data = importedExtendedData[Guid] = new PluginData { version = 1 };
+            data.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

@@ -1,32 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>dde006d7-3af0-423a-8071-1c0012d78f61</SharedGUID>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Accessory_States</Import_RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\AccStateSync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-Sync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\Migration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Studio.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Events.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GameEvent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\GUI Maker.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Classes\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Settings\" />
-  </ItemGroup>
+    <PropertyGroup>
+        <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <HasSharedItems>true</HasSharedItems>
+        <SharedGUID>dde006d7-3af0-423a-8071-1c0012d78f61</SharedGUID>
+    </PropertyGroup>
+    <PropertyGroup Label="Configuration">
+        <Import_RootNamespace>Accessory_States</Import_RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\AccStateSync.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\ASS-Sync.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)ACC_State_sync\Migration.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Studio.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Data.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Controller.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Constants.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\DataStruct.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Events.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)GameEvent.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\GUI Maker.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Hooks.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)CharaCustomController\Maker.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Classes\Migrator.cs"/>
+        <Compile Include="$(MSBuildThisFileDirectory)Settings\Standard Settings.cs"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="$(MSBuildThisFileDirectory)Classes\"/>
+        <Folder Include="$(MSBuildThisFileDirectory)Settings\"/>
+    </ItemGroup>
 </Project>

@@ -1,110 +1,113 @@
-﻿using KKAPI.Chara;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KKAPI.Chara;
+using KKAPI.Maker;
+using UnityEngine.Serialization;
+
+#if KK
+using Heroine = SaveData.Heroine;
+#elif KKS
+using SaveData;
+#endif
 
 namespace Accessory_States
 {
     public partial class CharaEvent : CharaCustomFunctionController
     {
-        internal static bool ASS_Exists;
+        internal static bool AssExists;
 
-        private ChaFile chafile;
+        internal static List<Heroine> FreeHHeroines = new List<Heroine>();
 
-        public static event EventHandler<CoordinateLoadedEventARG> Coordloaded;
+        [FormerlySerializedAs("NowCoordinate")]
+        public CoordinateData nowCoordinate = new CoordinateData();
 
-        private byte lastknownshoetype = 0;
+        public readonly Dictionary<string, List<KeyValuePair<int, SlotData>>> NowParentedNameDictionary =
+            new Dictionary<string, List<KeyValuePair<int, SlotData>>>();
 
-        private bool ShowSub = true;
+        private ChaFile _chaFile;
 
-        internal static List<SaveData.Heroine> FreeHHeroines = new List<SaveData.Heroine>();
+        private byte _lastKnownShoeType;
 
-        public Dictionary<int, CoordinateData> Coordinate = new Dictionary<int, CoordinateData>();
+        private bool _showSub = true;
 
-        public CoordinateData NowCoordinate = new CoordinateData();
+        private Dictionary<int, CoordinateData> _coordinate = new Dictionary<int, CoordinateData>();
 
-        public Dictionary<string, List<KeyValuePair<int, Slotdata>>> Now_Parented_Name_Dictionary = new Dictionary<string, List<KeyValuePair<int, Slotdata>>>();
+        private ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
 
-        internal ChaFileAccessory.PartsInfo[] Parts => ChaControl.nowCoordinate.accessory.parts;
+        public static event EventHandler<CoordinateLoadedEventArg> CoordinateLoaded;
 
-        public void Update_Now_Coordinate()
+        public void UpdateNowCoordinate()
         {
-            var outfitnum = (int)CurrentCoordinate.Value;
-            if (!Coordinate.TryGetValue(outfitnum, out var coordinateData))
+            var coordinateValue = (int)CurrentCoordinate.Value;
+            if (!_coordinate.TryGetValue(coordinateValue, out var coordinateData))
             {
                 coordinateData = new CoordinateData();
-                Coordinate[outfitnum] = coordinateData;
+                _coordinate[coordinateValue] = coordinateData;
             }
-            if (KKAPI.Maker.MakerAPI.InsideMaker)
-            {
-                NowCoordinate = coordinateData;
-            }
+
+            if (MakerAPI.InsideMaker)
+                nowCoordinate = coordinateData;
             else
-            {
-                NowCoordinate = new CoordinateData(coordinateData);
-            }
+                nowCoordinate = new CoordinateData(coordinateData);
             Update_Parented_Name();
         }
 
-        public void Update_Now_Coordinate(int outfitnum)
+        public void UpdateNowCoordinate(int outfitNum)
         {
-            NowCoordinate = new CoordinateData(Coordinate[outfitnum]);
+            nowCoordinate = new CoordinateData(_coordinate[outfitNum]);
             Update_Parented_Name();
         }
 
         public void Update_Parented_Name()
         {
-            Now_Parented_Name_Dictionary.Clear();
-            var shoetype = ChaControl.fileStatus.shoesType;
-            var ParentedList = NowCoordinate.Slotinfo.Where(x => x.Value.Parented && (x.Value.Shoetype == 2 || x.Value.Shoetype == shoetype));
-            foreach (var item in ParentedList)
+            NowParentedNameDictionary.Clear();
+            var shoeType = ChaControl.fileStatus.shoesType;
+            var parentedList = nowCoordinate.SlotInfo.Where(x =>
+                x.Value.parented && (x.Value.ShoeType == 2 || x.Value.ShoeType == shoeType));
+            foreach (var item in parentedList)
             {
-                var parentkey = Parts[item.Key].parentKey;
-                if (!Now_Parented_Name_Dictionary.TryGetValue(parentkey, out var list))
+                var parentKey = Parts[item.Key].parentKey;
+                if (!NowParentedNameDictionary.TryGetValue(parentKey, out var list))
                 {
-                    list = new List<KeyValuePair<int, Slotdata>>();
-                    Now_Parented_Name_Dictionary[parentkey] = list;
+                    list = new List<KeyValuePair<int, SlotData>>();
+                    NowParentedNameDictionary[parentKey] = list;
                 }
+
                 list.Add(item);
             }
         }
 
         public void Clear_Now_Coordinate()
         {
-            NowCoordinate.Clear();
-            Now_Parented_Name_Dictionary.Clear();
+            nowCoordinate.Clear();
+            NowParentedNameDictionary.Clear();
         }
 
         public void Clear()
         {
-            for (int i = 0, n = Coordinate.Count; i < n; i++)
-            {
-                Coordinate[i].Clear();
-            }
-            Now_Parented_Name_Dictionary.Clear();
+            for (int i = 0, n = _coordinate.Count; i < n; i++) _coordinate[i].Clear();
+            NowParentedNameDictionary.Clear();
         }
 
-        public void Clearoutfit(int key)
+        public void ClearOutfit(int key)
         {
-            Coordinate[key].Clear();
+            _coordinate[key].Clear();
         }
 
-        public void Createoutfit(int key)
+        public void CreateOutfit(int key)
         {
-            if (!Coordinate.ContainsKey(key))
-            {
-                Coordinate[key] = new CoordinateData();
-            }
+            if (!_coordinate.ContainsKey(key)) _coordinate[key] = new CoordinateData();
         }
 
-        public void Moveoutfit(int dest, int src)
+        public void MoveOutfit(int dest, int src)
         {
-            Coordinate[dest] = new CoordinateData(Coordinate[src]);
+            _coordinate[dest] = new CoordinateData(_coordinate[src]);
         }
 
-        public void Removeoutfit(int key)
+        public void RemoveOutfit(int key)
         {
-            Coordinate.Remove(key);
+            _coordinate.Remove(key);
         }
 
         #region Properties
@@ -121,28 +124,28 @@ namespace Accessory_States
         //    set { ThisCharactersData.NowCoordinate = value; }
         //}
 
-        internal Dictionary<int, Slotdata> Slotinfo
+        internal Dictionary<int, SlotData> SlotInfo
         {
-            get { return NowCoordinate.Slotinfo; }
-            set { NowCoordinate.Slotinfo = value; }
+            get => nowCoordinate.SlotInfo;
+            set => nowCoordinate.SlotInfo = value;
         }
 
         internal Dictionary<int, NameData> Names
         {
-            get { return NowCoordinate.Names; }
-            set { NowCoordinate.Names = value; }
+            get => nowCoordinate.Names;
+            set => nowCoordinate.Names = value;
         }
 
         internal bool[] ClothNotData
         {
-            get { return NowCoordinate.ClothNotData; }
-            set { NowCoordinate.ClothNotData = value; }
+            get => nowCoordinate.ClothNotData;
+            set => nowCoordinate.ClothNotData = value;
         }
 
-        internal bool ForceClothDataUpdate
+        private bool ForceClothDataUpdate
         {
-            get { return NowCoordinate.ForceClothNotUpdate; }
-            set { NowCoordinate.ForceClothNotUpdate = value; }
+            get => nowCoordinate.forceClothNotUpdate;
+            set => nowCoordinate.forceClothNotUpdate = value;
         }
 
         public static bool StopMakerLoop { get; internal set; }

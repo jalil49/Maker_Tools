@@ -4,7 +4,7 @@ namespace CardUpdateTool
 {
     public static class Constants
     {
-        public static Dictionary<string, ReadableInfo> ReadableGuid = new Dictionary<string, ReadableInfo>()
+        public static readonly Dictionary<string, ReadableInfo> ReadableGuid = new Dictionary<string, ReadableInfo>
         {
             ["Additional_Card_Info"] = new ReadableInfo("Additional Card Info") { KnownVersion = 1 },
             ["Accessory_Parents"] = new ReadableInfo("Accessory Parents") { KnownVersion = 1 },
@@ -39,27 +39,27 @@ namespace CardUpdateTool
             ["Bulge"] = new ReadableInfo("Bulge", false) { KnownVersion = 1 },
             ["KK_Pregnancy"] = new ReadableInfo("Pregnancy", false) { KnownVersion = 1 },
             ["KK_PregnancyPlus"] = new ReadableInfo("Pregnancy Plus", false) { KnownVersion = 1 },
-            ["moreAccessories"] = new ReadableInfo("More Accessories") { KnownVersion = 2 },
+            ["moreAccessories"] = new ReadableInfo("More Accessories") { KnownVersion = 2 }
         };
 
         public class ReadableInfo
         {
-            public string Name;
-            public bool Charavisible;
-            public bool Outfitvisible;
-            public int KnownVersion = 0;
+            public readonly bool CharaVisible;
+            public readonly string Name;
+            public readonly bool OutfitVisible;
+            public int KnownVersion;
 
-            public ReadableInfo(string _name, bool _chara, bool _outfit)
+            public ReadableInfo(string name, bool chara, bool outfit)
             {
-                Name = _name;
-                Charavisible = _chara;
-                Outfitvisible = _outfit;
+                Name = name;
+                CharaVisible = chara;
+                OutfitVisible = outfit;
             }
 
-            public ReadableInfo(string _name, bool _showboth = true)
+            public ReadableInfo(string name, bool showBoth = true)
             {
-                Name = _name;
-                Outfitvisible = Charavisible = _showboth;
+                Name = name;
+                OutfitVisible = CharaVisible = showBoth;
             }
         }
     }

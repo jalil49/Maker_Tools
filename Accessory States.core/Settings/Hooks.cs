@@ -1,12 +1,12 @@
-﻿using ChaCustom;
+﻿using System;
+using ChaCustom;
 using HarmonyLib;
-using System;
 
 namespace Accessory_States
 {
     internal static partial class Hooks
     {
-        public static event EventHandler<OnClickCoordinateChange> HcoordChange;
+        public static event EventHandler<OnClickCoordinateChange> HCoordinateChange;
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetClothesState))]
@@ -24,10 +24,10 @@ namespace Accessory_States
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSprite), nameof(HSprite.OnClickCoordinateChange), new Type[] { typeof(int) })]
-        public static void Hook_OnClickCoordinateChange(int _coordinate)
+        [HarmonyPatch(typeof(HSprite), nameof(HSprite.OnClickCoordinateChange), typeof(int))]
+        public static void Hook_OnClickCoordinateChange(int coordinate)
         {
-            OnClickCoordinateChangeEvent(0, _coordinate);
+            OnClickCoordinateChangeEvent(0, coordinate);
         }
 
         [HarmonyPrefix]
@@ -38,32 +38,29 @@ namespace Accessory_States
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(HSprite), nameof(HSprite.OnClickCoordinateChange), new Type[] { typeof(int), typeof(int) })]
-        public static void Hook_OnClickCoordinateChange2(int _female, int _coordinate)
+        [HarmonyPatch(typeof(HSprite), nameof(HSprite.OnClickCoordinateChange), typeof(int), typeof(int))]
+        public static void Hook_OnClickCoordinateChange2(int female, int coordinate)
         {
-            OnClickCoordinateChangeEvent(_female, _coordinate);
+            OnClickCoordinateChangeEvent(female, coordinate);
         }
 
-        private static void OnClickCoordinateChangeEvent(int _female, int _coordinate)
+        private static void OnClickCoordinateChangeEvent(int female, int coordinate)
         {
-            var args = new OnClickCoordinateChange(_female, _coordinate);
-            if (HcoordChange == null || HcoordChange.GetInvocationList().Length == 0)
-            {
-                return;
-            }
+            var args = new OnClickCoordinateChange(female, coordinate);
+            if (HCoordinateChange == null || HCoordinateChange.GetInvocationList().Length == 0) return;
             try
             {
-                HcoordChange?.Invoke(null, args);
+                HCoordinateChange?.Invoke(null, args);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(HcoordChange)} - {ex}");
+                Settings.Logger.LogError($"Subscriber crash in {nameof(Hooks)}.{nameof(HCoordinateChange)} - {ex}");
             }
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(HSceneProc), nameof(HSceneProc.SetState))]
-        internal static void LoadSethook(HSceneProc __instance)
+        internal static void LoadSetHook(HSceneProc __instance)
         {
             if (__instance.flags.isFreeH)
                 CharaEvent.FreeHHeroines = __instance.flags.lstHeroine;

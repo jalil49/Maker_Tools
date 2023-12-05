@@ -1,29 +1,32 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using BepInEx;
 using ExtensibleSaveFormat;
 using MessagePack;
-using System.Collections.Generic;
 
 namespace Accessory_Themes
 {
     [BepInProcess("KoikatsuSunshine")]
     public partial class Settings : BaseUnityPlugin
     {
-        private void GameUnique() { ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported; }
-
-        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
+        private void GameUnique()
         {
-            if (!importedExtendedData.TryGetValue(GUID, out var Data) || Data == null) return;
-            var data = new DataStruct();
-            if (Data.version == 1)
+            ExtendedSave.CardBeingImported += ExtendedSave_CardBeingImported;
+        }
+
+        private void ExtendedSave_CardBeingImported(Dictionary<string, PluginData> importedExtendedData,
+            Dictionary<int, int?> coordinateMapping)
+        {
+            if (!importedExtendedData.TryGetValue(Guid, out var pluginData) || pluginData == null) return;
+            var dataStruct = new DataStruct();
+            if (pluginData.version == 1)
             {
-                if (Data.data.TryGetValue("CoordinateData", out var ByteData) && ByteData != null)
-                {
-                    data.Coordinate = MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])ByteData);
-                }
+                if (pluginData.data.TryGetValue("CoordinateData", out var byteData) && byteData != null)
+                    dataStruct.Coordinate =
+                        MessagePackSerializer.Deserialize<Dictionary<int, CoordinateData>>((byte[])byteData);
             }
-            else if (Data.version == 0)
+            else if (pluginData.version == 0)
             {
-                Migrator.MigrateV0(Data, ref data);
+                Migrator.MigrateV0(pluginData, ref dataStruct);
             }
             else
             {
@@ -34,12 +37,12 @@ namespace Accessory_Themes
 
             foreach (var item in coordinateMapping)
             {
-                if (!data.Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
+                if (!dataStruct.Coordinate.TryGetValue(item.Key, out var coord) || !item.Value.HasValue) continue;
                 transfer[item.Value.Value] = coord;
-
             }
-            Data.data.Clear();
-            Data.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
+
+            pluginData.data.Clear();
+            pluginData.data["CoordinateData"] = MessagePackSerializer.Serialize(transfer);
         }
     }
 }

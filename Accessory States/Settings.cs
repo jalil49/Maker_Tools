@@ -7,8 +7,10 @@ namespace Accessory_States
     [BepInProcess("KoikatuVR")]
     [BepInProcess("Koikatsu Party VR")]
     [BepInProcess("CharaStudio")]
-    public partial class Settings : BaseUnityPlugin
+    public partial class Settings
     {
-        private void GameUnique() { }
+        private void GameUnique()
+        {
+        }
     }
 }

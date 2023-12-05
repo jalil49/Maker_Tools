@@ -1,12 +1,12 @@
-﻿using KKAPI;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using KKAPI;
 using KKAPI.Chara;
 using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using KKAPI.Maker.UI.Sidebar;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -16,86 +16,85 @@ namespace Accessory_States
 {
     partial class CharaEvent : CharaCustomFunctionController
     {
-        static AccessoryControlWrapper<MakerDropdown, int> ACC_Appearance_dropdown;
-        static AccessoryControlWrapper<MakerSlider, float> ACC_Appearance_state;
-        static AccessoryControlWrapper<MakerSlider, float> ACC_Appearance_state2;
+        private static AccessoryControlWrapper<MakerDropdown, int> _accAppearanceDropdown;
+        private static AccessoryControlWrapper<MakerSlider, float> _accAppearanceState;
+        private static AccessoryControlWrapper<MakerSlider, float> _accAppearanceState2;
 
-        private static readonly int Max_Defined_Key = Constants.ConstantOutfitNames.Keys.Max();
+        private static readonly int MaxDefinedKey = Constants.ConstantOutfitNames.Keys.Max();
 
-        static MakerButton gui_button;
+        private static MakerButton _guiButton;
 
-        static bool MakerEnabled = false;
+        private static bool _makerEnabled;
 
-        static CharaEvent ControllerGet => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+        private static CharaEvent ControllerGet => MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
         public static void MakerAPI_RegisterCustomSubCategories(object sender, RegisterSubCategoriesEvent e)
         {
-            MakerEnabled = Settings.Enable.Value;
-            if (!MakerEnabled)
-            {
-                return;
-            }
+            _makerEnabled = Settings.Enable.Value;
+            if (!_makerEnabled) return;
 
             var owner = Settings.Instance;
             var category = new MakerCategory(null, null);
             //var category = new MakerCategory("03_ClothesTop", "tglACCSettings", MakerConstants.Clothes.Copy.Position + 3, "Accessory Settings");
 
-            var ACC_app_Dropdown = Constants.ConstantOutfitNames.Values.ToArray();
+            var accAppDropdown = Constants.ConstantOutfitNames.Values.ToArray();
             //string[] ACC_app_Dropdown = new string[] { "None", "Top", "Bottom", "Bra", "Panty", "Gloves", "Pantyhose", "Socks", "Shoes" };
 
-            ACC_Appearance_dropdown = MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(new MakerDropdown("Clothing\nBind", ACC_app_Dropdown, category, 0, owner), true);
-            ACC_Appearance_dropdown.ValueChanged += (s, es) => ControllerGet.ACC_Appearance_dropdown_ValueChanged(es.SlotIndex, es.NewValue - 1);
+            _accAppearanceDropdown =
+                MakerAPI.AddEditableAccessoryWindowControl<MakerDropdown, int>(
+                    new MakerDropdown("Clothing\nBind", accAppDropdown, category, 0, owner), true);
+            _accAppearanceDropdown.ValueChanged += (s, es) =>
+                ControllerGet.ACC_Appearance_dropdown_ValueChanged(es.SlotIndex, es.NewValue - 1);
 
-            var Start_Slider = new MakerSlider(category, "Start", 0, 3, 0, owner)
+            var startSlider = new MakerSlider(category, "Start", 0, 3, 0, owner)
             {
                 WholeNumbers = true
             };
-            ACC_Appearance_state = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(Start_Slider, true);
-            ACC_Appearance_state.ValueChanged += (s, es) => ControllerGet.ACC_Appearance_state_ValueChanged(es.SlotIndex, Mathf.RoundToInt(es.NewValue), 0);
+            _accAppearanceState = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(startSlider, true);
+            _accAppearanceState.ValueChanged += (s, es) =>
+                ControllerGet.ACC_Appearance_state_ValueChanged(es.SlotIndex, Mathf.RoundToInt(es.NewValue), 0);
 
-            var Stop_Slider = new MakerSlider(category, "Stop", 0, 3, 3, owner)
+            var stopSlider = new MakerSlider(category, "Stop", 0, 3, 3, owner)
             {
                 WholeNumbers = true
             };
-            ACC_Appearance_state2 = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(Stop_Slider, true);
-            ACC_Appearance_state2.ValueChanged += (s, es) => ControllerGet.ACC_Appearance_state2_ValueChanged(es.SlotIndex, Mathf.RoundToInt(es.NewValue), 0);
+            _accAppearanceState2 = MakerAPI.AddEditableAccessoryWindowControl<MakerSlider, float>(stopSlider, true);
+            _accAppearanceState2.ValueChanged += (s, es) =>
+                ControllerGet.ACC_Appearance_state2_ValueChanged(es.SlotIndex, Mathf.RoundToInt(es.NewValue), 0);
 
-            gui_button = new MakerButton("States GUI", category, owner);
-            MakerAPI.AddAccessoryWindowControl(gui_button, true);
-            gui_button.OnClick.AddListener(delegate () { GUI_Toggle(); });
+            _guiButton = new MakerButton("States GUI", category, owner);
+            MakerAPI.AddAccessoryWindowControl(_guiButton, true);
+            _guiButton.OnClick.AddListener(delegate { GUI_Toggle(); });
 
             SetupInterface();
 
             var interfacebutton = e.AddSidebarControl(new SidebarToggle("ACC States", true, owner));
-            interfacebutton.ValueChanged.Subscribe(x => ShowToggleInterface = x);
+            interfacebutton.ValueChanged.Subscribe(x => _showToggleInterface = x);
 
-            var GroupingID = "Maker_Tools_" + Settings.NamingID.Value;
-            ACC_Appearance_dropdown.Control.GroupingID = GroupingID;
-            ACC_Appearance_state.Control.GroupingID = GroupingID;
-            ACC_Appearance_state2.Control.GroupingID = GroupingID;
-            gui_button.GroupingID = GroupingID;
+            var groupingID = "Maker_Tools_" + Settings.NamingID.Value;
+            _accAppearanceDropdown.Control.GroupingID = groupingID;
+            _accAppearanceState.Control.GroupingID = groupingID;
+            _accAppearanceState2.Control.GroupingID = groupingID;
+            _guiButton.GroupingID = groupingID;
         }
 
         internal void RemoveOutfitEvent()
         {
-            var max = Coordinate.Keys.Max();
+            var max = _coordinate.Keys.Max();
             if (max <= 6)
                 return;
-            Removeoutfit(max);
+            RemoveOutfit(max);
         }
 
         internal void AddOutfitEvent()
         {
-            Createoutfit(Coordinate.Count);
+            CreateOutfit(_coordinate.Count);
         }
 
         public static void Maker_started()
         {
-            MakerEnabled = Settings.Enable.Value;
-            if (!MakerEnabled)
-            {
-                return;
-            }
+            _makerEnabled = Settings.Enable.Value;
+            if (!_makerEnabled) return;
             MakerAPI.MakerExiting += (s, e) => Maker_Ended();
 
             MakerAPI.ReloadCustomInterface += MakerAPI_ReloadCustomInterface;
@@ -115,9 +114,9 @@ namespace Accessory_States
             AccessoriesApi.AccessoriesCopied -= AccessoriesApi_AccessoriesCopied;
             AccessoriesApi.AccessoryTransferred -= AccessoriesApi_AccessoryTransferred;
 
-            ShowCustomGui = false;
-            MakerEnabled = false;
-            ShowToggleInterface = false;
+            _showCustomGui = false;
+            _makerEnabled = false;
+            _showToggleInterface = false;
         }
 
         private static void AccessoriesApi_AccessoryTransferred(object sender, AccessoryTransferEventArgs e)
@@ -132,41 +131,40 @@ namespace Accessory_States
 
         private void AccessoriesTransferred(AccessoryTransferEventArgs e)
         {
-            ACC_Appearance_dropdown.SetValue(e.DestinationSlotIndex, ACC_Appearance_dropdown.GetValue(e.SourceSlotIndex), false);
-            ACC_Appearance_state.SetValue(e.DestinationSlotIndex, ACC_Appearance_state.GetValue(e.SourceSlotIndex), false);
-            ACC_Appearance_state2.SetValue(e.DestinationSlotIndex, ACC_Appearance_state2.GetValue(e.SourceSlotIndex), false);
+            _accAppearanceDropdown.SetValue(e.DestinationSlotIndex, _accAppearanceDropdown.GetValue(e.SourceSlotIndex),
+                false);
+            _accAppearanceState.SetValue(e.DestinationSlotIndex, _accAppearanceState.GetValue(e.SourceSlotIndex),
+                false);
+            _accAppearanceState2.SetValue(e.DestinationSlotIndex, _accAppearanceState2.GetValue(e.SourceSlotIndex),
+                false);
 
-            var slotinfo = Slotinfo;
+            var slotInfo = SlotInfo;
 
-            if (slotinfo.ContainsKey(e.SourceSlotIndex))
-            {
-                slotinfo[e.DestinationSlotIndex] = new Slotdata(slotinfo[e.SourceSlotIndex]);
-            }
+            if (slotInfo.ContainsKey(e.SourceSlotIndex))
+                slotInfo[e.DestinationSlotIndex] = new SlotData(slotInfo[e.SourceSlotIndex]);
             else
-            {
-                slotinfo.Remove(e.DestinationSlotIndex);
-            }
+                slotInfo.Remove(e.DestinationSlotIndex);
             Update_Parented_Name();
         }
 
         private void AccessoriesCopied(AccessoryCopyEventArgs e)
         {
-            var source = Coordinate[(int)e.CopySource];
-            var dest = Coordinate[(int)e.CopySource];
+            var source = _coordinate[(int)e.CopySource];
+            var dest = _coordinate[(int)e.CopySource];
             var convertednames = new Dictionary<int, int>();
             foreach (var slot in e.CopiedSlotIndexes)
             {
-
-                if (source.Slotinfo.TryGetValue(slot, out var slotinfo))
+                if (source.SlotInfo.TryGetValue(slot, out var slotInfo))
                 {
-                    dest.Slotinfo[slot] = new Slotdata(slotinfo);
+                    dest.SlotInfo[slot] = new SlotData(slotInfo);
                 }
                 else
                 {
-                    dest.Slotinfo.Remove(slot);
+                    dest.SlotInfo.Remove(slot);
                     continue;
                 }
-                var binding = slotinfo.Binding;
+
+                var binding = slotInfo.Binding;
                 if (binding > 8 && source.Names.TryGetValue(binding, out var custom))
                 {
                     if (dest.Names.ContainsKey(binding))
@@ -174,32 +172,33 @@ namespace Accessory_States
                         if (!convertednames.TryGetValue(binding, out var newvalue))
                         {
                             newvalue = 9;
-                            while (dest.Names.ContainsKey(newvalue))
-                            {
-                                newvalue++;
-                            }
+                            while (dest.Names.ContainsKey(newvalue)) newvalue++;
                             convertednames[binding] = newvalue;
                         }
+
                         binding = newvalue;
                     }
+
                     dest.Names[binding] = custom;
                 }
             }
+
             Update_Parented_Name();
             Refresh();
         }
 
         private static void MakerAPI_ReloadCustomInterface(object sender, EventArgs e)
         {
-            var Controller = ControllerGet;
-            Controller.StartCoroutine(Controller.WaitForSlots());
+            var controller = ControllerGet;
+            controller.StartCoroutine(controller.WaitForSlots());
         }
 
         private static void AccessoriesApi_MakerAccSlotAdded(object sender, AccessorySlotEventArgs e)
         {
-            var Controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
+            var controller = MakerAPI.GetCharacterControl().GetComponent<CharaEvent>();
 
-            Controller.StartCoroutine(Wait());
+            controller.StartCoroutine(Wait());
+
             IEnumerator Wait()
             {
                 yield return null;
@@ -208,50 +207,37 @@ namespace Accessory_States
 
         private void ACC_Is_Parented_ValueChanged(int slot, bool isparented)
         {
-            if (!Slotinfo.TryGetValue(slot, out var slotdata))
-            {
-                slotdata = Slotinfo[slot] = new Slotdata();
-            }
-            slotdata.Parented = isparented;
+            if (!SlotInfo.TryGetValue(slot, out var slotdata)) slotdata = SlotInfo[slot] = new SlotData();
+            slotdata.parented = isparented;
 
             Update_Parented_Name();
 
-            if (!GUI_Parent_Dict.TryGetValue(Parts[slot].parentKey, out var show) || !isparented)
-            {
-                show = true;
-            }
+            if (!GUIParentDict.TryGetValue(Parts[slot].parentKey, out var show) || !isparented) show = true;
             ChaControl.SetAccessoryState(slot, show);
         }
 
         private void ACC_Appearance_state_ValueChanged(int slot, int newvalue, int index)
         {
-            if (!Slotinfo.TryGetValue(slot, out var data))
-            {
-                data = Slotinfo[slot] = new Slotdata() { States = new List<int[]> { new int[] { newvalue, 3 } } };
-            }
+            if (!SlotInfo.TryGetValue(slot, out var data))
+                data = SlotInfo[slot] = new SlotData { States = new List<int[]> { new[] { newvalue, 3 } } };
 
             data.States[index][0] = newvalue;
 
-            if (data.Binding < 0)
-            {
-                return;
-            }
+            if (data.Binding < 0) return;
 
             UpdateAccessoryshow(data, slot);
         }
 
         private void ACC_Appearance_state2_ValueChanged(int slot, int newvalue, int index)
         {
-            if (!Slotinfo.TryGetValue(slot, out var data))
-            {
-                data = Slotinfo[slot] = new Slotdata() { States = new List<int[]> { new int[] { 0, newvalue } } };
-            }
+            if (!SlotInfo.TryGetValue(slot, out var data))
+                data = SlotInfo[slot] = new SlotData { States = new List<int[]> { new[] { 0, newvalue } } };
 
             data.States[index][1] = newvalue;
 
-            var slider = ACC_Appearance_state.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>();
-            var slider2 = ACC_Appearance_state2.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>();
-            if (autoscale && ACC_Appearance_dropdown.GetValue(slot) >= Constants.ConstantOutfitNames.Count)
+            var slider = _accAppearanceState.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>();
+            var slider2 = _accAppearanceState2.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>();
+            if (_autoscale && _accAppearanceDropdown.GetValue(slot) >= Constants.ConstantOutfitNames.Count)
             {
                 Update_Toggles_GUI();
                 if (Mathf.RoundToInt(slider2.value) == Mathf.RoundToInt(slider2.maxValue))
@@ -260,31 +246,22 @@ namespace Accessory_States
                     slider2.maxValue += 1;
                 }
             }
-            if (data.Binding < 0)
-            {
-                return;
-            }
+
+            if (data.Binding < 0) return;
             UpdateAccessoryshow(data, slot);
         }
 
-        private void UpdateAccessoryshow(Slotdata data, int slot)
+        private void UpdateAccessoryshow(SlotData data, int slot)
         {
             int state;
             var binding = data.Binding;
             if (binding < 9)
-            {
                 state = ChaControl.fileStatus.clothesState[binding];
-            }
             else
-            {
-                state = GUI_Custom_Dict[slot][0];
-            }
+                state = GUICustomDict[slot][0];
 
             var show = ShowState(state, data.States);
-            if (data.Shoetype != 2 && ChaControl.fileStatus.shoesType != data.Shoetype)
-            {
-                show = false;
-            }
+            if (data.ShoeType != 2 && ChaControl.fileStatus.shoesType != data.ShoeType) show = false;
             ChaControl.SetAccessoryState(slot, show);
         }
 
@@ -294,14 +271,10 @@ namespace Accessory_States
             var kind = 0;
             if (!delete)
             {
-                if (newvalue <= Max_Defined_Key)
-                {
-                    kind = Slotinfo[slot].Binding = newvalue;
-                }
+                if (newvalue <= MaxDefinedKey)
+                    kind = SlotInfo[slot].Binding = newvalue;
                 else
-                {
-                    kind = Slotinfo[slot].Binding = Names.ElementAt(newvalue - Max_Defined_Key - 1).Key;
-                }
+                    kind = SlotInfo[slot].Binding = Names.ElementAt(newvalue - MaxDefinedKey - 1).Key;
             }
 
             if (delete)
@@ -310,138 +283,123 @@ namespace Accessory_States
             }
             else if (newvalue < 9)
             {
-                ACC_Appearance_state.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue = 3;
-                ACC_Appearance_state2.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue = 3;
-                ACC_Appearance_state.SetValue(slot, 0);
-                ACC_Appearance_state2.SetValue(slot, 3);
+                _accAppearanceState.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue =
+                    3;
+                _accAppearanceState2.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue =
+                    3;
+                _accAppearanceState.SetValue(slot, 0);
+                _accAppearanceState2.SetValue(slot, 3);
             }
             else
             {
-                ACC_Appearance_state.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue = minilimit;
-                ACC_Appearance_state2.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue = minilimit;
-                ACC_Appearance_state.SetValue(slot, 0);
-                ACC_Appearance_state2.SetValue(slot, minilimit);
+                _accAppearanceState.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue =
+                    _minilimit;
+                _accAppearanceState2.Control.ControlObjects.ElementAt(slot).GetComponentInChildren<Slider>().maxValue =
+                    _minilimit;
+                _accAppearanceState.SetValue(slot, 0);
+                _accAppearanceState2.SetValue(slot, _minilimit);
             }
 
-            if (!ASS_Exists)
-            {
-                return;
-            }
+            if (!AssExists) return;
 
             if (delete)
-            {
                 DeleteGroup(kind);
-            }
             else
-            {
                 ChangeTriggerProperty(kind);
-            }
         }
 
         private void Update_Drop_boxes()
         {
-            var ACC_Appearance_dropdown_Controls = ACC_Appearance_dropdown.Control.ControlObjects.ToList();
-            var Appearance_Options = new List<TMP_Dropdown.OptionData>(ACC_Appearance_dropdown_Controls[0].GetComponentInChildren<TMP_Dropdown>().options);
+            var accAppearanceDropdownControls = _accAppearanceDropdown.Control.ControlObjects.ToList();
+            var appearanceOptions =
+                new List<TMP_Dropdown.OptionData>(accAppearanceDropdownControls[0]
+                    .GetComponentInChildren<TMP_Dropdown>().options);
             var optioncount = Constants.ConstantOutfitNames.Count;
             var namedict = Names;
             var n = namedict.Count;
 
-            if (Appearance_Options.Count > optioncount)
-            {
-                Appearance_Options.RemoveRange(optioncount, Appearance_Options.Count - (optioncount));
-            }
+            if (appearanceOptions.Count > optioncount)
+                appearanceOptions.RemoveRange(optioncount, appearanceOptions.Count - optioncount);
 
             foreach (var item in namedict)
             {
                 var temp = new TMP_Dropdown.OptionData(item.Value.Name);
-                Appearance_Options.Add(temp);
+                appearanceOptions.Add(temp);
             }
 
-            foreach (var item in ACC_Appearance_dropdown.Control.ControlObjects)
+            foreach (var item in _accAppearanceDropdown.Control.ControlObjects)
             {
                 item.GetComponentInChildren<TMP_Dropdown>().ClearOptions();
-                item.GetComponentInChildren<TMP_Dropdown>().AddOptions(Appearance_Options);
+                item.GetComponentInChildren<TMP_Dropdown>().AddOptions(appearanceOptions);
             }
 
-            foreach (var item in Slotinfo)
-            {
+            foreach (var item in SlotInfo)
                 if (item.Value.Binding < Constants.ConstantOutfitNames.Count)
                 {
-                    ACC_Appearance_dropdown.SetValue(item.Key, item.Value.Binding + 1, false);
+                    _accAppearanceDropdown.SetValue(item.Key, item.Value.Binding + 1, false);
                 }
                 else
                 {
                     var index = 0;
                     for (; index < n; index++)
-                    {
                         if (namedict.ElementAt(index).Key == item.Value.Binding)
-                        {
                             break;
-                        }
-                    }
-                    ACC_Appearance_dropdown.SetValue(item.Key, index + Constants.ConstantOutfitNames.Count, false);
+                    _accAppearanceDropdown.SetValue(item.Key, index + Constants.ConstantOutfitNames.Count, false);
                 }
-            }
         }
 
         private IEnumerator WaitForSlots()
         {
-            if (!MakerAPI.InsideMaker)
-            {
-                yield break;
-            }
+            if (!MakerAPI.InsideMaker) yield break;
 
-            var ACCData = Parts.Length;
+            var accData = Parts.Length;
             do
             {
                 yield return null;
-            } while (!MakerAPI.InsideAndLoaded || ACC_Appearance_state.Control.ControlObjects.Count() < ACCData);
-            Update_Now_Coordinate();
+            } while (!MakerAPI.InsideAndLoaded || _accAppearanceState.Control.ControlObjects.Count() < accData);
+
+            UpdateNowCoordinate();
             Refresh();
 
             Update_Drop_boxes();
-            var slider1 = ACC_Appearance_state.Control.ControlObjects;
-            var slider2 = ACC_Appearance_state2.Control.ControlObjects;
-            var slotinfo = Slotinfo;
-            for (var i = 0; i < ACCData; i++)
+            var slider1 = _accAppearanceState.Control.ControlObjects;
+            var slider2 = _accAppearanceState2.Control.ControlObjects;
+            var slotInfo = SlotInfo;
+            for (var i = 0; i < accData; i++)
             {
-                if (!slotinfo.TryGetValue(i, out var slotdata))
+                if (!slotInfo.TryGetValue(i, out var slotdata))
                 {
-                    slotdata = new Slotdata();
-                    slotinfo[i] = slotdata;
+                    slotdata = new SlotData();
+                    slotInfo[i] = slotdata;
                 }
+
                 var binding = slotdata.Binding;
                 var max = MaxState(binding);
                 var zerostate = slotdata.States[0];
                 slider1.ElementAt(i).GetComponentInChildren<Slider>().maxValue = Math.Max(3, max);
 
-                ACC_Appearance_state.SetValue(i, zerostate[0], false);
+                _accAppearanceState.SetValue(i, zerostate[0], false);
 
                 slider2.ElementAt(i).GetComponentInChildren<Slider>().maxValue = Math.Max(3, max);
 
-                ACC_Appearance_state2.SetValue(i, zerostate[1], false);
+                _accAppearanceState2.SetValue(i, zerostate[1], false);
 
                 if (binding == -1)
-                {
                     binding = 0;
-                }
                 else if (binding < 9)
-                {
                     binding += 1;
-                }
                 else
-                {
                     binding = 10 + IndexOfName(binding);
-                }
-                ACC_Appearance_dropdown.SetValue(i, binding, false);
+                _accAppearanceDropdown.SetValue(i, binding, false);
             }
+
             UpdateClothingNots();
             Update_Toggles_GUI();
         }
 
         internal void MovIt(List<QueueItem> queue)
         {
-            var slotinfo = Slotinfo;
+            var slotInfo = SlotInfo;
             foreach (var item in queue)
             {
                 Settings.Logger.LogDebug($"Moving Acc from slot {item.SrcSlot} to {item.DstSlot}");
@@ -449,46 +407,43 @@ namespace Accessory_States
                 var dropdown = 0;
                 var state1 = 0;
                 var state2 = 3;
-                if (slotinfo.TryGetValue(item.SrcSlot, out var slotdata))
+                if (slotInfo.TryGetValue(item.SrcSlot, out var slotdata))
                 {
                     var binding = slotdata.Binding;
                     var states = slotdata.States;
 
-                    dropdown = (binding > 8) ? 10 + IndexOfName(binding) : binding + 1;
+                    dropdown = binding > 8 ? 10 + IndexOfName(binding) : binding + 1;
                     state1 = states[0][0];
                     state2 = states[0][1];
-                    slotinfo[item.DstSlot] = new Slotdata(slotdata);
+                    slotInfo[item.DstSlot] = new SlotData(slotdata);
                 }
                 else
                 {
-                    slotinfo.Remove(item.DstSlot);
+                    slotInfo.Remove(item.DstSlot);
                 }
 
-                slotinfo.Remove(item.SrcSlot);
+                slotInfo.Remove(item.SrcSlot);
 
-                ACC_Appearance_dropdown.SetValue(item.DstSlot, dropdown, false);
-                ACC_Appearance_state.SetValue(item.DstSlot, state1, false);
-                ACC_Appearance_state2.SetValue(item.DstSlot, state2, false);
+                _accAppearanceDropdown.SetValue(item.DstSlot, dropdown, false);
+                _accAppearanceState.SetValue(item.DstSlot, state1, false);
+                _accAppearanceState2.SetValue(item.DstSlot, state2, false);
 
 
-                ACC_Appearance_dropdown.SetValue(item.SrcSlot, 0, false);
-                ACC_Appearance_state.SetValue(item.SrcSlot, 0, false);
-                ACC_Appearance_state2.SetValue(item.SrcSlot, 3, false);
+                _accAppearanceDropdown.SetValue(item.SrcSlot, 0, false);
+                _accAppearanceState.SetValue(item.SrcSlot, 0, false);
+                _accAppearanceState2.SetValue(item.SrcSlot, 3, false);
             }
         }
 
         internal void Slot_ACC_Change(int slotNo, int type)
         {
-            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker)
-            {
-                return;
-            }
+            if (KoikatuAPI.GetCurrentGameMode() != GameMode.Maker) return;
             if (type == 120)
             {
-                Slotinfo.Remove(slotNo);
-                ACC_Appearance_dropdown.SetValue(slotNo, 0, false);
-                ACC_Appearance_state.SetValue(slotNo, 0, false);
-                ACC_Appearance_state2.SetValue(slotNo, 3, false);
+                SlotInfo.Remove(slotNo);
+                _accAppearanceDropdown.SetValue(slotNo, 0, false);
+                _accAppearanceState.SetValue(slotNo, 0, false);
+                _accAppearanceState2.SetValue(slotNo, 3, false);
             }
         }
 
@@ -496,22 +451,15 @@ namespace Accessory_States
         {
             var namedict = Names;
             for (int i = 0, n = namedict.Count; i < n; i++)
-            {
                 if (namedict.ElementAt(i).Key == binding)
-                {
                     return i;
-                }
-            }
             return 0;
         }
 
         internal void UpdateClothingNots()
         {
             var clothingnot = ClothNotData;
-            for (int i = 0, n = clothingnot.Length; i < n; i++)
-            {
-                clothingnot[i] = false;
-            }
+            for (int i = 0, n = clothingnot.Length; i < n; i++) clothingnot[i] = false;
 
             var clothinfo = ChaControl.infoClothes;
 
@@ -523,20 +471,17 @@ namespace Accessory_States
 
         private void UpdateTopClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
         {
-            if (infoBase == null)
-            {
-                return;
-            }
-            Hooks.ClothingNotPatch.IsshortsCheck = false;
-            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
+            if (infoBase == null) return;
+            Hooks.ClothingNotPatch.IsShortsCheck = false;
+            var listInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
 
             var key = ChaListDefine.KeyType.Coordinate;
             infoBase.GetInfo(key);
-            var notbot = ListInfoResult[key] == 2; //only in ChangeClothesTopAsync
+            var notbot = listInfoResult[key] == 2; //only in ChangeClothesTopAsync
 
             key = ChaListDefine.KeyType.NotBra;
             infoBase.GetInfo(key);
-            var notbra = ListInfoResult[key] == 1; //only in ChangeClothesTopAsync
+            var notbra = listInfoResult[key] == 1; //only in ChangeClothesTopAsync
 
             clothingnot[0] = clothingnot[0] || notbot;
             clothingnot[1] = clothingnot[1] || notbra;
@@ -544,18 +489,15 @@ namespace Accessory_States
 
         private void UpdateBraClothingNots(ListInfoBase infoBase, ref bool[] clothingnot)
         {
-            if (infoBase == null)
-            {
-                return;
-            }
-            Hooks.ClothingNotPatch.IsshortsCheck = true;
+            if (infoBase == null) return;
+            Hooks.ClothingNotPatch.IsShortsCheck = true;
 
-            var ListInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
+            var listInfoResult = Hooks.ClothingNotPatch.ListInfoResult;
             var key = ChaListDefine.KeyType.Coordinate;
 
-            infoBase.GetInfo(key);//kk uses coordinate to hide shorts
+            infoBase.GetInfo(key); //kk uses coordinate to hide shorts
 
-            var notShorts = ListInfoResult[key] == 2; //only in ChangeClothesBraAsync
+            var notShorts = listInfoResult[key] == 2; //only in ChangeClothesBraAsync
 
             clothingnot[2] = clothingnot[2] || notShorts;
         }
@@ -579,31 +521,21 @@ namespace Accessory_States
                         return;
                     break;
                 case 7:
-                    if (ChaControl.nowCoordinate.clothes.parts[8].id == 0)
-                    {
-                        RemoveClothingBinding(9);
-                    }
+                    if (ChaControl.nowCoordinate.clothes.parts[8].id == 0) RemoveClothingBinding(9);
                     break;
                 case 8:
-                    if (ChaControl.nowCoordinate.clothes.parts[7].id == 0)
-                    {
-                        RemoveClothingBinding(9);
-                    }
-                    break;
-                default:
+                    if (ChaControl.nowCoordinate.clothes.parts[7].id == 0) RemoveClothingBinding(9);
                     break;
             }
+
             RemoveClothingBinding(kind);
         }
 
         private void RemoveClothingBinding(int kind)
         {
-            var slotinfo = Slotinfo;
-            var removelist = slotinfo.Where(x => x.Value.Binding == kind).ToList();
-            for (int i = 0, n = removelist.Count; i < n; i++)
-            {
-                slotinfo.Remove(removelist[i].Key);
-            }
+            var slotInfo = SlotInfo;
+            var removelist = slotInfo.Where(x => x.Value.Binding == kind).ToList();
+            for (int i = 0, n = removelist.Count; i < n; i++) slotInfo.Remove(removelist[i].Key);
         }
     }
 }

@@ -1,47 +1,45 @@
-﻿using Extensions;
-using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Extensions;
+using MessagePack;
+using UnityEngine.Serialization;
 
 namespace Additional_Card_Info
 {
     public class DataStruct
     {
+        public CardInfo CardInfo = new CardInfo();
         public Dictionary<int, CoordinateInfo> CoordinateInfo = new Dictionary<int, CoordinateInfo>();
-
-        public Cardinfo CardInfo = new Cardinfo();
 
         public CoordinateInfo NowCoordinateInfo = new CoordinateInfo();
 
         public void CleanUp()
         {
             CardInfo.CleanUp();
-            foreach (var item in CoordinateInfo)
-            {
-                item.Value.CleanUp();
-            }
+            foreach (var item in CoordinateInfo) item.Value.CleanUp();
         }
 
-        public void Clearoutfit(int key)
+        public void ClearOutfit(int key)
         {
             if (!CoordinateInfo.ContainsKey(key))
-                Createoutfit(key);
+                CreateOutfit(key);
             CoordinateInfo[key].Clear();
         }
 
-        public void Createoutfit(int key)
+        public void CreateOutfit(int key)
         {
             if (!CoordinateInfo.ContainsKey(key))
                 CoordinateInfo[key] = new CoordinateInfo();
         }
 
-        public void Moveoutfit(int dest, int src)
+        public void MoveOutfit(int dest, int src)
         {
             CoordinateInfo[dest] = new CoordinateInfo(CoordinateInfo[src]);
         }
 
-        public void Removeoutfit(int key)
+        public void RemoveOutfit(int key)
         {
             CoordinateInfo.Remove(key);
         }
@@ -49,63 +47,66 @@ namespace Additional_Card_Info
 
     [Serializable]
     [MessagePackObject]
-    public class Cardinfo
+    public class CardInfo
     {
-        [Key("_cosplayready")]
-        public bool CosplayReady;
+        // ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("CosplayReady")] [Key("_cosplayready")]
+        public bool cosplayReady;
 
-        [Key("_advdir")]
-        public bool AdvancedDirectory;
+        // ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("AdvancedDirectory")] [Key("_advdir")]
+        public bool advancedDirectory;
 
-        [Key("_personalsavebool")]
-        public bool[] PersonalClothingBools;
+        [FormerlySerializedAs("PersonalClothingBools")] [Key("_personalsavebool")]
+        public bool[] personalClothingBools;
 
-        [Key("_simpledirectory")]
-        public string SimpleFolderDirectory;
+        [FormerlySerializedAs("SimpleFolderDirectory")] [Key("_simpledirectory")]
+        public string simpleFolderDirectory;
 
-        [Key("_advdirectory")]
-        public Dictionary<string, string> AdvancedFolderDirectory;
+        [Key("_advdirectory")] public Dictionary<string, string> AdvancedFolderDirectory;
 
-        public Cardinfo() { NullCheck(); }
-
-        public Cardinfo(bool _advdir, bool _cosplayready, bool[] _personalsavebool, string _simpledirectory, Dictionary<string, string> _advdirectory)
+        public CardInfo()
         {
-            CosplayReady = _cosplayready;
-            SimpleFolderDirectory = _simpledirectory;
-            AdvancedDirectory = _advdir;
-            PersonalClothingBools = _personalsavebool.ToNewArray(9);
+            NullCheck();
+        }
 
-            AdvancedFolderDirectory = _advdirectory.ToNewDictionary();
+        public CardInfo(bool advDir, bool cosplayReady, bool[] personalsavebool, string simpledirectory,
+            Dictionary<string, string> advdirectory)
+        {
+            this.cosplayReady = cosplayReady;
+            simpleFolderDirectory = simpledirectory;
+            advancedDirectory = advDir;
+            personalClothingBools = personalsavebool.ToNewArray(9);
+
+            AdvancedFolderDirectory = advdirectory.ToNewDictionary();
+            if (AdvancedFolderDirectory == null) return;
             NullCheck();
         }
 
         internal void CleanUp()
         {
-            var invalidpath = System.IO.Path.GetInvalidPathChars().Select(x => x.ToString());
-            var folderkeys = AdvancedFolderDirectory.Keys.ToList();
-            foreach (var key in folderkeys)
+            var invalidPath = Path.GetInvalidPathChars().Select(x => x.ToString());
+            var folderKeys = AdvancedFolderDirectory.Keys.ToList();
+            foreach (var key in folderKeys)
             {
                 var path = AdvancedFolderDirectory[key] = AdvancedFolderDirectory[key].Trim();
-
-                if (path.Length == 0 || path.ContainsAny(invalidpath))
-                {
-                    AdvancedFolderDirectory.Remove(key);
-                }
+                var enumerable = invalidPath.ToList();
+                if (path.Length == 0 || path.ContainsAny(enumerable)) AdvancedFolderDirectory.Remove(key);
             }
         }
 
         public void Clear()
         {
-            CosplayReady = false;
-            PersonalClothingBools = new bool[9];
+            cosplayReady = false;
+            personalClothingBools = new bool[9];
             AdvancedFolderDirectory.Clear();
         }
 
         private void NullCheck()
         {
-            if (SimpleFolderDirectory == null) SimpleFolderDirectory = "";
+            if (simpleFolderDirectory == null) simpleFolderDirectory = "";
             if (AdvancedFolderDirectory == null) AdvancedFolderDirectory = new Dictionary<string, string>();
-            if (PersonalClothingBools == null) PersonalClothingBools = new bool[9];
+            if (personalClothingBools == null) personalClothingBools = new bool[9];
         }
     }
 
@@ -113,150 +114,149 @@ namespace Additional_Card_Info
     [MessagePackObject]
     public class CoordinateInfo
     {
-        #region fields
-        [Key("_makeup")]
-        public bool MakeUpKeep;
-
-        [Key("_clothnot")]
-        public bool[] ClothNotData;
-
-        [Key("_coordsavebool")]
-        public bool[] CoordinateSaveBools;
-
-        [Key("_acckeep")]
-        public List<int> AccKeep;
-
-        [Key("_hairkeep")]
-        public List<int> HairAcc;
-
-        [Key("_creatornames")]
-        public List<string> CreatorNames;
-
-        [Key("_set")]
-        public string SetNames;
-
-        [Key("_subset")]
-        public string SubSetNames;
-
-        [Key("_restrictioninfo")]
-        public RestrictionInfo RestrictionInfo;
-        #endregion
-
-        public CoordinateInfo() { NullCheck(); }
-
-        public CoordinateInfo(CoordinateInfo _copy) => CopyData(_copy);
-
-        public void CopyData(CoordinateInfo _copy) => CopyData(_copy.ClothNotData, _copy.CoordinateSaveBools, _copy.AccKeep, _copy.HairAcc, _copy.CreatorNames, _copy.SetNames, _copy.SubSetNames, _copy.RestrictionInfo);
-
-        public void CopyData(bool[] _clothnot, bool[] _coordsavebool, List<int> _acckeep, List<int> _hairkeep, List<string> _creatornames, string _set, string _subset, RestrictionInfo _restrictioninfo)
+        public CoordinateInfo()
         {
-            SetNames = _set;
-            SubSetNames = _subset;
+            NullCheck();
+        }
 
-            CoordinateSaveBools = _coordsavebool.ToNewArray(9);
-            AccKeep = _acckeep.ToNewList();
-            HairAcc = _hairkeep.ToNewList();
-            CreatorNames = _creatornames.ToNewList();
-            ClothNotData = _clothnot.ToNewArray(3);
+        public CoordinateInfo(CoordinateInfo copy)
+        {
+            CopyData(copy);
+        }
 
-            if (_restrictioninfo != null) RestrictionInfo = new RestrictionInfo(_restrictioninfo);
-            else RestrictionInfo = null;
+        public void CopyData(CoordinateInfo copy)
+        {
+            CopyData(copy.clothNotData, copy.coordinateSaveBools, copy.accKeep, copy.hairAcc, copy.creatorNames,
+                copy.setNames, copy.subSetNames, copy.restrictionInfo);
+        }
+
+        public void CopyData(bool[] clothNot, bool[] coordSaveBool, List<int> copyAccKeep, List<int> copyHairKeep,
+            List<string> copyCreatorNames, string set, string subset, RestrictionInfo copyRestrictionInfo)
+        {
+            setNames = set;
+            subSetNames = subset;
+
+            coordinateSaveBools = coordSaveBool.ToNewArray(9);
+            accKeep = copyAccKeep.ToNewList();
+            hairAcc = copyHairKeep.ToNewList();
+            creatorNames = copyCreatorNames.ToNewList();
+            clothNotData = clothNot.ToNewArray(3);
+
+            restrictionInfo = copyRestrictionInfo != null ? new RestrictionInfo(copyRestrictionInfo) : null;
             NullCheck();
         }
 
         public void Clear()
         {
-            ClothNotData = new bool[3];
-            CoordinateSaveBools = new bool[9];
-            AccKeep.Clear();
-            HairAcc.Clear();
-            CreatorNames.Clear();
-            SetNames = "";
-            SubSetNames = "";
-            RestrictionInfo.Clear();
+            clothNotData = new bool[3];
+            coordinateSaveBools = new bool[9];
+            accKeep.Clear();
+            hairAcc.Clear();
+            creatorNames.Clear();
+            setNames = "";
+            subSetNames = "";
+            restrictionInfo.Clear();
         }
 
         internal void CleanUp()
         {
-            var invalidpath = System.IO.Path.GetInvalidPathChars();
-
-            foreach (var item in invalidpath)
+            var invalidPath = Path.GetInvalidPathChars();
+            foreach (var item in invalidPath)
             {
-                SetNames.Replace(item, '_');
-                SubSetNames.Replace(item, '_');
+                setNames = setNames.Replace(item, '_');
+                subSetNames = subSetNames.Replace(item, '_');
             }
-            RestrictionInfo.CleanUp();
+
+            restrictionInfo.CleanUp();
         }
 
         private void NullCheck()
         {
-            if (ClothNotData == null) ClothNotData = new bool[3];
-            if (CoordinateSaveBools == null) CoordinateSaveBools = new bool[9];
-            if (AccKeep == null) AccKeep = new List<int>();
-            if (HairAcc == null) HairAcc = new List<int>();
-            if (CreatorNames == null) CreatorNames = new List<string>();
-            if (SetNames == null) SetNames = "";
-            if (SubSetNames == null) SubSetNames = "";
-            if (RestrictionInfo == null) RestrictionInfo = new RestrictionInfo();
+            if (clothNotData == null) clothNotData = new bool[3];
+            if (coordinateSaveBools == null) coordinateSaveBools = new bool[9];
+            if (accKeep == null) accKeep = new List<int>();
+            if (hairAcc == null) hairAcc = new List<int>();
+            if (creatorNames == null) creatorNames = new List<string>();
+            if (setNames == null) setNames = "";
+            if (subSetNames == null) subSetNames = "";
+            if (restrictionInfo == null) restrictionInfo = new RestrictionInfo();
         }
+
+        #region fields
+
+        [FormerlySerializedAs("MakeUpKeep")] [Key("_makeup")]
+        public bool makeUpKeep;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("ClothNotData")] [Key("_clothnot")]
+        public bool[] clothNotData;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("CoordinateSaveBools")] [Key("_coordsavebool")]
+        public bool[] coordinateSaveBools;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("AccKeep")] [Key("_acckeep")]
+        public List<int> accKeep;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("HairAcc")] [Key("_hairkeep")]
+        public List<int> hairAcc;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("CreatorNames")] [Key("_creatornames")]
+        public List<string> creatorNames;
+
+        [FormerlySerializedAs("SetNames")] [Key("_set")]
+        public string setNames;
+
+        [FormerlySerializedAs("SubSetNames")] [Key("_subset")]
+        public string subSetNames;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("RestrictionInfo")] [Key("_restrictioninfo")]
+        public RestrictionInfo restrictionInfo;
+
+        #endregion
     }
 
     [Serializable]
     [MessagePackObject]
     public class RestrictionInfo
     {
-        #region fields
-        [Key("_personality")]
-        public Dictionary<int, int> PersonalityType_Restriction;
-
-        [Key("_trait")]
-        public Dictionary<int, int> TraitType_Restriction;
-
-        [Key("_interest")]
-        public Dictionary<int, int> Interest_Restriction;
-
-        [Key("_height")]
-        public bool[] Height_Restriction;
-
-        [Key("_breast")]
-        public bool[] Breastsize_Restriction;
-
-        [Key("_htype")]
-        public int HstateType_Restriction;
-
-        [Key("_club")]
-        public int ClubType_Restriction;
-
-        [Key("_gender")]
-        public int GenderType;
-
-        [Key("_coordtype")]
-        public int CoordinateType;
-
-        [Key("_coordsubtype")]
-        public int CoordinateSubType;
-        #endregion
-
-        public RestrictionInfo() { NullCheck(); }
-
-        public RestrictionInfo(RestrictionInfo _copy) => CopyData(_copy);
-
-        public void CopyData(RestrictionInfo _copy) => CopyData(_copy.PersonalityType_Restriction, _copy.TraitType_Restriction, _copy.Interest_Restriction, _copy.HstateType_Restriction, _copy.ClubType_Restriction, _copy.GenderType, _copy.CoordinateType, _copy.CoordinateSubType, _copy.Height_Restriction, _copy.Breastsize_Restriction);
-
-        public void CopyData(Dictionary<int, int> _personality, Dictionary<int, int> _trait, Dictionary<int, int> _interest, int _htype, int _club, int _gender, int _coordtype, int _coordsubtype, bool[] _height, bool[] _breast)
+        public RestrictionInfo()
         {
-            HstateType_Restriction = _htype;
-            ClubType_Restriction = _club;
-            GenderType = _gender;
-            CoordinateType = _coordtype;
-            CoordinateSubType = _coordsubtype;
+            NullCheck();
+        }
 
-            Height_Restriction = _height.ToNewArray(3);
-            Breastsize_Restriction = _breast.ToNewArray(3);
+        public RestrictionInfo(RestrictionInfo copy)
+        {
+            CopyData(copy);
+        }
 
-            PersonalityType_Restriction = _personality.ToNewDictionary();
-            TraitType_Restriction = _trait.ToNewDictionary();
-            Interest_Restriction = _interest.ToNewDictionary();
+        public void CopyData(RestrictionInfo copy)
+        {
+            CopyData(copy.PersonalityTypeRestriction, copy.TraitTypeRestriction, copy.InterestRestriction,
+                copy.hStateTypeRestriction, copy.clubTypeRestriction, copy.genderType, copy.coordinateType,
+                copy.coordinateSubType, copy.heightRestriction, copy.breastsizeRestriction);
+        }
+
+        public void CopyData(Dictionary<int, int> personality, Dictionary<int, int> trait,
+            Dictionary<int, int> interest, int copyHType, int club, int gender, int copyCoordType, int coordSubType,
+            bool[] height, bool[] breast)
+        {
+            hStateTypeRestriction = copyHType;
+            clubTypeRestriction = club;
+            genderType = gender;
+            coordinateType = copyCoordType;
+            coordinateSubType = coordSubType;
+
+            heightRestriction = height.ToNewArray(3);
+            breastsizeRestriction = breast.ToNewArray(3);
+
+            PersonalityTypeRestriction = personality.ToNewDictionary();
+            TraitTypeRestriction = trait.ToNewDictionary();
+            InterestRestriction = interest.ToNewDictionary();
             //if (_personality != null) PersonalityType_Restriction = new Dictionary<int, int>(_personality);
             //else PersonalityType_Restriction = null;
             //if (_trait != null) TraitType_Restriction = new Dictionary<int, int>(_personality);
@@ -269,54 +269,80 @@ namespace Additional_Card_Info
 
         private void NullCheck()
         {
-            if (PersonalityType_Restriction == null) PersonalityType_Restriction = new Dictionary<int, int>();
-            if (Interest_Restriction == null) Interest_Restriction = new Dictionary<int, int>();
-            if (TraitType_Restriction == null) TraitType_Restriction = new Dictionary<int, int>();
-            if (Height_Restriction == null) Height_Restriction = new bool[3];
-            if (Breastsize_Restriction == null) Breastsize_Restriction = new bool[3];
+            if (PersonalityTypeRestriction == null) PersonalityTypeRestriction = new Dictionary<int, int>();
+            if (InterestRestriction == null) InterestRestriction = new Dictionary<int, int>();
+            if (TraitTypeRestriction == null) TraitTypeRestriction = new Dictionary<int, int>();
+            if (heightRestriction == null) heightRestriction = new bool[3];
+            if (breastsizeRestriction == null) breastsizeRestriction = new bool[3];
         }
 
         public void Clear()
         {
-            PersonalityType_Restriction.Clear();
+            PersonalityTypeRestriction.Clear();
 
-            TraitType_Restriction.Clear();
+            TraitTypeRestriction.Clear();
 
-            Interest_Restriction.Clear();
+            InterestRestriction.Clear();
 
-            CoordinateType = 0;
+            coordinateType = 0;
 
-            CoordinateSubType = 0;
+            coordinateSubType = 0;
 
-            HstateType_Restriction = 0;
+            hStateTypeRestriction = 0;
 
-            ClubType_Restriction = 0;
+            clubTypeRestriction = 0;
 
-            GenderType = 0;
+            genderType = 0;
 
-            for (var i = 0; i < 3; i++)
-            {
-                Height_Restriction[i] = Breastsize_Restriction[i] = false;
-            }
+            for (var i = 0; i < 3; i++) heightRestriction[i] = breastsizeRestriction[i] = false;
         }
 
         internal void CleanUp()
         {
-            var clean = PersonalityType_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
-            foreach (var item in clean)
-            {
-                PersonalityType_Restriction.Remove(item);
-            }
-            clean = TraitType_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
-            foreach (var item in clean)
-            {
-                TraitType_Restriction.Remove(item);
-            }
-            clean = Interest_Restriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
-            foreach (var item in clean)
-            {
-                Interest_Restriction.Remove(item);
-            }
+            var clean = PersonalityTypeRestriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            foreach (var item in clean) PersonalityTypeRestriction.Remove(item);
+            clean = TraitTypeRestriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            foreach (var item in clean) TraitTypeRestriction.Remove(item);
+            clean = InterestRestriction.Where(x => x.Value == 0).Select(x => x.Key).ToList();
+            foreach (var item in clean) InterestRestriction.Remove(item);
         }
+
+        #region fields
+
+        [Key("_personality")] public Dictionary<int, int> PersonalityTypeRestriction;
+
+        [Key("_trait")] public Dictionary<int, int> TraitTypeRestriction;
+
+        [Key("_interest")] public Dictionary<int, int> InterestRestriction;
+
+        [FormerlySerializedAs("Height_Restriction")] [Key("_height")]
+        public bool[] heightRestriction;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("Breastsize_Restriction")] [Key("_breast")]
+        public bool[] breastsizeRestriction;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("hstateTypeRestriction")]
+        [FormerlySerializedAs("HstateType_Restriction")]
+        // ReSharper disable once StringLiteralTypo
+        [Key("_htype")]
+        public int hStateTypeRestriction;
+
+        [FormerlySerializedAs("ClubType_Restriction")] [Key("_club")]
+        public int clubTypeRestriction;
+
+        [FormerlySerializedAs("GenderType")] [Key("_gender")]
+        public int genderType;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("CoordinateType")] [Key("_coordtype")]
+        public int coordinateType;
+
+// ReSharper disable once StringLiteralTypo
+        [FormerlySerializedAs("CoordinateSubType")] [Key("_coordsubtype")]
+        public int coordinateSubType;
+
+        #endregion
     }
 }
